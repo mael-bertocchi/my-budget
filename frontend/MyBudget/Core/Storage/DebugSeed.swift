@@ -25,15 +25,15 @@ enum DebugSeed {
         }
 
         let usd = Currency.named("USD")
-        let gbp = Currency.named("GBP")
+        let chf = Currency.named("CHF")
 
         let operations: [Operation] = [
             Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", method: .card, amount: 54.20, currencyCode: usd.code, rateToEuro: usd.rateToEuro),
             Operation(date: day(0, hour: 9), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", method: .card, amount: 12.90),
-            Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "dining", location: "Mitte", method: .cash, amount: 4.20),
-            Operation(date: day(1, hour: 10), name: "Salary", categoryId: "income", location: "Employer", method: .transfer, amount: 3200, type: .income, isRecurring: true),
-            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", location: "Online", method: .card, amount: 38, currencyCode: gbp.code, rateToEuro: gbp.rateToEuro),
-            Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "dining", location: "Kreuzberg", method: .card, amount: 48),
+            Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", method: .cash, amount: 4.20),
+            Operation(date: day(1, hour: 10), name: "Salary", categoryId: "salary", location: "Employer", method: .transfer, amount: 3200, type: .income, isRecurring: true),
+            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", location: "Online", method: .card, amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro),
+            Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "restaurant", location: "Kreuzberg", method: .card, amount: 48),
             Operation(date: day(3, hour: 8), name: "Rent", categoryId: "rent", location: "Landlord", method: .transfer, amount: 1150, isRecurring: true),
             Operation(date: day(3, hour: 19), name: "FitX Gym", categoryId: "health", location: "Prenzlauer Berg", method: .card, amount: 29.90, isRecurring: true),
             Operation(date: day(4, hour: 21), name: "Netflix", categoryId: "fun", location: "Online", method: .card, amount: 12.99, isRecurring: true),
@@ -44,11 +44,11 @@ enum DebugSeed {
             Operation(date: dayOfMonth(8), name: "Edeka", categoryId: "groceries", location: "Schönhauser Allee", method: .card, amount: 58.90),
             Operation(date: dayOfMonth(3), name: "REWE", categoryId: "groceries", location: "Prenzlauer Berg", method: .card, amount: 68.30),
 
-            Operation(date: dayOfMonth(15), name: "Sushi Bar", categoryId: "dining", location: "Rosenthaler Platz", method: .card, amount: 38.50),
-            Operation(date: dayOfMonth(10), name: "Zenkichi", categoryId: "dining", location: "Mitte", method: .card, amount: 52),
-            Operation(date: dayOfMonth(7), name: "The Barn Coffee", categoryId: "dining", location: "Mitte", method: .cash, amount: 4.80),
-            Operation(date: dayOfMonth(5), name: "Burgermeister", categoryId: "dining", location: "Schlesisches Tor", method: .cash, amount: 22.50),
-            Operation(date: dayOfMonth(2), name: "Café Kranzler", categoryId: "dining", location: "Charlottenburg", method: .card, amount: 18),
+            Operation(date: dayOfMonth(15), name: "Sushi Bar", categoryId: "restaurant", location: "Rosenthaler Platz", method: .card, amount: 38.50),
+            Operation(date: dayOfMonth(10), name: "Zenkichi", categoryId: "restaurant", location: "Mitte", method: .card, amount: 52),
+            Operation(date: dayOfMonth(7), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", method: .cash, amount: 4.80),
+            Operation(date: dayOfMonth(5), name: "Burgermeister", categoryId: "restaurant", location: "Schlesisches Tor", method: .cash, amount: 22.50),
+            Operation(date: dayOfMonth(2), name: "Café Kranzler", categoryId: "restaurant", location: "Charlottenburg", method: .card, amount: 18),
 
             Operation(date: dayOfMonth(1), name: "BVG Monthly", categoryId: "transport", location: "Berlin", method: .transfer, amount: 49, isRecurring: true),
             Operation(date: dayOfMonth(11), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", method: .card, amount: 22.60),

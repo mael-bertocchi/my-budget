@@ -216,33 +216,41 @@ struct BudgetSettings: Codable, Equatable {
 
 enum CategoryPalette {
     static let groceries: UInt32 = 0x3ECF8E
-    static let dining: UInt32 = 0xFFA23E
+    static let restaurant: UInt32 = 0xFFA23E
     static let transport: UInt32 = 0x4D9BFF
     static let rent: UInt32 = 0xA78BFA
     static let shopping: UInt32 = 0xFF6BA8
     static let fun: UInt32 = 0x38D6D6
     static let income: UInt32 = 0x3ECF8E
     static let health: UInt32 = 0xFF8A5C
+    static let school: UInt32 = 0xFFD166
+    static let miscellaneous: UInt32 = 0x9BA1B0
+    static let refund: UInt32 = 0x38D6D6
+    static let family: UInt32 = 0xFF6BA8
 
     static let goalGreen: UInt32 = 0x3ECF8E
     static let goalBlue: UInt32 = 0x4D9BFF
     static let goalViolet: UInt32 = 0xA78BFA
 
     static let all: [UInt32] = [
-        groceries, dining, transport, rent, shopping, fun, health, goalBlue
+        groceries, restaurant, transport, rent, shopping, fun, health, goalBlue
     ]
 }
 
 extension Category {
     static let defaults: [Category] = [
         Category(id: "groceries", name: "Groceries", symbol: "cart", colorHex: CategoryPalette.groceries, monthlyLimit: 400),
-        Category(id: "dining", name: "Dining", symbol: "fork.knife", colorHex: CategoryPalette.dining, monthlyLimit: 250),
+        Category(id: "restaurant", name: "Restaurant", symbol: "fork.knife", colorHex: CategoryPalette.restaurant, monthlyLimit: 250),
         Category(id: "transport", name: "Transport", symbol: "tram", colorHex: CategoryPalette.transport, monthlyLimit: 150),
         Category(id: "rent", name: "Rent", symbol: "house", colorHex: CategoryPalette.rent, monthlyLimit: 1150),
         Category(id: "shopping", name: "Shopping", symbol: "bag", colorHex: CategoryPalette.shopping, monthlyLimit: 180),
         Category(id: "fun", name: "Fun", symbol: "film", colorHex: CategoryPalette.fun, monthlyLimit: 120),
         Category(id: "health", name: "Health", symbol: "dumbbell", colorHex: CategoryPalette.health, monthlyLimit: 80),
-        Category(id: "income", name: "Income", symbol: "briefcase", colorHex: CategoryPalette.income, monthlyLimit: 0, type: .income)
+        Category(id: "school", name: "School", symbol: "graduationcap", colorHex: CategoryPalette.school, monthlyLimit: 120),
+        Category(id: "miscellaneous", name: "Miscellaneous", symbol: "square.grid.2x2", colorHex: CategoryPalette.miscellaneous, monthlyLimit: 100),
+        Category(id: "salary", name: "Salary", symbol: "briefcase", colorHex: CategoryPalette.income, monthlyLimit: 0, type: .income),
+        Category(id: "refund", name: "Refund", symbol: "arrow.uturn.backward", colorHex: CategoryPalette.refund, monthlyLimit: 0, type: .income),
+        Category(id: "family", name: "Family", symbol: "person.2", colorHex: CategoryPalette.family, monthlyLimit: 0, type: .income)
     ]
 
     static let fallback = Category(
