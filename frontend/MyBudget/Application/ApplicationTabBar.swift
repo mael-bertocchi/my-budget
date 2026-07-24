@@ -44,13 +44,14 @@ struct ApplicationTabBar: View {
         HStack(spacing: 0) {
             tabItem(.budget)
             tabItem(.history)
-            addButton
+            Color.clear.frame(maxWidth: .infinity)
             tabItem(.savings)
             tabItem(.settings)
         }
         .padding(.horizontal, 12)
         .frame(height: 68)
         .glassBar()
+        .overlay(alignment: .center) { addButton }
         .padding(.horizontal, 12)
         .padding(.bottom, 12)
         .padding(.top, 4)
@@ -90,9 +91,8 @@ struct ApplicationTabBar: View {
                         .foregroundStyle(Theme.background)
                 )
                 .shadow(color: Theme.accent.opacity(0.45), radius: 9, y: 8)
-                .frame(maxWidth: .infinity)
-                .offset(y: -10)
                 .contentShape(Circle())
+                .offset(y: -10)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("New operation")
