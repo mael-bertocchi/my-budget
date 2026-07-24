@@ -57,7 +57,9 @@ enum Formatting {
     }
 
     static func rate(_ value: Double) -> String {
-        value >= 0.1 ? String(format: "%.2f", value) : String(format: "%.4f", value)
+        if value >= 0.1 { return String(format: "%.2f", value) }
+        if value >= 0.001 { return String(format: "%.4f", value) }
+        return String(format: "%.5f", value)
     }
 
     static func decimalInput(_ amount: Double) -> String {
