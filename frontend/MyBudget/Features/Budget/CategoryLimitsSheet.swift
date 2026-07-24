@@ -30,8 +30,14 @@ struct CategoryLimitsSheet: View {
                 .glassInput()
                 .padding(.bottom, 22)
 
-                SectionLabel("Category limits")
-                    .padding(.bottom, 12)
+                HStack {
+                    SectionLabel("Category limits")
+                    Spacer(minLength: 12)
+                    Text(dispatchText)
+                        .font(Theme.font(12))
+                        .foregroundStyle(dispatchColor)
+                }
+                .padding(.bottom, 12)
 
                 VStack(spacing: 10) {
                     ForEach(store.expenseCategories) { category in
@@ -52,6 +58,26 @@ struct CategoryLimitsSheet: View {
         .screenBackground()
         .presentationDragIndicator(.visible)
         .onAppear(perform: loadValues)
+    }
+
+    private var toDispatch: Double {
+        let budget = Formatting.parseAmount(monthlyLimit) ?? 0
+        let allocated = store.expenseCategories.reduce(0) { total, category in
+            total + (Formatting.parseAmount(limits[category.id] ?? "") ?? 0)
+        }
+        return budget - allocated
+    }
+
+    private var dispatchText: String {
+        if toDispatch > 0 { return Formatting.euro(toDispatch) + " to dispatch" }
+        if toDispatch < 0 { return Formatting.euro(-toDispatch) + " over budget" }
+        return "Fully dispatched"
+    }
+
+    private var dispatchColor: Color {
+        if toDispatch > 0 { return Theme.accent300 }
+        if toDispatch < 0 { return Theme.negative }
+        return Theme.positive
     }
 
     private func limitRow(_ category: Category) -> some View {

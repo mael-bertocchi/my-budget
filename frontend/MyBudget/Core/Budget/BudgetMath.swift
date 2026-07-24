@@ -117,6 +117,16 @@ enum BudgetMath {
             .map { CategorySpend(category: $0, spent: totals[$0.id] ?? 0) }
     }
 
+    static func allocatedLimits(categories: [Category]) -> Double {
+        categories
+            .filter { $0.type == .expense }
+            .reduce(0) { $0 + $1.monthlyLimit }
+    }
+
+    static func toDispatch(categories: [Category], settings: BudgetSettings) -> Double {
+        settings.monthlyLimit - allocatedLimits(categories: categories)
+    }
+
     static func dayGroups(_ operations: [Operation]) -> [DayGroup] {
         let grouped = Dictionary(grouping: operations) { calendar.startOfDay(for: $0.date) }
         return grouped

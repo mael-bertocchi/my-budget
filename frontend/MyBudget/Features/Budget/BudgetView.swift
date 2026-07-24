@@ -31,7 +31,14 @@ struct BudgetView: View {
                     .padding(.bottom, 22)
 
                 categoryHeader
-                    .padding(.bottom, 12)
+                    .padding(.bottom, toDispatch > 0 ? 6 : 12)
+
+                if toDispatch > 0 {
+                    Text(Formatting.euro(toDispatch) + " of the budget is not dispatched yet")
+                        .font(Theme.font(12))
+                        .foregroundStyle(Theme.accent300)
+                        .padding(.bottom, 12)
+                }
 
                 categoryList
             }
@@ -65,6 +72,10 @@ struct BudgetView: View {
             month: month
         )
         .filter { $0.limit > 0 || $0.spent > 0 }
+    }
+
+    private var toDispatch: Double {
+        BudgetMath.toDispatch(categories: store.categories, settings: store.budget)
     }
 
     private var canGoForward: Bool {
