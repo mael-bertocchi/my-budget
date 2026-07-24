@@ -5,6 +5,7 @@ struct MyBudgetApplication: App {
     @State private var store: LocalStore
     @State private var rates: ExchangeRates
     @State private var preferences: Preferences
+    @State private var tabBarVisibility = TabBarVisibility()
 
     init() {
         _store = State(initialValue: LocalStore())
@@ -18,6 +19,7 @@ struct MyBudgetApplication: App {
                 .environment(store)
                 .environment(rates)
                 .environment(preferences)
+                .environment(tabBarVisibility)
                 .tint(Theme.accent)
                 .preferredColorScheme(.dark)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)

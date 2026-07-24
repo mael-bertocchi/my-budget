@@ -40,6 +40,7 @@ struct BudgetView: View {
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
+        .hidesTabBarOnScroll()
         .sheet(isPresented: $showLimits) {
             CategoryLimitsSheet()
         }

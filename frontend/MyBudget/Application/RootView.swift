@@ -22,6 +22,7 @@ struct RootView: View {
 struct MainShell: View {
     @Environment(LocalStore.self) private var store
     @Environment(Preferences.self) private var preferences
+    @Environment(TabBarVisibility.self) private var tabBarVisibility
 
     @State private var selection: AppTab = .budget
     @State private var editorRoute: OperationEditorRoute?
@@ -41,7 +42,13 @@ struct MainShell: View {
                     editorRoute = .new
                 }
             )
+            .offset(y: tabBarVisibility.isHidden ? Theme.tabBarHiddenOffset : 0)
+            .opacity(tabBarVisibility.isHidden ? 0 : 1)
+            .animation(.snappy(duration: 0.26), value: tabBarVisibility.isHidden)
             .ignoresSafeArea(.keyboard, edges: .bottom)
+        }
+        .onChange(of: selection) { _, _ in
+            tabBarVisibility.reveal()
         }
         .sheet(item: $editorRoute) { route in
             OperationEditorSheet(route: route)

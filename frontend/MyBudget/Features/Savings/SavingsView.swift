@@ -42,6 +42,7 @@ struct SavingsView: View {
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
+        .hidesTabBarOnScroll()
         .sheet(item: $movementRoute) { route in
             MovementSheet(kind: route.kind)
                 .presentationDetents([.medium, .large])

@@ -66,6 +66,7 @@ struct HistoryView: View {
             }
             .scrollIndicators(.hidden)
             .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
+            .hidesTabBarOnScroll()
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -105,6 +106,7 @@ struct HistoryView: View {
             }
             .scrollIndicators(.hidden)
             .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
+            .hidesTabBarOnScroll()
         }
     }
 

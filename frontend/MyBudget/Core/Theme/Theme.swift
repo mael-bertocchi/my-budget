@@ -80,6 +80,7 @@ enum Theme {
     static let minHitTarget: CGFloat = 44
 
     static let tabBarClearance: CGFloat = 96
+    static let tabBarHiddenOffset: CGFloat = 130
 }
 
 extension Color {
