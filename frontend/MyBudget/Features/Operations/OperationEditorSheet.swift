@@ -26,7 +26,6 @@ struct OperationEditorSheet: View {
     @State private var categoryId = ""
     @State private var name = ""
     @State private var location = ""
-    @State private var method: PaymentMethod = .card
     @State private var date = Date.now
     @State private var isRecurring = false
 
@@ -233,14 +232,6 @@ struct OperationEditorSheet: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                FieldLabel("Payment method")
-                SegmentedControl(
-                    options: PaymentMethod.allCases.map { ($0, $0.label, $0.systemImage) },
-                    selection: $method
-                )
-            }
-
             recurringRow
         }
     }
@@ -272,7 +263,6 @@ struct OperationEditorSheet: View {
     private func loadValues() {
         guard case .edit(let operationId) = route, let operation = store.operation(id: operationId) else {
             currencyCode = preferences.lastUsedCurrencyCode
-            method = preferences.defaultPaymentMethod
             categoryId = store.categories(for: type).first?.id ?? ""
             return
         }
@@ -282,7 +272,6 @@ struct OperationEditorSheet: View {
         categoryId = operation.categoryId
         name = operation.name
         location = operation.location ?? ""
-        method = operation.method
         date = operation.date
         isRecurring = operation.isRecurring
     }
@@ -307,7 +296,6 @@ struct OperationEditorSheet: View {
             name: name.trimmingCharacters(in: .whitespaces),
             categoryId: categoryId,
             location: trimmedLocation.isEmpty ? nil : trimmedLocation,
-            method: method,
             amount: amount,
             currencyCode: currencyCode,
             rateToEuro: currency.rateToEuro,
@@ -317,7 +305,6 @@ struct OperationEditorSheet: View {
 
         store.upsertOperation(operation)
         preferences.lastUsedCurrencyCode = currencyCode
-        preferences.defaultPaymentMethod = method
         preferences.success()
         dismiss()
     }

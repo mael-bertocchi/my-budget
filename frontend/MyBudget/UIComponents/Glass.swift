@@ -13,13 +13,6 @@ struct GlassStyle {
         blur: .ultraThinMaterial
     )
 
-    static let bar = GlassStyle(
-        fill: Theme.glassBarFill,
-        border: Theme.glassBarBorder,
-        specular: Theme.specularBar,
-        blur: .ultraThinMaterial
-    )
-
     static let input = GlassStyle(
         fill: Theme.glassInputFill,
         border: Theme.glassInputBorder,
@@ -70,10 +63,6 @@ extension View {
 
     func glassInput(radius: CGFloat = Theme.inputRadius) -> some View {
         modifier(GlassSurface(radius: radius, style: .input, shadow: false))
-    }
-
-    func glassBar(radius: CGFloat = Theme.tabBarRadius) -> some View {
-        modifier(GlassSurface(radius: radius, style: .bar, shadow: true))
     }
 }
 
@@ -147,5 +136,16 @@ struct RowDivider: View {
         Rectangle()
             .fill(Theme.divider)
             .frame(height: 1)
+    }
+}
+
+struct StatusDot: View {
+    var color: Color
+    var size: CGFloat = 7
+
+    var body: some View {
+        Circle()
+            .fill(color)
+            .frame(width: size, height: size)
     }
 }

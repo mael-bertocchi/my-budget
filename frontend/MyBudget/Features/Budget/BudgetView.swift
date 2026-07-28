@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BudgetView: View {
     var onOpenCategory: (Category) -> Void = { _ in }
+    var onNewOperation: () -> Void = {}
 
     @Environment(LocalStore.self) private var store
     @Environment(Preferences.self) private var preferences
@@ -46,8 +47,6 @@ struct BudgetView: View {
             .padding(.horizontal, Theme.screenPadding)
         }
         .scrollIndicators(.hidden)
-        .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
-        .hidesTabBarOnScroll()
         .sheet(isPresented: $showLimits) {
             CategoryLimitsSheet()
         }
@@ -83,20 +82,24 @@ struct BudgetView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center) {
+        HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Monthly budget")
                     .font(Theme.font(12))
                     .foregroundStyle(Theme.muted)
                 ScreenTitle(Formatting.monthTitle(month))
             }
-            Spacer(minLength: 12)
+            Spacer(minLength: 8)
             StepperButton(
                 title: Formatting.monthShort(BudgetMath.shiftMonth(month, by: -1)),
                 onBack: { step(-1) },
                 onForward: { step(1) },
                 forwardEnabled: canGoForward
             )
+            HeaderAddButton {
+                preferences.tap()
+                onNewOperation()
+            }
         }
     }
 

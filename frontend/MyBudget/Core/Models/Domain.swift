@@ -22,30 +22,6 @@ enum OperationType: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-enum PaymentMethod: String, Codable, CaseIterable, Identifiable {
-    case card = "CARD"
-    case cash = "CASH"
-    case transfer = "TRANSFER"
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .card: return "Card"
-        case .cash: return "Cash"
-        case .transfer: return "Transfer"
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .card: return "creditcard"
-        case .cash: return "banknote"
-        case .transfer: return "arrow.left.arrow.right"
-        }
-    }
-}
-
 enum MovementKind: String, Codable, CaseIterable, Identifiable {
     case deposit = "DEPOSIT"
     case withdrawal = "WITHDRAWAL"
@@ -102,7 +78,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var name: String
     var categoryId: String
     var location: String?
-    var method: PaymentMethod
     var amount: Double
     var currencyCode: String
     var rateToEuro: Double
@@ -116,7 +91,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         name: String,
         categoryId: String,
         location: String? = nil,
-        method: PaymentMethod = .card,
         amount: Double,
         currencyCode: String = Currency.euro.code,
         rateToEuro: Double = 1,
@@ -129,7 +103,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         self.name = name
         self.categoryId = categoryId
         self.location = location
-        self.method = method
         self.amount = amount
         self.currencyCode = currencyCode
         self.rateToEuro = rateToEuro

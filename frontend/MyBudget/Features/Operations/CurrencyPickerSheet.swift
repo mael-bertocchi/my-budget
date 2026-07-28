@@ -41,12 +41,6 @@ struct CurrencyPickerSheet: View {
 
     private func row(_ currency: Currency) -> some View {
         HStack(spacing: 12) {
-            Text(currency.symbol)
-                .font(Theme.font(15, .medium))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 34, height: 34)
-                .background(Theme.accent.opacity(0.20), in: RoundedRectangle(cornerRadius: Theme.tileRadius, style: .continuous))
-
             VStack(alignment: .leading, spacing: 1) {
                 Text(currency.code)
                     .font(Theme.font(14))

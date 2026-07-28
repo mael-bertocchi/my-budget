@@ -1,57 +1,94 @@
 import SwiftUI
 
+enum AppTab: String, CaseIterable, Identifiable {
+    case budget
+    case history
+    case savings
+    case settings
+
+    var id: String { rawValue }
+}
+
 struct RootView: View {
     @Environment(LocalStore.self) private var store
+    @Environment(ApplicationSession.self) private var session
 
     var body: some View {
-        MainShell()
-            .task {
-                #if DEBUG
-                if CommandLine.arguments.contains("-demo-empty") {
-                    DebugSeed.enterDemoEmpty(store: store)
-                    return
+        Group {
+            switch session.identityState {
+            case .loading:
+                ZStack {
+                    AmbientBackground()
+                    ProgressView()
+                        .tint(Theme.accent)
                 }
-                if CommandLine.arguments.contains("-demo") {
-                    DebugSeed.enterDemo(store: store)
-                }
-                #endif
+            case .signedOut:
+                SignInView()
+            case .signedIn:
+                MainShell()
             }
+        }
+        .task {
+            #if DEBUG
+            if CommandLine.arguments.contains("-demo-empty") {
+                DebugSeed.enterDemoEmpty(store: store)
+                session.enterDemo()
+                return
+            }
+            if CommandLine.arguments.contains("-demo") {
+                DebugSeed.enterDemo(store: store)
+                session.enterDemo()
+                return
+            }
+            #endif
+            await session.bootstrap()
+        }
     }
 }
 
 struct MainShell: View {
-    @Environment(LocalStore.self) private var store
     @Environment(Preferences.self) private var preferences
-    @Environment(TabBarVisibility.self) private var tabBarVisibility
+    @Environment(ApplicationSession.self) private var session
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var selection: AppTab = .budget
     @State private var editorRoute: OperationEditorRoute?
     @State private var historyFilter: HistoryFilter = .all
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            AmbientBackground()
-
-            tabContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            ApplicationTabBar(
-                selection: $selection,
-                onAddTap: {
-                    preferences.tap()
-                    editorRoute = .new
-                }
-            )
-            .offset(y: tabBarVisibility.isHidden ? Theme.tabBarHiddenOffset : 0)
-            .opacity(tabBarVisibility.isHidden ? 0 : 1)
-            .animation(.snappy(duration: 0.26), value: tabBarVisibility.isHidden)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
+        TabView(selection: $selection) {
+            Tab("Budget", systemImage: "chart.pie", value: AppTab.budget) {
+                BudgetView(
+                    onOpenCategory: openCategoryInHistory,
+                    onNewOperation: { editorRoute = .new }
+                )
+                .screenBackground()
+            }
+            Tab("History", systemImage: "clock.arrow.circlepath", value: AppTab.history) {
+                HistoryView(
+                    filter: $historyFilter,
+                    onSelect: { editorRoute = .edit($0.id) },
+                    onNewOperation: { editorRoute = .new }
+                )
+                .screenBackground()
+            }
+            Tab("Savings", systemImage: "banknote", value: AppTab.savings) {
+                SavingsView()
+                    .screenBackground()
+            }
+            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
+                SettingsView()
+                    .screenBackground()
+            }
         }
-        .onChange(of: selection) { _, _ in
-            tabBarVisibility.reveal()
-        }
+        .tabBarMinimizeBehavior(.onScrollDown)
         .sheet(item: $editorRoute) { route in
             OperationEditorSheet(route: route)
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                session.applicationBecameActive()
+            }
         }
         .onAppear {
             #if DEBUG
@@ -63,20 +100,6 @@ struct MainShell: View {
                 editorRoute = .new
             }
             #endif
-        }
-    }
-
-    @ViewBuilder
-    private var tabContent: some View {
-        switch selection {
-        case .budget:
-            BudgetView(onOpenCategory: openCategoryInHistory)
-        case .history:
-            HistoryView(filter: $historyFilter, onSelect: { editorRoute = .edit($0.id) })
-        case .savings:
-            SavingsView()
-        case .settings:
-            SettingsView()
         }
     }
 

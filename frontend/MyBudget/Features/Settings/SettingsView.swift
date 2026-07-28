@@ -4,10 +4,12 @@ struct SettingsView: View {
     @Environment(LocalStore.self) private var store
     @Environment(ExchangeRates.self) private var rates
     @Environment(Preferences.self) private var preferences
+    @Environment(ApplicationSession.self) private var session
 
     @State private var showLimits = false
     @State private var showCurrencyPicker = false
     @State private var showResetConfirmation = false
+    @State private var showSignOutConfirmation = false
 
     var body: some View {
         @Bindable var preferences = preferences
@@ -17,23 +19,47 @@ struct SettingsView: View {
                 ScreenTitle("Settings")
                     .padding(.bottom, 20)
 
+                SectionLabel("Account")
+                    .padding(.bottom, 10)
+                VStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        IconTile(symbol: "person.crop.circle", color: Theme.accent)
+                        Text(session.username ?? "Signed in")
+                            .font(Theme.font(14))
+                            .foregroundStyle(Theme.text)
+                        Spacer(minLength: 8)
+                        syncBadge
+                    }
+                    .padding(.vertical, 11)
+                    .padding(.horizontal, 14)
+                    RowDivider()
+                    Button {
+                        showSignOutConfirmation = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            IconTile(symbol: "rectangle.portrait.and.arrow.right", color: Theme.negative)
+                            Text("Sign out")
+                                .font(Theme.font(14))
+                                .foregroundStyle(Theme.negative)
+                            Spacer(minLength: 8)
+                        }
+                        .padding(.vertical, 11)
+                        .padding(.horizontal, 14)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .glassCard()
+
                 SectionLabel("Budget")
+                    .padding(.top, 22)
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
                     valueRow(
                         symbol: "target",
                         color: Theme.accent,
-                        title: "Monthly budget",
+                        title: "Budget & limits",
                         value: Formatting.euro(store.budget.monthlyLimit)
-                    ) {
-                        showLimits = true
-                    }
-                    RowDivider()
-                    valueRow(
-                        symbol: "slider.horizontal.3",
-                        color: Theme.accent,
-                        title: "Category limits",
-                        value: "\(store.expenseCategories.count)"
                     ) {
                         showLimits = true
                     }
@@ -52,23 +78,6 @@ struct SettingsView: View {
                     ) {
                         showCurrencyPicker = true
                     }
-                    RowDivider()
-                    HStack(spacing: 12) {
-                        IconTile(symbol: "creditcard", color: Theme.accent)
-                        Text("Payment method")
-                            .font(Theme.font(14))
-                            .foregroundStyle(Theme.text)
-                        Spacer(minLength: 8)
-                        Picker("", selection: $preferences.defaultPaymentMethod) {
-                            ForEach(PaymentMethod.allCases) { method in
-                                Text(method.label).tag(method)
-                            }
-                        }
-                        .labelsHidden()
-                        .tint(Theme.muted)
-                    }
-                    .padding(.vertical, 11)
-                    .padding(.horizontal, 14)
                     RowDivider()
                     HStack(spacing: 12) {
                         IconTile(symbol: "hand.tap", color: Theme.accent)
@@ -92,14 +101,12 @@ struct SettingsView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(rates.currencies.dropFirst().enumerated()), id: \.element.id) { index, currency in
                         HStack(spacing: 12) {
-                            Text(currency.symbol)
-                                .font(Theme.font(14, .medium))
-                                .foregroundStyle(Theme.accent)
-                                .frame(width: 32, height: 32)
-                                .background(Theme.accent.opacity(0.20), in: RoundedRectangle(cornerRadius: Theme.tileRadius, style: .continuous))
                             Text(currency.code)
-                                .font(Theme.font(14))
+                                .font(Theme.font(14, .medium))
                                 .foregroundStyle(Theme.text)
+                            Text(currency.name)
+                                .font(Theme.font(13))
+                                .foregroundStyle(Theme.muted)
                             Spacer(minLength: 8)
                             Text("1 \(currency.code) = \(Formatting.rate(currency.rateToEuro)) €")
                                 .font(Theme.font(12))
@@ -150,8 +157,6 @@ struct SettingsView: View {
             .padding(.horizontal, Theme.screenPadding)
         }
         .scrollIndicators(.hidden)
-        .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
-        .hidesTabBarOnScroll()
         .sheet(isPresented: $showLimits) {
             CategoryLimitsSheet()
         }
@@ -165,6 +170,41 @@ struct SettingsView: View {
                 preferences.success()
             }
             Button("Cancel", role: .cancel) {}
+        }
+        .confirmationDialog("Sign out of this device?", isPresented: $showSignOutConfirmation, titleVisibility: .visible) {
+            Button("Sign out", role: .destructive) {
+                Task { await session.signOut() }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private var syncBadge: some View {
+        HStack(spacing: 5) {
+            switch session.syncState {
+            case .syncing:
+                ProgressView()
+                    .controlSize(.mini)
+                    .tint(Theme.muted)
+                Text("Syncing")
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+            case .idle:
+                StatusDot(color: Theme.positive)
+                Text("Synced")
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+            case .offline:
+                StatusDot(color: Theme.warning)
+                Text("Offline")
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+            case .error:
+                StatusDot(color: Theme.negative)
+                Text("Error")
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+            }
         }
     }
 

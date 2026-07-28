@@ -281,3 +281,20 @@ struct ScreenTitle: View {
             .foregroundStyle(Theme.text)
     }
 }
+
+struct HeaderAddButton: View {
+    var accessibilityLabel: String = "New operation"
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "plus")
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 22, height: 22)
+        }
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.circle)
+        .tint(Theme.accent)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}

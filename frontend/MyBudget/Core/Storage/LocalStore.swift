@@ -25,12 +25,40 @@ final class LocalStore {
     private(set) var savingsBalance: Double = 0
     private(set) var budget: BudgetSettings = .default
 
+    @ObservationIgnored var onChange: (() -> Void)?
+    @ObservationIgnored private var isApplyingRemote = false
+
     init() {
         load()
         if categories.isEmpty {
             categories = Category.defaults
             save()
         }
+    }
+
+    func document() -> BudgetDocument {
+        BudgetDocument(
+            categories: categories,
+            operations: operations,
+            goals: goals,
+            movements: movements,
+            savingsBalance: savingsBalance,
+            budget: budget
+        )
+    }
+
+    func applyRemote(_ document: BudgetDocument) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        categories = document.categories
+        operations = document.operations
+        goals = document.goals
+        movements = document.movements
+        savingsBalance = document.savingsBalance
+        budget = document.budget
+        sortOperations()
+        sortMovements()
+        persist()
     }
 
     func category(id: String) -> Category? {
@@ -194,15 +222,6 @@ final class LocalStore {
         save()
     }
 
-    private struct Snapshot: Codable {
-        var categories: [Category]
-        var operations: [Operation]
-        var goals: [SavingsGoal]
-        var movements: [SavingsMovement]
-        var savingsBalance: Double
-        var budget: BudgetSettings
-    }
-
     private static var fileURL: URL {
         let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -211,27 +230,26 @@ final class LocalStore {
 
     private func load() {
         guard let data = try? Data(contentsOf: Self.fileURL),
-              let snapshot = try? JSONCoding.decoder.decode(Snapshot.self, from: data) else { return }
-        categories = snapshot.categories
-        operations = snapshot.operations
-        goals = snapshot.goals
-        movements = snapshot.movements
-        savingsBalance = snapshot.savingsBalance
-        budget = snapshot.budget
+              let document = try? JSONCoding.decoder.decode(BudgetDocument.self, from: data) else { return }
+        categories = document.categories
+        operations = document.operations
+        goals = document.goals
+        movements = document.movements
+        savingsBalance = document.savingsBalance
+        budget = document.budget
         sortOperations()
         sortMovements()
     }
 
     func save() {
-        let snapshot = Snapshot(
-            categories: categories,
-            operations: operations,
-            goals: goals,
-            movements: movements,
-            savingsBalance: savingsBalance,
-            budget: budget
-        )
-        if let data = try? JSONCoding.encoder.encode(snapshot) {
+        persist()
+        if !isApplyingRemote {
+            onChange?()
+        }
+    }
+
+    private func persist() {
+        if let data = try? JSONCoding.encoder.encode(document()) {
             try? data.write(to: Self.fileURL, options: .atomic)
         }
     }

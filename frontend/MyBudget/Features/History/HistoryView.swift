@@ -9,6 +9,7 @@ enum HistoryFilter: Hashable {
 struct HistoryView: View {
     @Binding var filter: HistoryFilter
     var onSelect: (Operation) -> Void = { _ in }
+    var onNewOperation: () -> Void = {}
 
     @Environment(LocalStore.self) private var store
     @Environment(Preferences.self) private var preferences
@@ -24,8 +25,15 @@ struct HistoryView: View {
 
     private var headerBlock: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ScreenTitle("History")
-                .padding(.bottom, 12)
+            HStack(alignment: .center) {
+                ScreenTitle("History")
+                Spacer(minLength: 12)
+                HeaderAddButton {
+                    preferences.tap()
+                    onNewOperation()
+                }
+            }
+            .padding(.bottom, 12)
 
             SearchField(text: $query, prompt: "Search operations")
                 .padding(.bottom, 12)
@@ -65,8 +73,6 @@ struct HistoryView: View {
                     .padding(.top, 12)
             }
             .scrollIndicators(.hidden)
-            .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
-            .hidesTabBarOnScroll()
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -105,8 +111,6 @@ struct HistoryView: View {
                 .padding(.bottom, 20)
             }
             .scrollIndicators(.hidden)
-            .contentMargins(.bottom, Theme.tabBarClearance, for: .scrollContent)
-            .hidesTabBarOnScroll()
         }
     }
 
@@ -139,7 +143,7 @@ struct HistoryView: View {
     private func matchesQuery(_ operation: Operation, _ query: String) -> Bool {
         guard !query.isEmpty else { return true }
         let category = store.categoryOrFallback(id: operation.categoryId).name
-        let haystack = [operation.name, operation.location ?? "", category, operation.method.label]
+        let haystack = [operation.name, operation.location ?? "", category]
         return haystack.contains { $0.localizedCaseInsensitiveContains(query) }
     }
 
@@ -177,17 +181,17 @@ struct OperationRow: View {
                             .foregroundStyle(Theme.faint)
                     }
                 }
-                HStack(spacing: 4) {
-                    if operation.location != nil {
+                if let location = operation.location, !location.isEmpty {
+                    HStack(spacing: 4) {
                         Image(systemName: "mappin")
                             .font(.system(size: 10))
+                        Text(location)
                     }
-                    Text(subtitle)
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 }
-                .font(Theme.font(12))
-                .foregroundStyle(Theme.muted)
-                .lineLimit(1)
-                .truncationMode(.tail)
             }
 
             Spacer(minLength: 8)
@@ -208,14 +212,7 @@ struct OperationRow: View {
         .padding(.horizontal, 14)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(operation.name), \(amountText), \(subtitle)")
-    }
-
-    private var subtitle: String {
-        [operation.location, operation.method.label]
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " · ")
+        .accessibilityLabel("\(operation.name), \(amountText), \(operation.location ?? "")")
     }
 
     private var amountText: String {

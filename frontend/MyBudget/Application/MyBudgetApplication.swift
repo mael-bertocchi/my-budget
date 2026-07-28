@@ -5,12 +5,16 @@ struct MyBudgetApplication: App {
     @State private var store: LocalStore
     @State private var rates: ExchangeRates
     @State private var preferences: Preferences
-    @State private var tabBarVisibility = TabBarVisibility()
+    @State private var session: ApplicationSession
 
     init() {
-        _store = State(initialValue: LocalStore())
+        let store = LocalStore()
+        let tokens = TokenStore()
+        let api = APIClient(tokens: tokens)
+        _store = State(initialValue: store)
         _rates = State(initialValue: ExchangeRates())
         _preferences = State(initialValue: Preferences())
+        _session = State(initialValue: ApplicationSession(store: store, tokens: tokens, api: api))
     }
 
     var body: some Scene {
@@ -19,7 +23,7 @@ struct MyBudgetApplication: App {
                 .environment(store)
                 .environment(rates)
                 .environment(preferences)
-                .environment(tabBarVisibility)
+                .environment(session)
                 .tint(Theme.accent)
                 .preferredColorScheme(.dark)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)

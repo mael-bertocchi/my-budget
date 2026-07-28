@@ -22,17 +22,15 @@ enum Theme {
 
     static let positive = Color(hex: 0x3ECF8E)
     static let negative = Color(hex: 0xFF5C72)
+    static let warning  = Color(hex: 0xFFA23E)
 
     static let glassCardFill  = Color.white.opacity(0.055)
-    static let glassBarFill   = Color.white.opacity(0.07)
     static let glassInputFill = Color.white.opacity(0.05)
 
     static let glassCardBorder = Color.white.opacity(0.10)
-    static let glassBarBorder  = Color.white.opacity(0.14)
     static let glassInputBorder = Color.white.opacity(0.13)
 
     static let specularCard = Color.white.opacity(0.14)
-    static let specularBar  = Color.white.opacity(0.22)
 
     static let glowViolet = Color(hex: 0xA78BFA).opacity(0.22)
     static let glowBlue   = Color(hex: 0x4D9BFF).opacity(0.17)
@@ -72,15 +70,11 @@ enum Theme {
     static let inputRadius: CGFloat = 8
     static let tileRadius: CGFloat = 9
     static let trackRadius: CGFloat = 3
-    static let tabBarRadius: CGFloat = 28
 
     static let trackHeight: CGFloat = 6
     static let inputHeight: CGFloat = 36
     static let primaryButtonHeight: CGFloat = 48
     static let minHitTarget: CGFloat = 44
-
-    static let tabBarClearance: CGFloat = 96
-    static let tabBarHiddenOffset: CGFloat = 130
 }
 
 extension Color {
