@@ -1,4 +1,4 @@
-# 💶 My Budget — iOS App
+# 💶 My Budget — Frontend
 
 The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Glass" design language: translucent, blurred materials floating over ambient colour glows on a pure-black base.
 
@@ -10,33 +10,42 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **History ledger** — day groups with day totals, a search field, and filter chips for type and category.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at.
 - **Savings** — total saved, monthly trend, goals with progress rings, and deposit/withdraw movements.
+- **Sign in & sync** — one account (its password lives in the backend's environment); every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns.
 
 ## Screens
 
-**Budget · History · Savings · Settings** — plus a floating **＋** that presents the *New operation* sheet.
+**Sign in** → **Budget · History · Savings · Settings** — a **＋** in the Budget and History headers presents the *New operation* sheet. Navigation uses the native iOS 26 Liquid Glass tab bar, which minimizes as you scroll.
 
 ## Tech
 
-Swift · SwiftUI · Observation — a single target (`MyBudget`), no dependencies, no network.
+Swift · SwiftUI · Observation · URLSession — a single target (`MyBudget`), no third-party dependencies.
 
 ## Architecture
 
 ```
 MyBudget/
-├─ Application/    App entry, root shell, floating tab bar
+├─ Application/    App entry, root shell (auth gate + native TabView)
 ├─ Core/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
 │  ├─ Formatting/  Euro, amount, rate and date formatting
 │  ├─ Models/      Domain types (Category, Operation, SavingsGoal, …)
 │  ├─ Money/       Currencies and euro exchange rates
+│  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store
 │  ├─ Preferences/ Last-used currency, default payment method, haptics
-│  ├─ Storage/     LocalStore (JSON snapshot) + debug seed
+│  ├─ Session/     ApplicationSession — auth state + pull/push sync
+│  ├─ Storage/     LocalStore (JSON snapshot), BudgetDocument, debug seed
 │  └─ Theme/       Design tokens, haptics
-├─ Features/       One folder per screen (Budget, History, Operations, Savings, Settings)
+├─ Features/       One folder per screen (Identity, Budget, History, Operations, Savings, Settings)
 └─ UIComponents/   Liquid glass surfaces, buttons, progress, tiles
 ```
 
-State lives in three `@Observable` objects injected through the environment: `LocalStore` (data, persisted to Application Support as JSON), `ExchangeRates` (currencies), and `Preferences` (UserDefaults). Views read them directly and derive everything else through `BudgetMath` — no view models.
+State lives in `@Observable` objects injected through the environment: `LocalStore` (data, persisted to Application Support as JSON), `ExchangeRates` (currencies), `Preferences` (UserDefaults), and `ApplicationSession` (auth + sync). Views read them directly and derive everything else through `BudgetMath` — no view models.
+
+### Sync model
+
+The local JSON store is the working copy; the server holds the durable one. On sign-in the app pulls the server's budget document (or, if the server is empty, uploads what's on the device). After that, every mutation debounces a full-document `PUT /v1/state`; a failed push flips the Settings badge to **Offline** and retries when the app next becomes active. Access tokens refresh automatically on a `401`; when the refresh token is gone, the app returns to the sign-in screen.
+
+The app talks to a fixed HTTPS endpoint — `https://my-budget.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
 
 ## Local Development
 
@@ -54,16 +63,20 @@ xcodebuild -project MyBudget.xcodeproj -scheme MyBudget -configuration Debug -de
 
 > Note: To run the simulator, go to Xcode and press the run button.
 
+## Signing in
+
+The app needs the backend running at `https://my-budget.mael-bertocchi.fr`. Sign in with the username and password set in the backend's environment (`IDENTITY_USERNAME` / `IDENTITY_PASSWORD`).
+
 ## Running Demonstration
 
-The shared scheme launches with `-demo` **enabled**, so pressing Run seeds the sample month from the design handoff. Demo seeding only exists in Debug builds.
+The shared scheme launches with `-demo` **enabled**, so pressing Run seeds the sample month from the design handoff and skips sign-in entirely (no backend needed). Demo mode only exists in Debug builds and never touches the network.
 
-To start from an empty app, edit the scheme (**Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Arguments**) and untick `-demo`.
+To reach the real sign-in screen, edit the scheme (**Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸ Arguments**) and untick `-demo`.
 
 | Flag | Effect |
 | --- | --- |
-| `-demo` | Seeds the sample month, savings and goals (on by default) |
-| `-demo-empty` | Wipes the store instead (use alone, not with `-demo`) |
+| `-demo` | Seeds the sample month and skips sign-in (on by default) |
+| `-demo-empty` | Skips sign-in with an empty store (use alone, not with `-demo`) |
 | `-tab budget\|history\|savings\|settings` | Opens directly on a given tab |
 | `-open add` | Opens straight into the New operation sheet |
 
