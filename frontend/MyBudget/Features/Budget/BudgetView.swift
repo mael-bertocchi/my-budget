@@ -18,8 +18,8 @@ struct BudgetView: View {
 
                 BudgetRing(
                     progress: hasOperations ? summary.progress : 0,
-                    caption: "Left to spend",
-                    amount: hasOperations ? Formatting.euro(summary.left) : "—",
+                    caption: isOverBudget ? "Overspent" : "Left to spend",
+                    amount: hasOperations ? Formatting.euro(abs(summary.left)) : "—",
                     subtitle: hasOperations ? "of " + Formatting.euro(summary.limit) : "No operations",
                     color: isOverBudget ? Theme.negative : Theme.accent
                 )
