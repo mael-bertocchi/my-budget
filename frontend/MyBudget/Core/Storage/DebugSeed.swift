@@ -19,11 +19,6 @@ enum DebugSeed {
             return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: base) ?? base
         }
 
-        func monthsAgo(_ offset: Int, day number: Int = 1) -> Date {
-            let month = BudgetMath.shiftMonth(today, by: -offset)
-            return calendar.date(byAdding: .day, value: number - 1, to: month) ?? month
-        }
-
         let usd = Currency.named("USD")
         let chf = Currency.named("CHF")
 
@@ -62,29 +57,9 @@ enum DebugSeed {
             Operation(date: dayOfMonth(6, hour: 20), name: "Kino Babylon", categoryId: "fun", location: "Mitte", amount: 25.02)
         ]
 
-        let goals: [SavingsGoal] = [
-            SavingsGoal(id: "emergency", name: "Emergency fund", symbol: "checkmark.shield", colorHex: CategoryPalette.goalGreen, saved: 8400, target: 10000),
-            SavingsGoal(id: "japan", name: "Japan trip", symbol: "airplane", colorHex: CategoryPalette.goalBlue, saved: 2150, target: 4000),
-            SavingsGoal(id: "laptop", name: "New laptop", symbol: "laptopcomputer", colorHex: CategoryPalette.goalViolet, saved: 900, target: 2000)
-        ]
-
-        let movements: [SavingsMovement] = [
-            SavingsMovement(date: monthsAgo(0), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit),
-            SavingsMovement(date: monthsAgo(1, day: 18), name: "Flight tickets", note: "Vacation", amount: 480, kind: .withdrawal, goalId: "japan"),
-            SavingsMovement(date: monthsAgo(1), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit),
-            SavingsMovement(date: monthsAgo(2), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit),
-            SavingsMovement(date: monthsAgo(3), name: "Bonus", note: "Emergency fund", amount: 750, kind: .deposit, goalId: "emergency"),
-            SavingsMovement(date: monthsAgo(3, day: 2), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit),
-            SavingsMovement(date: monthsAgo(4), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit),
-            SavingsMovement(date: monthsAgo(5), name: "Monthly deposit", note: "Auto", amount: 300, kind: .deposit)
-        ]
-
         store.replaceAll(
             categories: Category.defaults,
             operations: operations,
-            goals: goals,
-            movements: movements,
-            savingsBalance: 11450,
             budget: BudgetSettings(monthlyLimit: 3000)
         )
     }

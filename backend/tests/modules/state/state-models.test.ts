@@ -1,4 +1,4 @@
-import { CategorySchema, OperationSchema, SavingsMovementSchema, StateSchema } from 'src/modules/state/state-models';
+import { CategorySchema, OperationSchema, StateSchema } from 'src/modules/state/state-models';
 import { describe, expect, it } from 'vitest';
 
 const validCategory = {
@@ -48,28 +48,11 @@ describe('OperationSchema', () => {
     });
 });
 
-describe('SavingsMovementSchema', () => {
-    it('accepts a deposit without a goal', () => {
-        const movement = { id: 'm1', date: '2026-07-01T00:00:00.000Z', name: 'Monthly deposit', amount: 300, kind: 'DEPOSIT' };
-
-        expect(SavingsMovementSchema.safeParse(movement).success).toBe(true);
-    });
-
-    it('rejects an unknown kind', () => {
-        const movement = { id: 'm1', date: '2026-07-01T00:00:00.000Z', name: 'x', amount: 300, kind: 'TRANSFER' };
-
-        expect(SavingsMovementSchema.safeParse(movement).success).toBe(false);
-    });
-});
-
 describe('StateSchema', () => {
     it('accepts a complete budget document', () => {
         const state = {
             categories: [validCategory],
             operations: [validOperation],
-            goals: [{ id: 'japan', name: 'Japan trip', symbol: 'airplane', colorHex: 0x4d9bff, saved: 2150, target: 4000 }],
-            movements: [{ id: 'm1', date: '2026-07-01T00:00:00.000Z', name: 'Monthly deposit', amount: 300, kind: 'DEPOSIT' }],
-            savingsBalance: 11450,
             budget: { monthlyLimit: 3000 }
         };
 
@@ -79,9 +62,6 @@ describe('StateSchema', () => {
     it('rejects a document with a missing collection', () => {
         const state = {
             categories: [validCategory],
-            operations: [validOperation],
-            goals: [],
-            savingsBalance: 0,
             budget: { monthlyLimit: 3000 }
         };
 

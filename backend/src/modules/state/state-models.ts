@@ -9,12 +9,6 @@ import { z } from 'zod';
 const MAX_ITEMS = 5000;
 
 /**
- * @constant MovementKindSchema
- * @description Zod schema for the direction of a savings movement.
- */
-export const MovementKindSchema = z.enum(['DEPOSIT', 'WITHDRAWAL']);
-
-/**
  * @constant CategorySchema
  * @description Zod schema for one budget category.
  */
@@ -44,33 +38,6 @@ export const OperationSchema = z.object({
 });
 
 /**
- * @constant SavingsGoalSchema
- * @description Zod schema for one savings goal.
- */
-export const SavingsGoalSchema = z.object({
-    id: IdSchema,
-    name: z.string().min(1).max(60),
-    symbol: z.string().min(1).max(60),
-    colorHex: ColorSchema,
-    saved: z.number().min(0).max(1_000_000_000),
-    target: z.number().min(0).max(1_000_000_000)
-});
-
-/**
- * @constant SavingsMovementSchema
- * @description Zod schema for one deposit or withdrawal movement.
- */
-export const SavingsMovementSchema = z.object({
-    id: IdSchema,
-    date: z.coerce.date(),
-    name: z.string().min(1).max(120),
-    note: z.string().max(200).nullish(),
-    amount: z.number().min(0).max(1_000_000_000),
-    kind: MovementKindSchema,
-    goalId: IdSchema.nullish()
-});
-
-/**
  * @constant BudgetSettingsSchema
  * @description Zod schema for the overall monthly budget settings.
  */
@@ -85,9 +52,6 @@ export const BudgetSettingsSchema = z.object({
 export const StateSchema = z.object({
     categories: z.array(CategorySchema).max(MAX_ITEMS),
     operations: z.array(OperationSchema).max(MAX_ITEMS),
-    goals: z.array(SavingsGoalSchema).max(MAX_ITEMS),
-    movements: z.array(SavingsMovementSchema).max(MAX_ITEMS),
-    savingsBalance: z.number().min(-1_000_000_000).max(1_000_000_000),
     budget: BudgetSettingsSchema
 });
 

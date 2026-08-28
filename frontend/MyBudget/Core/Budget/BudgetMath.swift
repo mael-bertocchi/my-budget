@@ -43,13 +43,6 @@ struct DayGroup: Identifiable, Equatable {
     }
 }
 
-struct MonthlySavingPoint: Identifiable, Equatable {
-    var month: Date
-    var amount: Double
-
-    var id: Date { month }
-}
-
 enum BudgetMath {
 
     static var calendar: Calendar {
@@ -123,26 +116,5 @@ enum BudgetMath {
         return grouped
             .map { DayGroup(date: $0.key, operations: $0.value.sorted { $0.date > $1.date }) }
             .sorted { $0.date > $1.date }
-    }
-
-    static func monthlySavings(
-        movements: [SavingsMovement],
-        months: Int = 6,
-        now: Date = .now
-    ) -> [MonthlySavingPoint] {
-        let anchor = monthStart(now)
-        return (0..<months).reversed().compactMap { offset in
-            guard let month = calendar.date(byAdding: .month, value: -offset, to: anchor) else { return nil }
-            let amount = movements
-                .filter { isSameMonth($0.date, month) }
-                .reduce(0) { $0 + $1.signedAmount }
-            return MonthlySavingPoint(month: month, amount: amount)
-        }
-    }
-
-    static func savedThisMonth(movements: [SavingsMovement], now: Date = .now) -> Double {
-        movements
-            .filter { isSameMonth($0.date, now) }
-            .reduce(0) { $0 + $1.signedAmount }
     }
 }

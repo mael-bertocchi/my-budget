@@ -1,27 +1,6 @@
 import Foundation
 import SwiftUI
 
-enum MovementKind: String, Codable, CaseIterable, Identifiable {
-    case deposit = "DEPOSIT"
-    case withdrawal = "WITHDRAWAL"
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .deposit: return "Deposit"
-        case .withdrawal: return "Withdraw"
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .deposit: return "arrow.down"
-        case .withdrawal: return "arrow.up"
-        }
-    }
-}
-
 struct Category: Codable, Identifiable, Equatable, Hashable {
     var id: String
     var name: String
@@ -89,69 +68,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var euroAmount: Double { amount * rateToEuro }
 }
 
-struct SavingsGoal: Codable, Identifiable, Equatable, Hashable {
-    var id: String
-    var name: String
-    var symbol: String
-    var colorHex: UInt32
-    var saved: Double
-    var target: Double
-
-    init(
-        id: String = UUID().uuidString,
-        name: String,
-        symbol: String,
-        colorHex: UInt32,
-        saved: Double,
-        target: Double
-    ) {
-        self.id = id
-        self.name = name
-        self.symbol = symbol
-        self.colorHex = colorHex
-        self.saved = saved
-        self.target = target
-    }
-
-    var color: Color { Color(hex: colorHex) }
-    var tileBackground: Color { color.opacity(0.20) }
-
-    var progress: Double {
-        guard target > 0 else { return 0 }
-        return min(1, saved / target)
-    }
-}
-
-struct SavingsMovement: Codable, Identifiable, Equatable, Hashable {
-    var id: String
-    var date: Date
-    var name: String
-    var note: String?
-    var amount: Double
-    var kind: MovementKind
-    var goalId: String?
-
-    init(
-        id: String = UUID().uuidString,
-        date: Date,
-        name: String,
-        note: String? = nil,
-        amount: Double,
-        kind: MovementKind,
-        goalId: String? = nil
-    ) {
-        self.id = id
-        self.date = date
-        self.name = name
-        self.note = note
-        self.amount = amount
-        self.kind = kind
-        self.goalId = goalId
-    }
-
-    var signedAmount: Double { kind == .deposit ? amount : -amount }
-}
-
 struct BudgetSettings: Codable, Equatable {
     var monthlyLimit: Double
 
@@ -168,14 +84,6 @@ enum CategoryPalette {
     static let health: UInt32 = 0xFF8A5C
     static let school: UInt32 = 0xFFD166
     static let miscellaneous: UInt32 = 0x9BA1B0
-
-    static let goalGreen: UInt32 = 0x3ECF8E
-    static let goalBlue: UInt32 = 0x4D9BFF
-    static let goalViolet: UInt32 = 0xA78BFA
-
-    static let all: [UInt32] = [
-        groceries, restaurant, transport, rent, shopping, fun, health, goalBlue
-    ]
 }
 
 extension Category {
@@ -198,11 +106,4 @@ extension Category {
         colorHex: 0xA78BFA,
         monthlyLimit: 0
     )
-}
-
-extension SavingsGoal {
-    static let symbolChoices = [
-        "checkmark.shield", "airplane", "laptopcomputer", "house", "car",
-        "graduationcap", "gift", "heart", "star"
-    ]
 }

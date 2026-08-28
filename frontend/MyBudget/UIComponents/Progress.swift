@@ -73,31 +73,3 @@ struct BudgetRing: View {
         .accessibilityLabel("\(caption) \(amount) \(subtitle)")
     }
 }
-
-struct MonthlyBars: View {
-    var points: [MonthlySavingPoint]
-
-    private var peak: Double {
-        max(1, points.map { abs($0.amount) }.max() ?? 1)
-    }
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            ForEach(points) { point in
-                VStack(spacing: 7) {
-                    Spacer(minLength: 0)
-                    RoundedRectangle(cornerRadius: Theme.trackRadius, style: .continuous)
-                        .fill(point.amount < 0 ? Theme.negative : Theme.accent)
-                        .frame(height: max(3, 44 * abs(point.amount) / peak))
-                    Text(Formatting.monthShort(point.month))
-                        .font(Theme.font(10))
-                        .foregroundStyle(Theme.faint)
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .frame(height: 62)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Monthly savings trend")
-    }
-}

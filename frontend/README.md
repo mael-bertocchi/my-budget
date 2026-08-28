@@ -10,12 +10,11 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **History ledger** — day groups with day totals, a search field, and filter chips for each category.
 - **Current location** — the *New operation* sheet fills its location field from where you are, reverse geocoded to a place and a city.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at.
-- **Savings** — total saved, monthly trend, goals with progress rings, and deposit/withdraw movements.
 - **Sign in & sync** — one account (its password lives in the backend's environment); every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns.
 
 ## Screens
 
-**Sign in** → **Budget · History · Savings · Settings** — a **＋** in the Budget and History headers presents the *New operation* sheet. Navigation uses the native iOS 26 Liquid Glass tab bar, which minimizes as you scroll.
+**Sign in** → **Budget · History · Settings** — a **＋** in the Budget and History headers presents the *New operation* sheet. Navigation uses the native iOS 26 Liquid Glass tab bar, which minimizes as you scroll.
 
 ## Tech
 
@@ -30,14 +29,14 @@ MyBudget/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
 │  ├─ Formatting/  Euro, amount, rate and date formatting
 │  ├─ Location/    LocationProvider — one-shot fix, reverse geocoded to a place name
-│  ├─ Models/      Domain types (Category, Operation, SavingsGoal, …)
+│  ├─ Models/      Domain types (Category, Operation, BudgetSettings)
 │  ├─ Money/       Currencies and euro exchange rates
 │  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store
 │  ├─ Preferences/ Last-used currency, default payment method, haptics
 │  ├─ Session/     ApplicationSession — auth state + pull/push sync
 │  ├─ Storage/     LocalStore (JSON snapshot), BudgetDocument, debug seed
 │  └─ Theme/       Design tokens, haptics
-├─ Features/       One folder per screen (Identity, Budget, History, Operations, Savings, Settings)
+├─ Features/       One folder per screen (Identity, Budget, History, Operations, Settings)
 └─ UIComponents/   Liquid glass surfaces, buttons, progress, tiles
 ```
 
@@ -79,7 +78,7 @@ To reach the real sign-in screen, edit the scheme (**Product ▸ Scheme ▸ Edit
 | --- | --- |
 | `-demo` | Seeds the sample month and skips sign-in (on by default) |
 | `-demo-empty` | Skips sign-in with an empty store (use alone, not with `-demo`) |
-| `-tab budget\|history\|savings\|settings` | Opens directly on a given tab |
+| `-tab budget\|history\|settings` | Opens directly on a given tab |
 | `-open add` | Opens straight into the New operation sheet |
 
-Example: `-demo -tab savings` launches on the Savings tab with data.
+Example: `-demo -tab history` launches on the History tab with data.

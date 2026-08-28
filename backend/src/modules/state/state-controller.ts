@@ -5,7 +5,7 @@ import { pullState, pushState } from 'src/modules/state/state-service';
 
 /**
  * @function getState
- * @description Returns the owner's whole budget document (categories, operations, goals, movements, savings).
+ * @description Returns the owner's whole budget document (categories, operations, budget settings).
  *
  * @returns {Promise<void>} Resolves when the document is sent.
  */

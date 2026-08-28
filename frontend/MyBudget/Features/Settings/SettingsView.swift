@@ -127,7 +127,7 @@ struct SettingsView: View {
                 VStack(spacing: 0) {
                     infoRow(symbol: "list.bullet", title: "Operations", value: "\(store.operations.count)")
                     RowDivider()
-                    infoRow(symbol: "flag", title: "Goals", value: "\(store.goals.count)")
+                    infoRow(symbol: "square.grid.2x2", title: "Categories", value: "\(store.categories.count)")
                     RowDivider()
                     Button {
                         showResetConfirmation = true
@@ -164,7 +164,7 @@ struct SettingsView: View {
             CurrencyPickerSheet(selection: $preferences.lastUsedCurrencyCode)
                 .presentationDetents([.medium, .large])
         }
-        .confirmationDialog("Delete every operation, goal and movement?", isPresented: $showResetConfirmation, titleVisibility: .visible) {
+        .confirmationDialog("Delete every operation?", isPresented: $showResetConfirmation, titleVisibility: .visible) {
             Button("Reset", role: .destructive) {
                 store.clearAll()
                 preferences.success()

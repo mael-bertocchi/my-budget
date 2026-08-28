@@ -33,11 +33,6 @@ enum Formatting {
         "€" + (euroPrecise.string(from: NSNumber(value: amount)) ?? "0.00")
     }
 
-    static func signedEuroCompact(_ amount: Double) -> String {
-        let sign = amount < 0 ? "−" : "+"
-        return sign + euro(abs(amount))
-    }
-
     static func expense(_ amount: Double, currency: Currency = .euro) -> String {
         "−" + currency.symbol + (euroPrecise.string(from: NSNumber(value: abs(amount))) ?? "0.00")
     }

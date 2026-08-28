@@ -17,11 +17,9 @@ const DEFAULT_MONTHLY_LIMIT = 3000;
  * @returns {Promise<StateBody>} The full budget document.
  */
 export async function pullState(prisma: PrismaClient): Promise<StateBody> {
-    const [categories, operations, goals, movements, state] = await Promise.all([
+    const [categories, operations, state] = await Promise.all([
         prisma.category.findMany({ orderBy: { position: 'asc' } }),
         prisma.operation.findMany({ orderBy: { date: 'desc' } }),
-        prisma.savingsGoal.findMany({ orderBy: { position: 'asc' } }),
-        prisma.savingsMovement.findMany({ orderBy: { date: 'desc' } }),
         prisma.budgetState.findUnique({ where: { id: OWNER_ID } })
     ]);
 
@@ -45,24 +43,6 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
             isRecurring: operation.isRecurring,
             updatedAt: operation.updatedAt
         })),
-        goals: goals.map((goal) => ({
-            id: goal.id,
-            name: goal.name,
-            symbol: goal.symbol,
-            colorHex: goal.colorHex,
-            saved: goal.saved,
-            target: goal.target
-        })),
-        movements: movements.map((movement) => ({
-            id: movement.id,
-            date: movement.date,
-            name: movement.name,
-            note: movement.note,
-            amount: movement.amount,
-            kind: movement.kind,
-            goalId: movement.goalId
-        })),
-        savingsBalance: state?.savingsBalance ?? 0,
         budget: { monthlyLimit: state?.monthlyLimit ?? DEFAULT_MONTHLY_LIMIT }
     };
 }
@@ -80,8 +60,6 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
     await prisma.$transaction([
         prisma.category.deleteMany(),
         prisma.operation.deleteMany(),
-        prisma.savingsGoal.deleteMany(),
-        prisma.savingsMovement.deleteMany(),
         prisma.category.createMany({
             data: body.categories.map((category, index) => ({
                 id: category.id,
@@ -105,32 +83,10 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 isRecurring: operation.isRecurring
             }))
         }),
-        prisma.savingsGoal.createMany({
-            data: body.goals.map((goal, index) => ({
-                id: goal.id,
-                name: goal.name,
-                symbol: goal.symbol,
-                colorHex: goal.colorHex,
-                saved: goal.saved,
-                target: goal.target,
-                position: index
-            }))
-        }),
-        prisma.savingsMovement.createMany({
-            data: body.movements.map((movement) => ({
-                id: movement.id,
-                date: movement.date,
-                name: movement.name,
-                note: movement.note ?? null,
-                amount: movement.amount,
-                kind: movement.kind,
-                goalId: movement.goalId ?? null
-            }))
-        }),
         prisma.budgetState.upsert({
             where: { id: OWNER_ID },
-            update: { monthlyLimit: body.budget.monthlyLimit, savingsBalance: body.savingsBalance },
-            create: { id: OWNER_ID, monthlyLimit: body.budget.monthlyLimit, savingsBalance: body.savingsBalance }
+            update: { monthlyLimit: body.budget.monthlyLimit },
+            create: { id: OWNER_ID, monthlyLimit: body.budget.monthlyLimit }
         })
     ]);
 

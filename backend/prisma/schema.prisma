@@ -15,11 +15,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum MovementKind {
-  DEPOSIT
-  WITHDRAWAL
-}
-
 model RefreshSession {
   id        String   @id
   userId    String   @map("user_id")
@@ -61,39 +56,10 @@ model Operation {
   @@map("operations")
 }
 
-model SavingsGoal {
-  id        String   @id
-  name      String
-  symbol    String
-  colorHex  Int      @map("color_hex")
-  saved     Float    @default(0)
-  target    Float    @default(0)
-  position  Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("savings_goals")
-}
-
-model SavingsMovement {
-  id        String       @id
-  date      DateTime
-  name      String
-  note      String?
-  amount    Float
-  kind      MovementKind
-  goalId    String?      @map("goal_id")
-  createdAt DateTime     @default(now()) @map("created_at")
-
-  @@index([date])
-  @@map("savings_movements")
-}
-
 model BudgetState {
-  id             String   @id
-  monthlyLimit   Float    @default(3000) @map("monthly_limit")
-  savingsBalance Float    @default(0) @map("savings_balance")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id           String   @id
+  monthlyLimit Float    @default(3000) @map("monthly_limit")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("budget_state")
 }

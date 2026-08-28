@@ -3,7 +3,6 @@ import SwiftUI
 enum AppTab: String, CaseIterable, Identifiable {
     case budget
     case history
-    case savings
     case settings
 
     var id: String { rawValue }
@@ -71,10 +70,6 @@ struct MainShell: View {
                     onNewOperation: { editorRoute = .new }
                 )
                 .screenBackground()
-            }
-            Tab("Savings", systemImage: "banknote", value: AppTab.savings) {
-                SavingsView()
-                    .screenBackground()
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
