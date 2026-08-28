@@ -32,6 +32,15 @@ struct OperationEditorSheet: View {
     @State private var showCurrencyPicker = false
     @State private var showDatePicker = false
     @State private var showDeleteConfirmation = false
+
+    @FocusState private var focus: Field?
+
+    private enum Field {
+        case amount
+        case name
+        case description
+        case location
+    }
     @State private var isLocating = false
     @State private var locationError: String?
     @State private var locator = LocationProvider()
@@ -77,6 +86,11 @@ struct OperationEditorSheet: View {
             .padding(.top, 20)
             .padding(.horizontal, Theme.screenPadding)
             .padding(.bottom, 32)
+            .background(
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { dismissEditing() }
+            )
         }
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
@@ -91,6 +105,10 @@ struct OperationEditorSheet: View {
             Button("Cancel", role: .cancel) {}
         }
         .onAppear(perform: loadValues)
+        .onChange(of: focus) { _, field in
+            guard field != nil, showDatePicker else { return }
+            withAnimation(.easeOut(duration: 0.2)) { showDatePicker = false }
+        }
     }
 
     private var isEditing: Bool {
@@ -125,6 +143,7 @@ struct OperationEditorSheet: View {
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .fixedSize(horizontal: true, vertical: false)
+                    .focused($focus, equals: .amount)
                     .accessibilityLabel("Amount")
 
                 Button {
@@ -177,6 +196,7 @@ struct OperationEditorSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             GlassField(label: "Name") {
                 TextField("", text: $name, prompt: Text("Whole Foods").foregroundStyle(Theme.faint))
+                    .focused($focus, equals: .name)
                     .accessibilityLabel("Name")
             }
 
@@ -188,6 +208,7 @@ struct OperationEditorSheet: View {
                     axis: .vertical
                 )
                 .lineLimit(1...4)
+                .focused($focus, equals: .description)
                 .accessibilityLabel("Description")
             }
 
@@ -195,6 +216,7 @@ struct OperationEditorSheet: View {
                 FieldLabel("Date")
                 Button {
                     preferences.tap()
+                    focus = nil
                     withAnimation(.easeOut(duration: 0.2)) {
                         showDatePicker.toggle()
                     }
@@ -232,6 +254,7 @@ struct OperationEditorSheet: View {
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.accent)
                         TextField("", text: $location, prompt: Text("Berlin Mitte").foregroundStyle(Theme.faint))
+                            .focused($focus, equals: .location)
                             .accessibilityLabel("Location")
                         currentLocationButton
                     }
@@ -311,6 +334,12 @@ struct OperationEditorSheet: View {
         location = operation.location ?? ""
         date = operation.date
         isRecurring = operation.isRecurring
+    }
+
+    private func dismissEditing() {
+        focus = nil
+        guard showDatePicker else { return }
+        withAnimation(.easeOut(duration: 0.2)) { showDatePicker = false }
     }
 
     private func resolveCurrentLocation() {

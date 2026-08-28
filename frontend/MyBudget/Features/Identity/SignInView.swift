@@ -60,6 +60,11 @@ struct SignInView: View {
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.top, 80)
                 .padding(.bottom, 40)
+                .background(
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture { focus = nil }
+                )
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)

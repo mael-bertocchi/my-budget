@@ -8,6 +8,13 @@ struct CategoryLimitsSheet: View {
     @State private var monthlyLimit: String = ""
     @State private var limits: [String: String] = [:]
 
+    @FocusState private var focus: Field?
+
+    private enum Field: Hashable {
+        case monthly
+        case category(String)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -21,6 +28,7 @@ struct CategoryLimitsSheet: View {
                         .font(Theme.font(15))
                         .foregroundStyle(Theme.muted)
                     TextField("", text: $monthlyLimit, prompt: Text("3000").foregroundStyle(Theme.faint))
+                        .focused($focus, equals: .monthly)
                         .keyboardType(.decimalPad)
                         .font(Theme.font(15, .medium))
                         .foregroundStyle(Theme.text)
@@ -53,8 +61,14 @@ struct CategoryLimitsSheet: View {
             .padding(.top, 20)
             .padding(.horizontal, Theme.screenPadding)
             .padding(.bottom, 32)
+            .background(
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { focus = nil }
+            )
         }
         .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .screenBackground()
         .presentationDragIndicator(.visible)
         .onAppear(perform: loadValues)
@@ -99,6 +113,7 @@ struct CategoryLimitsSheet: View {
                     ),
                     prompt: Text("0").foregroundStyle(Theme.faint)
                 )
+                .focused($focus, equals: .category(category.id))
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .font(Theme.font(14, .medium))
