@@ -28,7 +28,7 @@ struct SignInView: View {
                     VStack(spacing: 12) {
                         field(
                             label: "Username",
-                            prompt: "you",
+                            prompt: "You",
                             text: $username,
                             focus: .username,
                             secure: false,

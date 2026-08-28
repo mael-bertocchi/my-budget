@@ -64,7 +64,7 @@ The API is live; verify it with `GET /v1/health`.
 The only account is the one in your environment:
 
 ```bash
-IDENTITY_USERNAME="you"
+IDENTITY_USERNAME="You"
 IDENTITY_PASSWORD="something-long-and-secret"
 ```
 
