@@ -69,18 +69,6 @@ final class LocalStore {
         category(id: id) ?? .fallback
     }
 
-    var expenseCategories: [Category] {
-        categories.filter { $0.type == .expense }
-    }
-
-    var incomeCategories: [Category] {
-        categories.filter { $0.type == .income }
-    }
-
-    func categories(for type: OperationType) -> [Category] {
-        type == .income ? incomeCategories : expenseCategories
-    }
-
     func upsertCategory(_ category: Category) {
         if let index = categories.firstIndex(where: { $0.id == category.id }) {
             categories[index] = category
@@ -230,7 +218,7 @@ final class LocalStore {
 
     private func load() {
         guard let data = try? Data(contentsOf: Self.fileURL),
-              let document = try? JSONCoding.decoder.decode(BudgetDocument.self, from: data) else { return }
+              let document = try? JSONCoding.decoder.decode(BudgetDocument.self, from: LegacyDocument.withoutIncome(data)) else { return }
         categories = document.categories
         operations = document.operations
         goals = document.goals

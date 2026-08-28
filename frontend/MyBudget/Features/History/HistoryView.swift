@@ -2,7 +2,6 @@ import SwiftUI
 
 enum HistoryFilter: Hashable {
     case all
-    case type(OperationType)
     case category(String)
 }
 
@@ -43,11 +42,6 @@ struct HistoryView: View {
                     FilterChip(title: "All", isActive: filter == .all) {
                         select(.all)
                     }
-                    ForEach(OperationType.allCases) { type in
-                        FilterChip(title: type.label, isActive: filter == .type(type)) {
-                            select(.type(type))
-                        }
-                    }
                     ForEach(store.categories) { category in
                         FilterChip(title: category.name, isActive: filter == .category(category.id)) {
                             select(.category(category.id))
@@ -80,7 +74,7 @@ struct HistoryView: View {
                         HStack {
                             DayLabel(Formatting.relativeDay(group.date))
                             Spacer(minLength: 12)
-                            Text(Formatting.signedEuro(group.total))
+                            Text(Formatting.expense(group.spent))
                                 .font(Theme.font(12))
                                 .foregroundStyle(Theme.faint)
                         }
@@ -118,7 +112,7 @@ struct HistoryView: View {
         if !query.isEmpty || filter != .all {
             return "No operations match this search."
         }
-        return "No operations yet. Tap ＋ to log your first expense or income."
+        return "No operations yet. Tap ＋ to log your first expense."
     }
 
     private var groups: [DayGroup] {
@@ -133,8 +127,6 @@ struct HistoryView: View {
         switch filter {
         case .all:
             return true
-        case .type(let type):
-            return operation.type == type
         case .category(let categoryId):
             return operation.categoryId == categoryId
         }
@@ -199,7 +191,7 @@ struct OperationRow: View {
             VStack(alignment: .trailing, spacing: 1) {
                 Text(amountText)
                     .font(Theme.font(14, .semibold))
-                    .foregroundStyle(operation.type == .income ? Theme.positive : Theme.text)
+                    .foregroundStyle(Theme.text)
                 if operation.isForeign {
                     Text(Formatting.euroEquivalent(operation.euroAmount))
                         .font(Theme.font(11))
@@ -216,10 +208,6 @@ struct OperationRow: View {
     }
 
     private var amountText: String {
-        Formatting.amount(
-            operation.amount,
-            currency: Currency.named(operation.currencyCode),
-            signed: operation.type
-        )
+        Formatting.expense(operation.amount, currency: Currency.named(operation.currencyCode))
     }
 }

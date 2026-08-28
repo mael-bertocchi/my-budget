@@ -40,7 +40,7 @@ struct CategoryLimitsSheet: View {
                 .padding(.bottom, 12)
 
                 VStack(spacing: 10) {
-                    ForEach(store.expenseCategories) { category in
+                    ForEach(store.categories) { category in
                         limitRow(category)
                     }
                 }
@@ -62,7 +62,7 @@ struct CategoryLimitsSheet: View {
 
     private var toDispatch: Double {
         let budget = Formatting.parseAmount(monthlyLimit) ?? 0
-        let allocated = store.expenseCategories.reduce(0) { total, category in
+        let allocated = store.categories.reduce(0) { total, category in
             total + (Formatting.parseAmount(limits[category.id] ?? "") ?? 0)
         }
         return budget - allocated
@@ -117,7 +117,7 @@ struct CategoryLimitsSheet: View {
     private func loadValues() {
         monthlyLimit = Formatting.decimalInput(store.budget.monthlyLimit)
         limits = Dictionary(
-            uniqueKeysWithValues: store.expenseCategories.map { ($0.id, Formatting.decimalInput($0.monthlyLimit)) }
+            uniqueKeysWithValues: store.categories.map { ($0.id, Formatting.decimalInput($0.monthlyLimit)) }
         )
     }
 

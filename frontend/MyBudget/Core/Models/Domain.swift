@@ -1,27 +1,6 @@
 import Foundation
 import SwiftUI
 
-enum OperationType: String, Codable, CaseIterable, Identifiable {
-    case expense = "EXPENSE"
-    case income = "INCOME"
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .expense: return "Expense"
-        case .income: return "Income"
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .expense: return "arrow.down.left"
-        case .income: return "arrow.up.right"
-        }
-    }
-}
-
 enum MovementKind: String, Codable, CaseIterable, Identifiable {
     case deposit = "DEPOSIT"
     case withdrawal = "WITHDRAWAL"
@@ -49,22 +28,19 @@ struct Category: Codable, Identifiable, Equatable, Hashable {
     var symbol: String
     var colorHex: UInt32
     var monthlyLimit: Double
-    var type: OperationType
 
     init(
         id: String = UUID().uuidString,
         name: String,
         symbol: String,
         colorHex: UInt32,
-        monthlyLimit: Double,
-        type: OperationType = .expense
+        monthlyLimit: Double
     ) {
         self.id = id
         self.name = name
         self.symbol = symbol
         self.colorHex = colorHex
         self.monthlyLimit = monthlyLimit
-        self.type = type
     }
 
     var color: Color { Color(hex: colorHex) }
@@ -81,7 +57,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var amount: Double
     var currencyCode: String
     var rateToEuro: Double
-    var type: OperationType
     var isRecurring: Bool
     var updatedAt: Date
 
@@ -94,7 +69,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         amount: Double,
         currencyCode: String = Currency.euro.code,
         rateToEuro: Double = 1,
-        type: OperationType = .expense,
         isRecurring: Bool = false,
         updatedAt: Date = .now
     ) {
@@ -106,7 +80,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         self.amount = amount
         self.currencyCode = currencyCode
         self.rateToEuro = rateToEuro
-        self.type = type
         self.isRecurring = isRecurring
         self.updatedAt = updatedAt
     }
@@ -114,8 +87,6 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var isForeign: Bool { currencyCode != Currency.euro.code }
 
     var euroAmount: Double { amount * rateToEuro }
-
-    var signedEuroAmount: Double { type == .income ? euroAmount : -euroAmount }
 }
 
 struct SavingsGoal: Codable, Identifiable, Equatable, Hashable {
@@ -194,12 +165,9 @@ enum CategoryPalette {
     static let rent: UInt32 = 0xA78BFA
     static let shopping: UInt32 = 0xFF6BA8
     static let fun: UInt32 = 0x38D6D6
-    static let income: UInt32 = 0x3ECF8E
     static let health: UInt32 = 0xFF8A5C
     static let school: UInt32 = 0xFFD166
     static let miscellaneous: UInt32 = 0x9BA1B0
-    static let refund: UInt32 = 0x38D6D6
-    static let family: UInt32 = 0xFF6BA8
 
     static let goalGreen: UInt32 = 0x3ECF8E
     static let goalBlue: UInt32 = 0x4D9BFF
@@ -220,10 +188,7 @@ extension Category {
         Category(id: "fun", name: "Fun", symbol: "film", colorHex: CategoryPalette.fun, monthlyLimit: 120),
         Category(id: "health", name: "Health", symbol: "dumbbell", colorHex: CategoryPalette.health, monthlyLimit: 80),
         Category(id: "school", name: "School", symbol: "graduationcap", colorHex: CategoryPalette.school, monthlyLimit: 120),
-        Category(id: "miscellaneous", name: "Miscellaneous", symbol: "square.grid.2x2", colorHex: CategoryPalette.miscellaneous, monthlyLimit: 100),
-        Category(id: "salary", name: "Salary", symbol: "briefcase", colorHex: CategoryPalette.income, monthlyLimit: 0, type: .income),
-        Category(id: "refund", name: "Refund", symbol: "arrow.uturn.backward", colorHex: CategoryPalette.refund, monthlyLimit: 0, type: .income),
-        Category(id: "family", name: "Family", symbol: "person.2", colorHex: CategoryPalette.family, monthlyLimit: 0, type: .income)
+        Category(id: "miscellaneous", name: "Miscellaneous", symbol: "square.grid.2x2", colorHex: CategoryPalette.miscellaneous, monthlyLimit: 100)
     ]
 
     static let fallback = Category(

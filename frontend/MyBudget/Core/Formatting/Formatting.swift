@@ -33,23 +33,13 @@ enum Formatting {
         "€" + (euroPrecise.string(from: NSNumber(value: amount)) ?? "0.00")
     }
 
-    static func signedEuro(_ amount: Double) -> String {
-        let sign = amount < 0 ? "−" : "+"
-        return sign + euroPrecise(abs(amount))
-    }
-
     static func signedEuroCompact(_ amount: Double) -> String {
         let sign = amount < 0 ? "−" : "+"
         return sign + euro(abs(amount))
     }
 
-    static func amount(_ amount: Double, currency: Currency, signed: OperationType? = nil) -> String {
-        let body = currency.symbol + (euroPrecise.string(from: NSNumber(value: abs(amount))) ?? "0.00")
-        switch signed {
-        case .expense: return "−" + body
-        case .income: return "+" + body
-        case nil: return body
-        }
+    static func expense(_ amount: Double, currency: Currency = .euro) -> String {
+        "−" + currency.symbol + (euroPrecise.string(from: NSNumber(value: abs(amount))) ?? "0.00")
     }
 
     static func euroEquivalent(_ amount: Double) -> String {

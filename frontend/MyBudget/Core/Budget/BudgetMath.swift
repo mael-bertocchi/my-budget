@@ -17,7 +17,6 @@ struct CategorySpend: Identifiable, Equatable {
 struct MonthSummary: Equatable {
     var limit: Double
     var spent: Double
-    var income: Double
     var daysLeft: Int
 
     var left: Double { limit - spent }
@@ -39,8 +38,8 @@ struct DayGroup: Identifiable, Equatable {
 
     var id: Date { date }
 
-    var total: Double {
-        operations.reduce(0) { $0 + $1.signedEuroAmount }
+    var spent: Double {
+        operations.reduce(0) { $0 + $1.euroAmount }
     }
 }
 
@@ -91,13 +90,10 @@ enum BudgetMath {
         settings: BudgetSettings,
         now: Date = .now
     ) -> MonthSummary {
-        let scoped = self.operations(operations, in: month)
-        let spent = scoped.filter { $0.type == .expense }.reduce(0) { $0 + $1.euroAmount }
-        let income = scoped.filter { $0.type == .income }.reduce(0) { $0 + $1.euroAmount }
+        let spent = self.operations(operations, in: month).reduce(0) { $0 + $1.euroAmount }
         return MonthSummary(
             limit: settings.monthlyLimit,
             spent: spent,
-            income: income,
             daysLeft: daysLeft(in: month, now: now)
         )
     }
@@ -107,20 +103,15 @@ enum BudgetMath {
         categories: [Category],
         month: Date
     ) -> [CategorySpend] {
-        let scoped = self.operations(operations, in: month).filter { $0.type == .expense }
         var totals: [String: Double] = [:]
-        for operation in scoped {
+        for operation in self.operations(operations, in: month) {
             totals[operation.categoryId, default: 0] += operation.euroAmount
         }
-        return categories
-            .filter { $0.type == .expense }
-            .map { CategorySpend(category: $0, spent: totals[$0.id] ?? 0) }
+        return categories.map { CategorySpend(category: $0, spent: totals[$0.id] ?? 0) }
     }
 
     static func allocatedLimits(categories: [Category]) -> Double {
-        categories
-            .filter { $0.type == .expense }
-            .reduce(0) { $0 + $1.monthlyLimit }
+        categories.reduce(0) { $0 + $1.monthlyLimit }
     }
 
     static func toDispatch(categories: [Category], settings: BudgetSettings) -> Double {

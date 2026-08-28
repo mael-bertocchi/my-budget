@@ -144,53 +144,6 @@ struct FilterChip: View {
     }
 }
 
-struct SegmentedControl<Value: Hashable>: View {
-    let options: [(value: Value, label: String, systemImage: String?)]
-    @Binding var selection: Value
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(options, id: \.value) { option in
-                segment(option)
-            }
-        }
-        .padding(3)
-        .glassInput(radius: Theme.controlRadius)
-    }
-
-    private func segment(_ option: (value: Value, label: String, systemImage: String?)) -> some View {
-        let isSelected = selection == option.value
-        return Button {
-            withAnimation(.easeOut(duration: 0.15)) {
-                selection = option.value
-            }
-        } label: {
-            HStack(spacing: 6) {
-                if let systemImage = option.systemImage {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 13, weight: .medium))
-                }
-                Text(option.label)
-                    .font(Theme.font(14))
-            }
-            .foregroundStyle(isSelected ? Theme.accent : Theme.muted)
-            .frame(maxWidth: .infinity)
-            .frame(height: 32)
-            .background(
-                isSelected ? AnyShapeStyle(Theme.accent.opacity(0.10)) : AnyShapeStyle(Color.clear),
-                in: RoundedRectangle(cornerRadius: Theme.inputRadius, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.inputRadius, style: .continuous)
-                    .strokeBorder(isSelected ? Theme.accent : Color.clear, lineWidth: 1)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-    }
-}
-
 struct SearchField: View {
     @Binding var text: String
     var prompt: String = "Search"

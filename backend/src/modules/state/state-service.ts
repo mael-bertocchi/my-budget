@@ -31,8 +31,7 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
             name: category.name,
             symbol: category.symbol,
             colorHex: category.colorHex,
-            monthlyLimit: category.monthlyLimit,
-            type: category.type
+            monthlyLimit: category.monthlyLimit
         })),
         operations: operations.map((operation) => ({
             id: operation.id,
@@ -43,7 +42,6 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
             amount: operation.amount,
             currencyCode: operation.currencyCode,
             rateToEuro: operation.rateToEuro,
-            type: operation.type,
             isRecurring: operation.isRecurring,
             updatedAt: operation.updatedAt
         })),
@@ -91,7 +89,6 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 symbol: category.symbol,
                 colorHex: category.colorHex,
                 monthlyLimit: category.monthlyLimit,
-                type: category.type,
                 position: index
             }))
         }),
@@ -105,7 +102,6 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 amount: operation.amount,
                 currencyCode: operation.currencyCode,
                 rateToEuro: operation.rateToEuro,
-                type: operation.type,
                 isRecurring: operation.isRecurring
             }))
         }),

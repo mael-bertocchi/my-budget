@@ -6,8 +6,7 @@ const validCategory = {
     name: 'Groceries',
     symbol: 'cart',
     colorHex: 0x3ecf8e,
-    monthlyLimit: 400,
-    type: 'EXPENSE'
+    monthlyLimit: 400
 };
 
 const validOperation = {
@@ -19,7 +18,6 @@ const validOperation = {
     amount: 54.2,
     currencyCode: 'USD',
     rateToEuro: 0.9207,
-    type: 'EXPENSE',
     isRecurring: false
 };
 
@@ -30,10 +28,6 @@ describe('CategorySchema', () => {
 
     it('rejects a colour outside the 0xRRGGBB range', () => {
         expect(CategorySchema.safeParse({ ...validCategory, colorHex: 0x1000000 }).success).toBe(false);
-    });
-
-    it('rejects an unknown type', () => {
-        expect(CategorySchema.safeParse({ ...validCategory, type: 'SAVINGS' }).success).toBe(false);
     });
 });
 

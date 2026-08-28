@@ -20,7 +20,6 @@ struct OperationEditorSheet: View {
     @Environment(Preferences.self) private var preferences
     @Environment(\.dismiss) private var dismiss
 
-    @State private var type: OperationType = .expense
     @State private var amountText = ""
     @State private var currencyCode = Currency.euro.code
     @State private var categoryId = ""
@@ -40,9 +39,6 @@ struct OperationEditorSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 SheetHeader(title: isEditing ? "Edit operation" : "New operation") { dismiss() }
-                    .padding(.bottom, 16)
-
-                typeControl
                     .padding(.bottom, 22)
 
                 amountBlock
@@ -94,7 +90,6 @@ struct OperationEditorSheet: View {
             Button("Cancel", role: .cancel) {}
         }
         .onAppear(perform: loadValues)
-        .onChange(of: type) { _, _ in alignCategoryWithType() }
     }
 
     private var isEditing: Bool {
@@ -116,13 +111,6 @@ struct OperationEditorSheet: View {
 
     private var isValid: Bool {
         amount > 0 && !name.trimmingCharacters(in: .whitespaces).isEmpty && !categoryId.isEmpty
-    }
-
-    private var typeControl: some View {
-        SegmentedControl(
-            options: OperationType.allCases.map { ($0, $0.label, $0.systemImage) },
-            selection: $type
-        )
     }
 
     private var amountBlock: some View {
@@ -173,7 +161,7 @@ struct OperationEditorSheet: View {
 
     private var categoryGrid: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 9), count: 4), spacing: 9) {
-            ForEach(store.categories(for: type)) { category in
+            ForEach(store.categories) { category in
                 CategoryChip(category: category, isSelected: categoryId == category.id) {
                     preferences.tap()
                     withAnimation(.easeOut(duration: 0.15)) {
@@ -300,10 +288,9 @@ struct OperationEditorSheet: View {
     private func loadValues() {
         guard case .edit(let operationId) = route, let operation = store.operation(id: operationId) else {
             currencyCode = preferences.lastUsedCurrencyCode
-            categoryId = store.categories(for: type).first?.id ?? ""
+            categoryId = store.categories.first?.id ?? ""
             return
         }
-        type = operation.type
         amountText = Formatting.decimalInput(operation.amount)
         currencyCode = operation.currencyCode
         categoryId = operation.categoryId
@@ -311,12 +298,6 @@ struct OperationEditorSheet: View {
         location = operation.location ?? ""
         date = operation.date
         isRecurring = operation.isRecurring
-    }
-
-    private func alignCategoryWithType() {
-        let available = store.categories(for: type)
-        guard !available.contains(where: { $0.id == categoryId }) else { return }
-        categoryId = available.first?.id ?? ""
     }
 
     private func resolveCurrentLocation() {
@@ -351,7 +332,6 @@ struct OperationEditorSheet: View {
             amount: amount,
             currencyCode: currencyCode,
             rateToEuro: currency.rateToEuro,
-            type: type,
             isRecurring: isRecurring
         )
 

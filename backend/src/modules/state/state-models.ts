@@ -9,12 +9,6 @@ import { z } from 'zod';
 const MAX_ITEMS = 5000;
 
 /**
- * @constant OperationTypeSchema
- * @description Zod schema for the expense/income discriminator.
- */
-export const OperationTypeSchema = z.enum(['EXPENSE', 'INCOME']);
-
-/**
  * @constant MovementKindSchema
  * @description Zod schema for the direction of a savings movement.
  */
@@ -29,8 +23,7 @@ export const CategorySchema = z.object({
     name: z.string().min(1).max(60),
     symbol: z.string().min(1).max(60),
     colorHex: ColorSchema,
-    monthlyLimit: z.number().min(0).max(1_000_000),
-    type: OperationTypeSchema
+    monthlyLimit: z.number().min(0).max(1_000_000)
 });
 
 /**
@@ -46,7 +39,6 @@ export const OperationSchema = z.object({
     amount: z.number().min(0).max(1_000_000_000),
     currencyCode: z.string().min(1).max(8),
     rateToEuro: z.number().min(0).max(1_000_000),
-    type: OperationTypeSchema,
     isRecurring: z.boolean(),
     updatedAt: z.coerce.date().optional()
 });

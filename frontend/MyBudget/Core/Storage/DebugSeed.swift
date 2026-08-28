@@ -31,7 +31,6 @@ enum DebugSeed {
             Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", amount: 54.20, currencyCode: usd.code, rateToEuro: usd.rateToEuro),
             Operation(date: day(0, hour: 9), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 12.90),
             Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", amount: 4.20),
-            Operation(date: day(1, hour: 10), name: "Salary", categoryId: "salary", location: "Employer", amount: 3200, type: .income, isRecurring: true),
             Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", location: "Online", amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro),
             Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "restaurant", location: "Kreuzberg", amount: 48),
             Operation(date: day(3, hour: 8), name: "Rent", categoryId: "rent", location: "Landlord", amount: 1150, isRecurring: true),

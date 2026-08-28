@@ -7,7 +7,7 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **Budget ring** — left to spend, spent, days left, and a per-day allowance that recomputes as the month runs down.
 - **Per-category limits** — a tinted tile, a progress bar, and an over-budget state that turns everything red.
 - **Month stepper** — walk back through previous months; every figure recomputes.
-- **History ledger** — day groups with day totals, a search field, and filter chips for type and category.
+- **History ledger** — day groups with day totals, a search field, and filter chips for each category.
 - **Current location** — the *New operation* sheet fills its location field from where you are, reverse geocoded to a place and a city.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at.
 - **Savings** — total saved, monthly trend, goals with progress rings, and deposit/withdraw movements.

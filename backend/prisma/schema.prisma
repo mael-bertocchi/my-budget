@@ -15,11 +15,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum OperationType {
-  EXPENSE
-  INCOME
-}
-
 enum MovementKind {
   DEPOSIT
   WITHDRAWAL
@@ -36,32 +31,30 @@ model RefreshSession {
 }
 
 model Category {
-  id           String        @id
+  id           String   @id
   name         String
   symbol       String
-  colorHex     Int           @map("color_hex")
-  monthlyLimit Float         @default(0) @map("monthly_limit")
-  type         OperationType @default(EXPENSE)
-  position     Int           @default(0)
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  colorHex     Int      @map("color_hex")
+  monthlyLimit Float    @default(0) @map("monthly_limit")
+  position     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("categories")
 }
 
 model Operation {
-  id          String        @id
-  date        DateTime
-  name        String
-  categoryId  String        @map("category_id")
-  location    String?
-  amount      Float
-  currencyCode String       @default("EUR") @map("currency_code")
-  rateToEuro  Float         @default(1) @map("rate_to_euro")
-  type        OperationType @default(EXPENSE)
-  isRecurring Boolean       @default(false) @map("is_recurring")
-  createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  id           String   @id
+  date         DateTime
+  name         String
+  categoryId   String   @map("category_id")
+  location     String?
+  amount       Float
+  currencyCode String   @default("EUR") @map("currency_code")
+  rateToEuro   Float    @default(1) @map("rate_to_euro")
+  isRecurring  Boolean  @default(false) @map("is_recurring")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@index([date])
   @@index([categoryId])
