@@ -17,10 +17,10 @@ struct BudgetView: View {
                     .padding(.bottom, 6)
 
                 BudgetRing(
-                    progress: summary.progress,
+                    progress: hasOperations ? summary.progress : 0,
                     caption: "Left to spend",
-                    amount: Formatting.euro(summary.left),
-                    subtitle: "of " + Formatting.euro(summary.limit),
+                    amount: hasOperations ? Formatting.euro(summary.left) : "—",
+                    subtitle: hasOperations ? "of " + Formatting.euro(summary.limit) : "No operations",
                     color: isOverBudget ? Theme.negative : Theme.accent
                 )
                 .frame(maxWidth: .infinity)
@@ -32,9 +32,9 @@ struct BudgetView: View {
                     .padding(.bottom, 22)
 
                 categoryHeader
-                    .padding(.bottom, toDispatch > 0 ? 6 : 12)
+                    .padding(.bottom, showDispatchNote ? 6 : 12)
 
-                if toDispatch > 0 {
+                if showDispatchNote {
                     Text(Formatting.euro(toDispatch) + " of the budget is not dispatched yet")
                         .font(Theme.font(12))
                         .foregroundStyle(Theme.accent300)
@@ -52,29 +52,42 @@ struct BudgetView: View {
         }
     }
 
+    private var monthlyBudget: MonthlyBudget {
+        store.monthlyBudget(for: month)
+    }
+
+    private var hasOperations: Bool {
+        !BudgetMath.operations(store.operations, in: month).isEmpty
+    }
+
     private var summary: MonthSummary {
         BudgetMath.summary(
             operations: store.operations,
             month: month,
-            settings: store.budget
+            budget: monthlyBudget
         )
     }
 
     private var isOverBudget: Bool {
-        summary.left < 0
+        hasOperations && summary.left < 0
+    }
+
+    private var isCurrentMonth: Bool {
+        BudgetMath.isSameMonth(month, .now)
     }
 
     private var spends: [CategorySpend] {
         BudgetMath.categorySpends(
             operations: store.operations,
             categories: store.categories,
-            month: month
+            month: month,
+            budget: monthlyBudget
         )
         .filter { $0.limit > 0 || $0.spent > 0 }
     }
 
     private var toDispatch: Double {
-        BudgetMath.toDispatch(categories: store.categories, settings: store.budget)
+        BudgetMath.toDispatch(categories: store.categories, budget: monthlyBudget)
     }
 
     private var canGoForward: Bool {
@@ -97,11 +110,15 @@ struct BudgetView: View {
         }
     }
 
+    private var showDispatchNote: Bool {
+        hasOperations && toDispatch > 0
+    }
+
     private var statCards: some View {
         HStack(spacing: 10) {
-            StatCard(label: "Spent", value: Formatting.euro(summary.spent))
-            StatCard(label: "Days left", value: "\(summary.daysLeft)")
-            StatCard(label: "Per day", value: Formatting.euro(summary.perDay))
+            StatCard(label: "Spent", value: hasOperations ? Formatting.euro(summary.spent) : "—")
+            StatCard(label: "Days left", value: hasOperations ? "\(summary.daysLeft)" : "—")
+            StatCard(label: "Per day", value: hasOperations ? Formatting.euro(summary.perDay) : "—")
         }
     }
 
@@ -109,16 +126,20 @@ struct BudgetView: View {
         HStack {
             SectionLabel("By category")
             Spacer(minLength: 12)
-            InlineLink(title: "Edit limits") {
-                preferences.tap()
-                showLimits = true
+            if isCurrentMonth {
+                InlineLink(title: "Edit limits") {
+                    preferences.tap()
+                    showLimits = true
+                }
             }
         }
     }
 
     @ViewBuilder
     private var categoryList: some View {
-        if spends.isEmpty {
+        if !hasOperations {
+            EmptyStateCard(message: "No operations in this month.")
+        } else if spends.isEmpty {
             EmptyStateCard(message: "No spending yet this month. Log an operation and your categories will fill in here.")
         } else {
             VStack(spacing: 16) {

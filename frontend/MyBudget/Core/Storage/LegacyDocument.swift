@@ -14,6 +14,7 @@ enum LegacyDocument {
                 return updated
             }
         }
+        if object["budgetHistory"] == nil { object["budgetHistory"] = [String: Any]() }
         guard let migrated = try? JSONSerialization.data(withJSONObject: object) else { return data }
         return migrated
     }

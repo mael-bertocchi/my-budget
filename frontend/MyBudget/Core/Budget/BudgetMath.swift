@@ -3,9 +3,9 @@ import Foundation
 struct CategorySpend: Identifiable, Equatable {
     var category: Category
     var spent: Double
+    var limit: Double
 
     var id: String { category.id }
-    var limit: Double { category.monthlyLimit }
     var isOverBudget: Bool { spent > limit && limit > 0 }
 
     var progress: Double {
@@ -51,6 +51,11 @@ enum BudgetMath {
         return calendar
     }
 
+    static func monthKey(_ date: Date) -> String {
+        let components = calendar.dateComponents([.year, .month], from: date)
+        return String(format: "%04d-%02d", components.year ?? 0, components.month ?? 0)
+    }
+
     static func monthStart(_ date: Date) -> Date {
         calendar.date(from: calendar.dateComponents([.year, .month], from: date)) ?? date
     }
@@ -80,12 +85,12 @@ enum BudgetMath {
     static func summary(
         operations: [Operation],
         month: Date,
-        settings: BudgetSettings,
+        budget: MonthlyBudget,
         now: Date = .now
     ) -> MonthSummary {
         let spent = self.operations(operations, in: month).reduce(0) { $0 + $1.euroAmount }
         return MonthSummary(
-            limit: settings.monthlyLimit,
+            limit: budget.monthlyLimit,
             spent: spent,
             daysLeft: daysLeft(in: month, now: now)
         )
@@ -94,21 +99,24 @@ enum BudgetMath {
     static func categorySpends(
         operations: [Operation],
         categories: [Category],
-        month: Date
+        month: Date,
+        budget: MonthlyBudget
     ) -> [CategorySpend] {
         var totals: [String: Double] = [:]
         for operation in self.operations(operations, in: month) {
             totals[operation.categoryId, default: 0] += operation.euroAmount
         }
-        return categories.map { CategorySpend(category: $0, spent: totals[$0.id] ?? 0) }
+        return categories.map {
+            CategorySpend(category: $0, spent: totals[$0.id] ?? 0, limit: budget.limit(for: $0.id))
+        }
     }
 
-    static func allocatedLimits(categories: [Category]) -> Double {
-        categories.reduce(0) { $0 + $1.monthlyLimit }
+    static func allocatedLimits(categories: [Category], budget: MonthlyBudget) -> Double {
+        categories.reduce(0) { $0 + budget.limit(for: $1.id) }
     }
 
-    static func toDispatch(categories: [Category], settings: BudgetSettings) -> Double {
-        settings.monthlyLimit - allocatedLimits(categories: categories)
+    static func toDispatch(categories: [Category], budget: MonthlyBudget) -> Double {
+        budget.monthlyLimit - allocatedLimits(categories: categories, budget: budget)
     }
 
     static func dayGroups(_ operations: [Operation]) -> [DayGroup] {

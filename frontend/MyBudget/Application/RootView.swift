@@ -41,11 +41,13 @@ struct RootView: View {
             }
             #endif
             await session.bootstrap()
+            store.sealCompletedMonths()
         }
     }
 }
 
 struct MainShell: View {
+    @Environment(LocalStore.self) private var store
     @Environment(Preferences.self) private var preferences
     @Environment(ApplicationSession.self) private var session
     @Environment(\.scenePhase) private var scenePhase
@@ -82,6 +84,7 @@ struct MainShell: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
+                store.sealCompletedMonths()
                 session.applicationBecameActive()
             }
         }

@@ -80,6 +80,15 @@ struct BudgetSettings: Codable, Equatable {
     static let `default` = BudgetSettings(monthlyLimit: 3000)
 }
 
+struct MonthlyBudget: Codable, Equatable {
+    var monthlyLimit: Double
+    var categoryLimits: [String: Double]
+
+    func limit(for categoryId: String) -> Double {
+        categoryLimits[categoryId] ?? 0
+    }
+}
+
 enum CategoryPalette {
     static let groceries: UInt32 = 0x3ECF8E
     static let restaurant: UInt32 = 0xFFA23E

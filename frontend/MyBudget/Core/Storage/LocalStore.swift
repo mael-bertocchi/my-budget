@@ -21,6 +21,7 @@ final class LocalStore {
     private(set) var categories: [Category] = []
     private(set) var operations: [Operation] = []
     private(set) var budget: BudgetSettings = .default
+    private(set) var budgetHistory: [String: MonthlyBudget] = [:]
 
     @ObservationIgnored var onChange: (() -> Void)?
     @ObservationIgnored private var isApplyingRemote = false
@@ -37,7 +38,8 @@ final class LocalStore {
         BudgetDocument(
             categories: categories,
             operations: operations,
-            budget: budget
+            budget: budget,
+            budgetHistory: budgetHistory
         )
     }
 
@@ -47,6 +49,7 @@ final class LocalStore {
         categories = document.categories
         operations = document.operations
         budget = document.budget
+        budgetHistory = document.budgetHistory
         sortOperations()
         persist()
     }
@@ -101,6 +104,34 @@ final class LocalStore {
         operations.first { $0.id == id }
     }
 
+    var liveBudget: MonthlyBudget {
+        MonthlyBudget(
+            monthlyLimit: budget.monthlyLimit,
+            categoryLimits: Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0.monthlyLimit) })
+        )
+    }
+
+    func monthlyBudget(for month: Date) -> MonthlyBudget {
+        budgetHistory[BudgetMath.monthKey(month)] ?? liveBudget
+    }
+
+    func sealCompletedMonths(now: Date = .now) {
+        guard let earliest = operations.map(\.date).min() else { return }
+        let snapshot = liveBudget
+        let currentMonth = BudgetMath.monthStart(now)
+        var month = BudgetMath.monthStart(earliest)
+        var sealed = false
+        while month < currentMonth {
+            let key = BudgetMath.monthKey(month)
+            if budgetHistory[key] == nil {
+                budgetHistory[key] = snapshot
+                sealed = true
+            }
+            month = BudgetMath.shiftMonth(month, by: 1)
+        }
+        if sealed { save() }
+    }
+
     var latestLocation: String? {
         operations.first { !$0.isOnline && !($0.location ?? "").isEmpty }?.location
     }
@@ -118,6 +149,7 @@ final class LocalStore {
         self.categories = categories
         self.operations = operations
         self.budget = budget
+        budgetHistory = [:]
         sortOperations()
         save()
     }
@@ -126,6 +158,7 @@ final class LocalStore {
         categories = Category.defaults
         operations = []
         budget = .default
+        budgetHistory = [:]
         save()
     }
 
@@ -141,6 +174,7 @@ final class LocalStore {
         categories = document.categories
         operations = document.operations
         budget = document.budget
+        budgetHistory = document.budgetHistory
         sortOperations()
     }
 

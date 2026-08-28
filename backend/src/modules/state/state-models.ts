@@ -48,13 +48,23 @@ export const BudgetSettingsSchema = z.object({
 });
 
 /**
+ * @constant MonthlyBudgetSchema
+ * @description Zod schema for the budget frozen against one finished month.
+ */
+export const MonthlyBudgetSchema = z.object({
+    monthlyLimit: z.number().min(0).max(1_000_000),
+    categoryLimits: z.record(IdSchema, z.number().min(0).max(1_000_000))
+});
+
+/**
  * @constant StateSchema
  * @description Zod schema for the whole budget document exchanged by the pull/push endpoints.
  */
 export const StateSchema = z.object({
     categories: z.array(CategorySchema).max(MAX_ITEMS),
     operations: z.array(OperationSchema).max(MAX_ITEMS),
-    budget: BudgetSettingsSchema
+    budget: BudgetSettingsSchema,
+    budgetHistory: z.record(z.string().regex(/^\d{4}-\d{2}$/), MonthlyBudgetSchema)
 });
 
 /**

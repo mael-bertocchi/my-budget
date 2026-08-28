@@ -17,9 +17,10 @@ const DEFAULT_MONTHLY_LIMIT = 3000;
  * @returns {Promise<StateBody>} The full budget document.
  */
 export async function pullState(prisma: PrismaClient): Promise<StateBody> {
-    const [categories, operations, state] = await Promise.all([
+    const [categories, operations, history, state] = await Promise.all([
         prisma.category.findMany({ orderBy: { position: 'asc' } }),
         prisma.operation.findMany({ orderBy: { date: 'desc' } }),
+        prisma.budgetHistory.findMany({ orderBy: { month: 'asc' } }),
         prisma.budgetState.findUnique({ where: { id: OWNER_ID } })
     ]);
 
@@ -45,7 +46,16 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
             isRecurring: operation.isRecurring,
             updatedAt: operation.updatedAt
         })),
-        budget: { monthlyLimit: state?.monthlyLimit ?? DEFAULT_MONTHLY_LIMIT }
+        budget: { monthlyLimit: state?.monthlyLimit ?? DEFAULT_MONTHLY_LIMIT },
+        budgetHistory: Object.fromEntries(
+            history.map((entry) => [
+                entry.month,
+                {
+                    monthlyLimit: entry.monthlyLimit,
+                    categoryLimits: entry.categoryLimits as Record<string, number>
+                }
+            ])
+        )
     };
 }
 
@@ -62,6 +72,7 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
     await prisma.$transaction([
         prisma.category.deleteMany(),
         prisma.operation.deleteMany(),
+        prisma.budgetHistory.deleteMany(),
         prisma.category.createMany({
             data: body.categories.map((category, index) => ({
                 id: category.id,
@@ -85,6 +96,13 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 rateToEuro: operation.rateToEuro,
                 isOnline: operation.isOnline,
                 isRecurring: operation.isRecurring
+            }))
+        }),
+        prisma.budgetHistory.createMany({
+            data: Object.entries(body.budgetHistory).map(([month, snapshot]) => ({
+                month,
+                monthlyLimit: snapshot.monthlyLimit,
+                categoryLimits: snapshot.categoryLimits
             }))
         }),
         prisma.budgetState.upsert({

@@ -58,6 +58,16 @@ model Operation {
   @@map("operations")
 }
 
+model BudgetHistory {
+  month          String   @id
+  monthlyLimit   Float    @map("monthly_limit")
+  categoryLimits Json     @map("category_limits")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("budget_history")
+}
+
 model BudgetState {
   id           String   @id
   monthlyLimit Float    @default(3000) @map("monthly_limit")
