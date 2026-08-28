@@ -1,7 +1,7 @@
 {
   "name": "@my-budget/backend",
   "description": "The Fastify backend for my-budget, a personal budget tracker.",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
