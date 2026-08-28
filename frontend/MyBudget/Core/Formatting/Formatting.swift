@@ -66,13 +66,6 @@ enum Formatting {
         return formatter.string(from: date)
     }
 
-    static func monthShort(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM"
-        return formatter.string(from: date)
-    }
-
     static func monthWithYear(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")

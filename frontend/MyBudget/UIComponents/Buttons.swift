@@ -99,7 +99,7 @@ struct StepperButton: View {
             Text(title)
                 .font(Theme.font(13))
                 .foregroundStyle(Theme.text)
-                .frame(minWidth: 30)
+                .frame(minWidth: 74)
 
             Button(action: onForward) {
                 Image(systemName: "chevron.right")

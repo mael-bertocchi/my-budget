@@ -83,19 +83,13 @@ struct BudgetView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Monthly budget")
-                    .font(Theme.font(12))
-                    .foregroundStyle(Theme.muted)
-                ScreenTitle(Formatting.monthTitle(month))
-            }
-            Spacer(minLength: 8)
             StepperButton(
-                title: Formatting.monthShort(BudgetMath.shiftMonth(month, by: -1)),
+                title: Formatting.monthTitle(month),
                 onBack: { step(-1) },
                 onForward: { step(1) },
                 forwardEnabled: canGoForward
             )
+            Spacer(minLength: 8)
             HeaderAddButton {
                 preferences.tap()
                 onNewOperation()
