@@ -53,6 +53,7 @@ struct CategoryChip: View {
             VStack(spacing: 6) {
                 Image(systemName: category.symbol)
                     .font(.system(size: 20, weight: .regular))
+                    .frame(height: 24)
                 Text(category.name)
                     .font(Theme.font(10))
                     .lineLimit(1)
