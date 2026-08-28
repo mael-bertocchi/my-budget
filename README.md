@@ -16,6 +16,7 @@ Log an operation, scan the history ledger, watch the monthly budget, and grow sa
 
 - 🎯 **One glance, one number** — a budget ring that tells you what is left to spend, and how much that is per remaining day.
 - 🧾 **A ledger you can read** — operations grouped by day, with day totals, search, and filters by type or category.
+- 📍 **Where you spent it** — one tap on the location field fills in the place you are standing in.
 - 🌍 **Any currency, always in euros** — enter in USD, CHF, KRW… the euro equivalent is computed live and shown next to the original amount.
 - 🚦 **Limits that speak up** — per-category limits, with the bar and the amount turning red the moment you go over.
 - 🐖 **Savings that add up** — balance, monthly trend, goals with progress, and deposit/withdraw movements.

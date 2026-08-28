@@ -8,6 +8,7 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **Per-category limits** — a tinted tile, a progress bar, and an over-budget state that turns everything red.
 - **Month stepper** — walk back through previous months; every figure recomputes.
 - **History ledger** — day groups with day totals, a search field, and filter chips for type and category.
+- **Current location** — the *New operation* sheet fills its location field from where you are, reverse geocoded to a place and a city.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at.
 - **Savings** — total saved, monthly trend, goals with progress rings, and deposit/withdraw movements.
 - **Sign in & sync** — one account (its password lives in the backend's environment); every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns.
@@ -28,6 +29,7 @@ MyBudget/
 ├─ Core/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
 │  ├─ Formatting/  Euro, amount, rate and date formatting
+│  ├─ Location/    LocationProvider — one-shot fix, reverse geocoded to a place name
 │  ├─ Models/      Domain types (Category, Operation, SavingsGoal, …)
 │  ├─ Money/       Currencies and euro exchange rates
 │  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store

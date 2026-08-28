@@ -32,6 +32,9 @@ struct OperationEditorSheet: View {
     @State private var showCurrencyPicker = false
     @State private var showDatePicker = false
     @State private var showDeleteConfirmation = false
+    @State private var isLocating = false
+    @State private var locationError: String?
+    @State private var locator = LocationProvider()
 
     var body: some View {
         ScrollView {
@@ -222,18 +225,52 @@ struct OperationEditorSheet: View {
                 }
             }
 
-            GlassField(label: "Location") {
-                HStack(spacing: 8) {
-                    Image(systemName: "mappin")
-                        .font(.system(size: 14))
-                        .foregroundStyle(Theme.accent)
-                    TextField("", text: $location, prompt: Text("Berlin Mitte").foregroundStyle(Theme.faint))
-                        .accessibilityLabel("Location")
+            VStack(alignment: .leading, spacing: 6) {
+                GlassField(label: "Location") {
+                    HStack(spacing: 8) {
+                        Image(systemName: "mappin")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.accent)
+                        TextField("", text: $location, prompt: Text("Berlin Mitte").foregroundStyle(Theme.faint))
+                            .accessibilityLabel("Location")
+                        currentLocationButton
+                    }
+                }
+
+                if let locationError {
+                    Text(locationError)
+                        .font(Theme.font(11))
+                        .foregroundStyle(Theme.negative)
                 }
             }
 
             recurringRow
         }
+    }
+
+    private var currentLocationButton: some View {
+        Button {
+            preferences.tap()
+            resolveCurrentLocation()
+        } label: {
+            Group {
+                if isLocating {
+                    ProgressView()
+                        .controlSize(.mini)
+                } else {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+            }
+            .tint(Theme.accent)
+            .foregroundStyle(Theme.accent)
+            .frame(width: 26, height: 26)
+            .background(Theme.accent900, in: RoundedRectangle(cornerRadius: Theme.inputRadius, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(isLocating)
+        .expandedTapTarget(vertical: 9, horizontal: 9)
+        .accessibilityLabel("Use current location")
     }
 
     private var recurringRow: some View {
@@ -280,6 +317,21 @@ struct OperationEditorSheet: View {
         let available = store.categories(for: type)
         guard !available.contains(where: { $0.id == categoryId }) else { return }
         categoryId = available.first?.id ?? ""
+    }
+
+    private func resolveCurrentLocation() {
+        guard !isLocating else { return }
+        isLocating = true
+        locationError = nil
+        Task {
+            do {
+                location = try await locator.currentPlaceName()
+                preferences.success()
+            } catch {
+                locationError = error.localizedDescription
+            }
+            isLocating = false
+        }
     }
 
     private func save() {
