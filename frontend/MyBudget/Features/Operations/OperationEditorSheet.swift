@@ -167,7 +167,7 @@ struct OperationEditorSheet: View {
             .padding(.top, 2)
 
             if currency.code != Currency.euro.code {
-                Text(Formatting.euroEquivalent(euroAmount))
+                Text(Formatting.euroPrecise(euroAmount))
                     .font(Theme.font(13))
                     .foregroundStyle(Theme.accent300)
                     .padding(.top, 4)

@@ -33,12 +33,8 @@ enum Formatting {
         "€" + (euroPrecise.string(from: NSNumber(value: amount)) ?? "0.00")
     }
 
-    static func expense(_ amount: Double, currency: Currency = .euro) -> String {
-        "−" + currency.symbol + (euroPrecise.string(from: NSNumber(value: abs(amount))) ?? "0.00")
-    }
-
-    static func euroEquivalent(_ amount: Double) -> String {
-        "≈ " + euroPrecise(amount)
+    static func amount(_ amount: Double, currency: Currency = .euro) -> String {
+        currency.symbol + (euroPrecise.string(from: NSNumber(value: abs(amount))) ?? "0.00")
     }
 
     static func rate(_ value: Double) -> String {

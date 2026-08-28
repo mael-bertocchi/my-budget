@@ -75,7 +75,7 @@ struct HistoryView: View {
                         HStack {
                             DayLabel(Formatting.relativeDay(group.date))
                             Spacer(minLength: 12)
-                            Text(Formatting.expense(group.spent))
+                            Text(Formatting.amount(group.spent))
                                 .font(Theme.font(12))
                                 .foregroundStyle(Theme.faint)
                         }
@@ -202,7 +202,7 @@ struct OperationRow: View {
                     .font(Theme.font(14, .semibold))
                     .foregroundStyle(Theme.text)
                 if operation.isForeign {
-                    Text(Formatting.euroEquivalent(operation.euroAmount))
+                    Text(Formatting.euroPrecise(operation.euroAmount))
                         .font(Theme.font(11))
                         .foregroundStyle(Theme.faint)
                 }
@@ -217,6 +217,6 @@ struct OperationRow: View {
     }
 
     private var amountText: String {
-        Formatting.expense(operation.amount, currency: Currency.named(operation.currencyCode))
+        Formatting.amount(operation.amount, currency: Currency.named(operation.currencyCode))
     }
 }
