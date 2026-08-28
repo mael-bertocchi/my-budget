@@ -26,11 +26,11 @@ enum DebugSeed {
             Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", amount: 54.20, currencyCode: usd.code, rateToEuro: usd.rateToEuro),
             Operation(date: day(0, hour: 9), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 12.90),
             Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", amount: 4.20),
-            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", location: "Online", amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro),
+            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro, isOnline: true),
             Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "restaurant", location: "Kreuzberg", amount: 48),
             Operation(date: day(3, hour: 8), name: "Rent", categoryId: "rent", location: "Landlord", amount: 1150, isRecurring: true),
             Operation(date: day(3, hour: 19), name: "FitX Gym", categoryId: "health", location: "Prenzlauer Berg", amount: 29.90, isRecurring: true),
-            Operation(date: day(4, hour: 21), name: "Netflix", categoryId: "fun", location: "Online", amount: 12.99, isRecurring: true),
+            Operation(date: day(4, hour: 21), name: "Netflix", categoryId: "fun", amount: 12.99, isOnline: true, isRecurring: true),
             Operation(date: day(4, hour: 17), name: "REWE", categoryId: "groceries", location: "Prenzlauer Berg", amount: 31.40),
 
             Operation(date: dayOfMonth(16), name: "REWE", categoryId: "groceries", location: "Prenzlauer Berg", amount: 62.30),
@@ -48,11 +48,11 @@ enum DebugSeed {
             Operation(date: dayOfMonth(11), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 22.60),
             Operation(date: dayOfMonth(6), name: "Uber", categoryId: "transport", location: "Neukölln", amount: 11.50),
 
-            Operation(date: dayOfMonth(14), name: "Zalando", categoryId: "shopping", location: "Online", amount: 89.90),
+            Operation(date: dayOfMonth(14), name: "Zalando", categoryId: "shopping", amount: 89.90, isOnline: true),
             Operation(date: dayOfMonth(9), name: "Muji", categoryId: "shopping", location: "Alexanderplatz", amount: 34.50),
             Operation(date: dayOfMonth(4), name: "Dussmann", categoryId: "shopping", location: "Friedrichstraße", amount: 36),
 
-            Operation(date: dayOfMonth(1, hour: 9), name: "Spotify", categoryId: "fun", location: "Online", amount: 10.99, isRecurring: true),
+            Operation(date: dayOfMonth(1, hour: 9), name: "Spotify", categoryId: "fun", amount: 10.99, isOnline: true, isRecurring: true),
             Operation(date: dayOfMonth(13), name: "Berghain", categoryId: "fun", location: "Friedrichshain", amount: 25),
             Operation(date: dayOfMonth(6, hour: 20), name: "Kino Babylon", categoryId: "fun", location: "Mitte", amount: 25.02)
         ]

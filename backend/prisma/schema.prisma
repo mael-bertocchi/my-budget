@@ -48,6 +48,7 @@ model Operation {
   amount       Float
   currencyCode String   @default("EUR") @map("currency_code")
   rateToEuro   Float    @default(1) @map("rate_to_euro")
+  isOnline     Boolean  @default(false) @map("is_online")
   isRecurring  Boolean  @default(false) @map("is_recurring")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")

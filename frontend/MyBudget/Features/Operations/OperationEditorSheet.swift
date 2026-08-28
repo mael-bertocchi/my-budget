@@ -27,6 +27,7 @@ struct OperationEditorSheet: View {
     @State private var description = ""
     @State private var location = ""
     @State private var date = Date.now
+    @State private var isOnline = false
     @State private var isRecurring = false
 
     @State private var showCurrencyPicker = false
@@ -41,9 +42,6 @@ struct OperationEditorSheet: View {
         case description
         case location
     }
-    @State private var isLocating = false
-    @State private var locationError: String?
-    @State private var locator = LocationProvider()
 
     var body: some View {
         ScrollView {
@@ -247,7 +245,9 @@ struct OperationEditorSheet: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            onlineRow
+
+            if !isOnline {
                 GlassField(label: "Location") {
                     HStack(spacing: 8) {
                         Image(systemName: "mappin")
@@ -256,44 +256,37 @@ struct OperationEditorSheet: View {
                         TextField("", text: $location, prompt: Text("Berlin Mitte").foregroundStyle(Theme.faint))
                             .focused($focus, equals: .location)
                             .accessibilityLabel("Location")
-                        currentLocationButton
                     }
                 }
-
-                if let locationError {
-                    Text(locationError)
-                        .font(Theme.font(11))
-                        .foregroundStyle(Theme.negative)
-                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             recurringRow
         }
     }
 
-    private var currentLocationButton: some View {
-        Button {
-            preferences.tap()
-            resolveCurrentLocation()
-        } label: {
-            Group {
-                if isLocating {
-                    ProgressView()
-                        .controlSize(.mini)
-                } else {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 12, weight: .semibold))
-                }
+    private var onlineRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "globe")
+                .font(.system(size: 17))
+                .foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Online")
+                    .font(Theme.font(14))
+                    .foregroundStyle(Theme.text)
+                Text("No physical location")
+                    .font(Theme.font(11))
+                    .foregroundStyle(Theme.muted)
             }
-            .tint(Theme.accent)
-            .foregroundStyle(Theme.accent)
-            .frame(width: 26, height: 26)
-            .background(Theme.accent900, in: RoundedRectangle(cornerRadius: Theme.inputRadius, style: .continuous))
+            Spacer(minLength: 8)
+            Toggle("", isOn: $isOnline.animation(.easeOut(duration: 0.2)))
+                .labelsHidden()
+                .tint(Theme.accent)
+                .accessibilityLabel("Online")
         }
-        .buttonStyle(.plain)
-        .disabled(isLocating)
-        .expandedTapTarget(vertical: 9, horizontal: 9)
-        .accessibilityLabel("Use current location")
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .glassCard(radius: Theme.controlRadius)
     }
 
     private var recurringRow: some View {
@@ -324,6 +317,7 @@ struct OperationEditorSheet: View {
         guard case .edit(let operationId) = route, let operation = store.operation(id: operationId) else {
             currencyCode = preferences.lastUsedCurrencyCode
             categoryId = store.categories.first?.id ?? ""
+            location = store.latestLocation ?? ""
             return
         }
         amountText = Formatting.decimalInput(operation.amount)
@@ -333,6 +327,7 @@ struct OperationEditorSheet: View {
         description = operation.description ?? ""
         location = operation.location ?? ""
         date = operation.date
+        isOnline = operation.isOnline
         isRecurring = operation.isRecurring
     }
 
@@ -342,24 +337,9 @@ struct OperationEditorSheet: View {
         withAnimation(.easeOut(duration: 0.2)) { showDatePicker = false }
     }
 
-    private func resolveCurrentLocation() {
-        guard !isLocating else { return }
-        isLocating = true
-        locationError = nil
-        Task {
-            do {
-                location = try await locator.currentPlaceName()
-                preferences.success()
-            } catch {
-                locationError = error.localizedDescription
-            }
-            isLocating = false
-        }
-    }
-
     private func save() {
         guard isValid else { return }
-        let trimmedLocation = location.trimmingCharacters(in: .whitespaces)
+        let trimmedLocation = isOnline ? "" : location.trimmingCharacters(in: .whitespaces)
         let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
         let existingId: String? = {
             if case .edit(let operationId) = route { return operationId }
@@ -376,6 +356,7 @@ struct OperationEditorSheet: View {
             amount: amount,
             currencyCode: currencyCode,
             rateToEuro: currency.rateToEuro,
+            isOnline: isOnline,
             isRecurring: isRecurring
         )
 

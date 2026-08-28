@@ -41,6 +41,7 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
             amount: operation.amount,
             currencyCode: operation.currencyCode,
             rateToEuro: operation.rateToEuro,
+            isOnline: operation.isOnline,
             isRecurring: operation.isRecurring,
             updatedAt: operation.updatedAt
         })),
@@ -82,6 +83,7 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 amount: operation.amount,
                 currencyCode: operation.currencyCode,
                 rateToEuro: operation.rateToEuro,
+                isOnline: operation.isOnline,
                 isRecurring: operation.isRecurring
             }))
         }),

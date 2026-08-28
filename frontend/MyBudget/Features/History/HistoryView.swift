@@ -182,7 +182,15 @@ struct OperationRow: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
-                if let location = operation.location, !location.isEmpty {
+                if operation.isOnline {
+                    HStack(spacing: 4) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 10))
+                        Text("Online")
+                    }
+                    .font(Theme.font(12))
+                    .foregroundStyle(Theme.muted)
+                } else if let location = operation.location, !location.isEmpty {
                     HStack(spacing: 4) {
                         Image(systemName: "mappin")
                             .font(.system(size: 10))

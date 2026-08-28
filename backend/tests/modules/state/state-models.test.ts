@@ -18,6 +18,7 @@ const validOperation = {
     amount: 54.2,
     currencyCode: 'USD',
     rateToEuro: 0.9207,
+    isOnline: false,
     isRecurring: false
 };
 
@@ -51,6 +52,14 @@ describe('OperationSchema', () => {
 
     it('rejects a description longer than 500 characters', () => {
         expect(OperationSchema.safeParse({ ...validOperation, description: 'x'.repeat(501) }).success).toBe(false);
+    });
+
+    it('defaults isOnline when an older client omits it', () => {
+        const { isOnline: _isOnline, ...withoutFlag } = validOperation;
+        const parsed = OperationSchema.safeParse(withoutFlag);
+
+        expect(parsed.success).toBe(true);
+        expect(parsed.data?.isOnline).toBe(false);
     });
 
     it('rejects a negative amount', () => {

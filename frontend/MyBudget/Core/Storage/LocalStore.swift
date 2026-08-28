@@ -101,6 +101,10 @@ final class LocalStore {
         operations.first { $0.id == id }
     }
 
+    var latestLocation: String? {
+        operations.first { !$0.isOnline && !($0.location ?? "").isEmpty }?.location
+    }
+
     func setMonthlyLimit(_ limit: Double) {
         budget.monthlyLimit = max(0, limit)
         save()
@@ -133,7 +137,7 @@ final class LocalStore {
 
     private func load() {
         guard let data = try? Data(contentsOf: Self.fileURL),
-              let document = try? JSONCoding.decoder.decode(BudgetDocument.self, from: LegacyDocument.withoutIncome(data)) else { return }
+              let document = try? JSONCoding.decoder.decode(BudgetDocument.self, from: LegacyDocument.migrated(data)) else { return }
         categories = document.categories
         operations = document.operations
         budget = document.budget

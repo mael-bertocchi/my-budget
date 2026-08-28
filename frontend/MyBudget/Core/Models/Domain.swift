@@ -37,6 +37,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var amount: Double
     var currencyCode: String
     var rateToEuro: Double
+    var isOnline: Bool
     var isRecurring: Bool
     var updatedAt: Date
 
@@ -50,6 +51,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         amount: Double,
         currencyCode: String = Currency.euro.code,
         rateToEuro: Double = 1,
+        isOnline: Bool = false,
         isRecurring: Bool = false,
         updatedAt: Date = .now
     ) {
@@ -62,6 +64,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         self.amount = amount
         self.currencyCode = currencyCode
         self.rateToEuro = rateToEuro
+        self.isOnline = isOnline
         self.isRecurring = isRecurring
         self.updatedAt = updatedAt
     }
