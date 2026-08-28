@@ -28,6 +28,7 @@ export const OperationSchema = z.object({
     id: IdSchema,
     date: z.coerce.date(),
     name: z.string().min(1).max(120),
+    description: z.string().max(500).nullish(),
     categoryId: IdSchema,
     location: z.string().max(200).nullish(),
     amount: z.number().min(0).max(1_000_000_000),

@@ -135,7 +135,7 @@ struct HistoryView: View {
     private func matchesQuery(_ operation: Operation, _ query: String) -> Bool {
         guard !query.isEmpty else { return true }
         let category = store.categoryOrFallback(id: operation.categoryId).name
-        let haystack = [operation.name, operation.location ?? "", category]
+        let haystack = [operation.name, operation.description ?? "", operation.location ?? "", category]
         return haystack.contains { $0.localizedCaseInsensitiveContains(query) }
     }
 
@@ -172,6 +172,13 @@ struct OperationRow: View {
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.faint)
                     }
+                }
+                if let description = operation.description, !description.isEmpty {
+                    Text(description)
+                        .font(Theme.font(12))
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
                 if let location = operation.location, !location.isEmpty {
                     HStack(spacing: 4) {

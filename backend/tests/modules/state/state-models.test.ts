@@ -43,6 +43,16 @@ describe('OperationSchema', () => {
         expect(OperationSchema.safeParse({ ...validOperation, location: null }).success).toBe(true);
     });
 
+    it('accepts an operation with or without a description', () => {
+        expect(OperationSchema.safeParse({ ...validOperation, description: 'Weekly groceries' }).success).toBe(true);
+        expect(OperationSchema.safeParse({ ...validOperation, description: null }).success).toBe(true);
+        expect(OperationSchema.safeParse(validOperation).success).toBe(true);
+    });
+
+    it('rejects a description longer than 500 characters', () => {
+        expect(OperationSchema.safeParse({ ...validOperation, description: 'x'.repeat(501) }).success).toBe(false);
+    });
+
     it('rejects a negative amount', () => {
         expect(OperationSchema.safeParse({ ...validOperation, amount: -1 }).success).toBe(false);
     });

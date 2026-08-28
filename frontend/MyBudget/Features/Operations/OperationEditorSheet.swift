@@ -24,6 +24,7 @@ struct OperationEditorSheet: View {
     @State private var currencyCode = Currency.euro.code
     @State private var categoryId = ""
     @State private var name = ""
+    @State private var description = ""
     @State private var location = ""
     @State private var date = Date.now
     @State private var isRecurring = false
@@ -179,6 +180,17 @@ struct OperationEditorSheet: View {
                     .accessibilityLabel("Name")
             }
 
+            GlassField(label: "Description") {
+                TextField(
+                    "",
+                    text: $description,
+                    prompt: Text("Weekly groceries with Anna").foregroundStyle(Theme.faint),
+                    axis: .vertical
+                )
+                .lineLimit(1...4)
+                .accessibilityLabel("Description")
+            }
+
             VStack(alignment: .leading, spacing: 6) {
                 FieldLabel("Date")
                 Button {
@@ -295,6 +307,7 @@ struct OperationEditorSheet: View {
         currencyCode = operation.currencyCode
         categoryId = operation.categoryId
         name = operation.name
+        description = operation.description ?? ""
         location = operation.location ?? ""
         date = operation.date
         isRecurring = operation.isRecurring
@@ -318,6 +331,7 @@ struct OperationEditorSheet: View {
     private func save() {
         guard isValid else { return }
         let trimmedLocation = location.trimmingCharacters(in: .whitespaces)
+        let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
         let existingId: String? = {
             if case .edit(let operationId) = route { return operationId }
             return nil
@@ -327,6 +341,7 @@ struct OperationEditorSheet: View {
             id: existingId ?? UUID().uuidString,
             date: date,
             name: name.trimmingCharacters(in: .whitespaces),
+            description: trimmedDescription.isEmpty ? nil : trimmedDescription,
             categoryId: categoryId,
             location: trimmedLocation.isEmpty ? nil : trimmedLocation,
             amount: amount,

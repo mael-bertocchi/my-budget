@@ -31,6 +31,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
     var id: String
     var date: Date
     var name: String
+    var description: String?
     var categoryId: String
     var location: String?
     var amount: Double
@@ -43,6 +44,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         id: String = UUID().uuidString,
         date: Date,
         name: String,
+        description: String? = nil,
         categoryId: String,
         location: String? = nil,
         amount: Double,
@@ -54,6 +56,7 @@ struct Operation: Codable, Identifiable, Equatable, Hashable {
         self.id = id
         self.date = date
         self.name = name
+        self.description = description
         self.categoryId = categoryId
         self.location = location
         self.amount = amount
