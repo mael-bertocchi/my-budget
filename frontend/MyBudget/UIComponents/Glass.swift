@@ -97,6 +97,42 @@ extension View {
     func screenBackground() -> some View {
         modifier(ScreenBackground())
     }
+
+    func scrollTopBlur() -> some View {
+        modifier(ScrollTopBlur())
+    }
+}
+
+struct ScrollTopBlur: ViewModifier {
+    @State private var isScrolled = false
+
+    func body(content: Content) -> some View {
+        content
+            .onScrollGeometryChange(for: Bool.self) { geometry in
+                geometry.contentOffset.y + geometry.contentInsets.top > 1
+            } action: { _, scrolled in
+                withAnimation(.easeOut(duration: 0.2)) { isScrolled = scrolled }
+            }
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .mask(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .black, location: 0),
+                                .init(color: .black, location: 0.35),
+                                .init(color: .clear, location: 1)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(height: 72)
+                    .opacity(isScrolled ? 0.8 : 0)
+                    .allowsHitTesting(false)
+                    .ignoresSafeArea(edges: .top)
+            }
+    }
 }
 
 struct SectionLabel: View {

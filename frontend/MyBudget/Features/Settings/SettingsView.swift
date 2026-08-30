@@ -157,6 +157,7 @@ struct SettingsView: View {
             .padding(.horizontal, Theme.screenPadding)
         }
         .scrollIndicators(.hidden)
+        .scrollTopBlur()
         .sheet(isPresented: $showLimits) {
             CategoryLimitsSheet()
         }

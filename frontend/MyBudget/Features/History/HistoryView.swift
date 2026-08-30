@@ -68,6 +68,7 @@ struct HistoryView: View {
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
+            .scrollTopBlur()
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
@@ -107,6 +108,7 @@ struct HistoryView: View {
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
+            .scrollTopBlur()
         }
     }
 
