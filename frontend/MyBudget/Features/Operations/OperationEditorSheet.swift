@@ -100,6 +100,10 @@ struct OperationEditorSheet: View {
             Button("Cancel", role: .cancel) {}
         }
         .onAppear(perform: loadValues)
+        .onChange(of: amountText) { _, typed in
+            let formatted = Formatting.groupedAmountInput(Formatting.sanitizeAmountInput(typed))
+            if formatted != typed { amountText = formatted }
+        }
         .onChange(of: focus) { _, field in
             guard field != nil, showDatePicker else { return }
             withAnimation(.easeOut(duration: 0.2)) { showDatePicker = false }
@@ -116,7 +120,7 @@ struct OperationEditorSheet: View {
     }
 
     private var amount: Double {
-        Formatting.parseAmount(amountText) ?? 0
+        Formatting.parseAmount(Formatting.sanitizeAmountInput(amountText)) ?? 0
     }
 
     private var euroAmount: Double {
@@ -317,7 +321,7 @@ struct OperationEditorSheet: View {
             location = store.latestLocation ?? ""
             return
         }
-        amountText = Formatting.decimalInput(operation.amount)
+        amountText = Formatting.groupedAmountInput(Formatting.decimalInput(operation.amount))
         currencyCode = operation.currencyCode
         categoryId = operation.categoryId
         name = operation.name
