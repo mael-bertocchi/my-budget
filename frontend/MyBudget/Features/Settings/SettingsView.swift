@@ -102,7 +102,7 @@ struct SettingsView: View {
                     ForEach(Array(rates.currencies.dropFirst().enumerated()), id: \.element.id) { index, currency in
                         HStack(spacing: 12) {
                             Text(currency.code)
-                                .font(Theme.font(14, .medium))
+                                .font(Theme.mono(14, .medium))
                                 .foregroundStyle(Theme.text)
                             Text(currency.name)
                                 .font(Theme.font(13))
