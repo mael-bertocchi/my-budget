@@ -52,10 +52,6 @@ struct CurrencyPickerSheet: View {
 
             Spacer(minLength: 8)
 
-            Text(currency.code == Currency.euro.code ? "base" : "rate \(Formatting.rate(currency.rateToEuro))")
-                .font(Theme.font(11))
-                .foregroundStyle(Theme.faint)
-
             Image(systemName: "checkmark")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Theme.accent)
