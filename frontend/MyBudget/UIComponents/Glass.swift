@@ -120,15 +120,18 @@ struct ScrollTopBlur: ViewModifier {
                         LinearGradient(
                             stops: [
                                 .init(color: .black, location: 0),
-                                .init(color: .black, location: 0.35),
+                                .init(color: .black.opacity(0.95), location: 0.3),
+                                .init(color: .black.opacity(0.78), location: 0.5),
+                                .init(color: .black.opacity(0.44), location: 0.68),
+                                .init(color: .black.opacity(0.14), location: 0.85),
                                 .init(color: .clear, location: 1)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    .frame(height: 72)
-                    .opacity(isScrolled ? 0.8 : 0)
+                    .frame(height: 84)
+                    .opacity(isScrolled ? 0.88 : 0)
                     .allowsHitTesting(false)
                     .ignoresSafeArea(edges: .top)
             }
