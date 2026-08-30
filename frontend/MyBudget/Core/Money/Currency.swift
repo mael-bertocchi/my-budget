@@ -14,7 +14,7 @@ extension Currency {
 
     static let all: [Currency] = [
         euro,
-        Currency(code: "USD", symbol: "$", name: "US Dollar", rateToEuro: 0.9207),
+        Currency(code: "USD", symbol: "$", name: "United States Dollar", rateToEuro: 0.9207),
         Currency(code: "CHF", symbol: "CHF", name: "Swiss Franc", rateToEuro: 1.0640),
         Currency(code: "KRW", symbol: "₩", name: "South Korean Won", rateToEuro: 0.00063)
     ]
