@@ -46,9 +46,6 @@ struct OperationEditorSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                SheetHeader(title: isEditing ? "Edit operation" : "New operation") { dismiss() }
-                    .padding(.bottom, 22)
-
                 amountBlock
                     .padding(.bottom, 8)
 
@@ -81,7 +78,7 @@ struct OperationEditorSheet: View {
                     .padding(.top, 14)
                 }
             }
-            .padding(.top, 20)
+            .padding(.top, 32)
             .padding(.horizontal, Theme.screenPadding)
             .padding(.bottom, 32)
             .background(
