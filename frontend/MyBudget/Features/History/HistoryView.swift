@@ -174,13 +174,11 @@ struct OperationRow: View {
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.faint)
                     }
-                }
-                if let description = operation.description, !description.isEmpty {
-                    Text(description)
-                        .font(Theme.font(12))
-                        .foregroundStyle(Theme.muted)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                    if hasDescription {
+                        Image(systemName: "text.alignleft")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.faint)
+                    }
                 }
                 if operation.isOnline {
                     HStack(spacing: 4) {
@@ -221,7 +219,23 @@ struct OperationRow: View {
         .padding(.horizontal, 14)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(operation.name), \(amountText), \(operation.location ?? "")")
+        .accessibilityLabel(accessibilityText)
+    }
+
+    private var hasDescription: Bool {
+        guard let description = operation.description else { return false }
+        return !description.isEmpty
+    }
+
+    private var accessibilityText: String {
+        var parts = [operation.name, amountText]
+        if let location = operation.location, !location.isEmpty {
+            parts.append(location)
+        }
+        if hasDescription {
+            parts.append("has a note")
+        }
+        return parts.joined(separator: ", ")
     }
 
     private var amountText: String {
