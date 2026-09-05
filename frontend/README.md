@@ -62,6 +62,26 @@ xcodebuild -project MyBudget.xcodeproj -scheme MyBudget -configuration Debug -de
 
 > Note: To run the simulator, go to Xcode and press the run button.
 
+## Keeping It Installed On A Device
+
+The project signs with a free personal Apple team, so each provisioning profile lasts **seven days**. When one lapses, iOS refuses to launch the app — *"My Budget" Is No Longer Available*, greyed-out icon — and also drops the developer trust, which only a tap on the phone can restore.
+
+`Scripts/refresh-device-install.sh` rebuilds, re-signs and reinstalls over the network. The iPhone only needs to be paired for wireless debugging and on the same Wi-Fi — no cable. Run it once a week, before the profile runs out, and the trust stays intact:
+
+```bash
+./Scripts/refresh-device-install.sh
+```
+
+| Flag | Effect |
+| --- | --- |
+| `--status` | Report the days left on the profile and exit |
+| `--no-launch` | Install without launching the app |
+| `--device <udid>` | Target a specific device instead of the paired iPhone |
+
+It builds `Release` into `build/device`; set `MY_BUDGET_CONFIGURATION=Debug` to match what Xcode's Run button installs.
+
+If the profile has already expired, the reinstall works but the launch is refused — restore the trust under **Settings ▸ General ▸ VPN & Device Management** on the phone, then run the script again.
+
 ## Signing in
 
 The app needs the backend running at `https://my-budget.mael-bertocchi.fr`. Sign in with the username and password set in the backend's environment (`IDENTITY_USERNAME` / `IDENTITY_PASSWORD`).
