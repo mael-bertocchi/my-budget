@@ -50,6 +50,7 @@ final class ApplicationSession {
         wireLocalChanges()
         refreshRates()
         await initialSync()
+        repriceRecentOperations()
     }
 
     func signIn(username: String, password: String) async throws {
@@ -62,6 +63,7 @@ final class ApplicationSession {
         wireLocalChanges()
         refreshRates()
         await initialSync()
+        repriceRecentOperations()
     }
 
     func signOut() async {
@@ -83,6 +85,7 @@ final class ApplicationSession {
     func applicationBecameActive() {
         guard identityState == .signedIn, !isDemo else { return }
         refreshRates()
+        repriceRecentOperations()
         schedulePush()
     }
 
@@ -93,6 +96,42 @@ final class ApplicationSession {
         identityState = .signedIn
     }
     #endif
+
+    /// Re-prices recent operations at the rate published for their own date. An operation entered before the
+    /// ECB publishes — around 16:00 CET — is stored at the previous day's rate, because at that moment no
+    /// rate for its own day exists yet. This corrects it once that day is out.
+    ///
+    /// A day with no rate of its own resolves to the last one published before it, so a Saturday purchase
+    /// settles on Friday's rate and stays there. The sweep is idempotent either way: once an operation matches
+    /// what its day resolves to, later passes find nothing to do.
+    private func repriceRecentOperations() {
+        guard !isDemo else { return }
+
+        Task { [store, rates] in
+            guard let horizon = Calendar.current.date(byAdding: .day, value: -Self.repriceWindowDays, to: .now) else { return }
+
+            let candidates = store.operations.filter { $0.date >= horizon && $0.currencyCode != Currency.euro.code }
+
+            guard !candidates.isEmpty else { return }
+
+            for day in Set(candidates.map { ExchangeRates.day(from: $0.date) }) {
+                await rates.load(day: day)
+            }
+
+            var corrected: [String: Double] = [:]
+
+            for operation in candidates {
+                let day = ExchangeRates.day(from: operation.date)
+
+                guard let published = rates.rate(code: operation.currencyCode, on: day),
+                      abs(published - operation.rateToEuro) > Self.rateEpsilon else { continue }
+
+                corrected[operation.id] = published
+            }
+
+            store.reprice(corrected)
+        }
+    }
 
     /// Tops up the exchange rates in the background. It never blocks a sync: a stale rate still
     /// renders, and `ExchangeRates` keeps the last known values when the server can't be reached.
@@ -161,6 +200,12 @@ final class ApplicationSession {
             syncState = .error(error.localizedDescription)
         }
     }
+
+    /// How far back the re-pricing sweep looks. Only recent operations can still be waiting on a publication.
+    private static let repriceWindowDays = 7
+
+    /// The smallest rate difference worth rewriting an operation for.
+    private static let rateEpsilon = 1e-9
 
     private enum Keys {
         static let username = "session.username"

@@ -95,6 +95,23 @@ final class LocalStore {
         save()
     }
 
+    /// Rewrites the stored exchange rate of several operations at once, saving and syncing a single time.
+    func reprice(_ rates: [String: Double]) {
+        var changed = false
+
+        for (id, rate) in rates {
+            guard let index = operations.firstIndex(where: { $0.id == id }), operations[index].rateToEuro != rate else { continue }
+
+            operations[index].rateToEuro = rate
+            operations[index].updatedAt = .now
+            changed = true
+        }
+
+        guard changed else { return }
+
+        save()
+    }
+
     func deleteOperation(id: String) {
         operations.removeAll { $0.id == id }
         save()

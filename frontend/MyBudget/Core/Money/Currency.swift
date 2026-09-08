@@ -111,6 +111,19 @@ final class ExchangeRates {
         return dated[day]?.rates[code]
     }
 
+    /// Whether a day's rates may still be replaced. A day answered by an earlier day's rate is provisional
+    /// while it is today or later: its own rate simply hasn't been published yet. A past weekend is not —
+    /// Friday's rate is the final answer for it.
+    private func isProvisional(_ snapshot: RateSnapshot, for day: String) -> Bool {
+        snapshot.quoteDate != day && day >= Self.day(from: .now)
+    }
+
+    /// The day the loaded rates were actually published on, which is the previous working day for a weekend
+    /// or a holiday. Nil until the day has been loaded.
+    func quoteDate(on day: String) -> String? {
+        dated[day]?.quoteDate
+    }
+
     /// Why one day's rates are missing, or nil when nothing went wrong.
     func failure(on day: String) -> String? {
         failures[day]
@@ -120,7 +133,7 @@ final class ExchangeRates {
     /// view that changes its mind about which day it wants would otherwise cancel the request mid-flight,
     /// and a cancelled request looks exactly like an unreachable server.
     func load(day: String) async {
-        guard dated[day] == nil else { return }
+        if let cached = dated[day], !isProvisional(cached, for: day) { return }
 
         if let inFlight = inFlight[day] {
             await inFlight.value
