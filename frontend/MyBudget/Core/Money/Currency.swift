@@ -19,7 +19,7 @@ extension Currency {
         euro,
         Currency(code: "USD", symbol: "$", name: "United States Dollar", rateToEuro: 0.860437),
         Currency(code: "CHF", symbol: "CHF", name: "Swiss Franc", rateToEuro: 1.063264),
-        Currency(code: "KRW", symbol: "₩", name: "South Korean Won", rateToEuro: 0.000638)
+        Currency(code: "KRW", symbol: "₩", name: "South Korean Won", rateToEuro: 0.00063834)
     ]
 
     static func named(_ code: String) -> Currency {

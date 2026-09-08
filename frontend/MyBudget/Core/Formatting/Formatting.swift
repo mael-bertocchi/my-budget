@@ -25,6 +25,20 @@ enum Formatting {
         return formatter
     }()
 
+    /// Rates span orders of magnitude — a euro buys about one dollar but over fifteen hundred won — so they
+    /// carry a fixed count of significant digits rather than of decimals. At five decimals every recent won
+    /// rate collapsed onto the same 0.00064, hiding the difference between one date and the next.
+    private static let rateSignificant: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.usesSignificantDigits = true
+        formatter.minimumSignificantDigits = 5
+        formatter.maximumSignificantDigits = 5
+        return formatter
+    }()
+
     static func euro(_ amount: Double) -> String {
         "€" + (euroCompact.string(from: NSNumber(value: amount.rounded())) ?? "0")
     }
@@ -38,9 +52,7 @@ enum Formatting {
     }
 
     static func rate(_ value: Double) -> String {
-        if value >= 0.1 { return String(format: "%.2f", value) }
-        if value >= 0.001 { return String(format: "%.4f", value) }
-        return String(format: "%.5f", value)
+        rateSignificant.string(from: NSNumber(value: value)) ?? "0"
     }
 
     static func decimalInput(_ amount: Double) -> String {
