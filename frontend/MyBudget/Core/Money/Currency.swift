@@ -51,8 +51,12 @@ final class ExchangeRates {
     /// permanently, and a finished day's rates never change.
     private(set) var dated: [String: RateSnapshot] = [:]
 
+    /// Why one day's rates could not be loaded, keyed by that day. A rate the app had to guess at should
+    /// never look like one it actually fetched, so the reason is kept and shown.
+    private(set) var failures: [String: String] = [:]
+
     private let api: APIClient
-    private var loading: Set<String> = []
+    private var inFlight: [String: Task<Void, Never>] = [:]
 
     init(api: APIClient) {
         self.api = api
@@ -115,18 +119,37 @@ final class ExchangeRates {
         dated[day]?.quoteDate
     }
 
-    /// Loads the rates for one past day, once. A failure leaves the day unloaded so the caller falls back
-    /// to the current rate rather than blocking the entry.
+    /// Why one day's rates are missing, or nil when nothing went wrong.
+    func failure(on day: String) -> String? {
+        failures[day]
+    }
+
+    /// Loads the rates for one day, once. The fetch runs in a task of its own rather than the caller's: a
+    /// view that changes its mind about which day it wants would otherwise cancel the request mid-flight,
+    /// and a cancelled request looks exactly like an unreachable server.
     func load(day: String) async {
-        guard dated[day] == nil, !loading.contains(day) else { return }
+        guard dated[day] == nil else { return }
 
-        loading.insert(day)
+        if let inFlight = inFlight[day] {
+            await inFlight.value
 
-        defer { loading.remove(day) }
+            return
+        }
 
-        guard let snapshot = try? await api.getRates(on: day) else { return }
+        let task = Task { [api] in
+            do {
+                dated[day] = try await api.getRates(on: day)
+                failures.removeValue(forKey: day)
+            } catch {
+                failures[day] = (error as? APIError)?.errorDescription ?? error.localizedDescription
+            }
 
-        dated[day] = snapshot
+            inFlight.removeValue(forKey: day)
+        }
+
+        inFlight[day] = task
+
+        await task.value
     }
 
     /// Re-fetches only when the rates have gone stale, so foregrounding the app repeatedly
