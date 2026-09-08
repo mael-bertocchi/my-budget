@@ -9,12 +9,13 @@ struct MyBudgetApplication: App {
 
     init() {
         let store = LocalStore()
+        let rates = ExchangeRates()
         let tokens = TokenStore()
         let api = APIClient(tokens: tokens)
         _store = State(initialValue: store)
-        _rates = State(initialValue: ExchangeRates())
+        _rates = State(initialValue: rates)
         _preferences = State(initialValue: Preferences())
-        _session = State(initialValue: ApplicationSession(store: store, tokens: tokens, api: api))
+        _session = State(initialValue: ApplicationSession(store: store, rates: rates, tokens: tokens, api: api))
     }
 
     var body: some Scene {

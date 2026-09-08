@@ -118,6 +118,18 @@ struct SettingsView: View {
                             RowDivider()
                         }
                     }
+                    RowDivider()
+                    HStack(spacing: 12) {
+                        Text("Updated")
+                            .font(Theme.font(13))
+                            .foregroundStyle(Theme.text)
+                        Spacer(minLength: 8)
+                        Text(ratesUpdatedLabel)
+                            .font(Theme.font(12))
+                            .foregroundStyle(Theme.muted)
+                    }
+                    .padding(.vertical, 11)
+                    .padding(.horizontal, 14)
                 }
                 .glassCard()
 
@@ -207,6 +219,14 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.muted)
             }
         }
+    }
+
+    /// How fresh the displayed rates are, so stale ones are obvious rather than silently wrong.
+    private var ratesUpdatedLabel: String {
+        guard let updatedAt = rates.updatedAt else { return "Never" }
+        guard updatedAt < .now else { return "Just now" }
+
+        return updatedAt.formatted(.relative(presentation: .named))
     }
 
     private var applicationVersion: String {

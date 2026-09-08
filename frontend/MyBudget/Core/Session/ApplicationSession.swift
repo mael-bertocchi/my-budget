@@ -25,14 +25,16 @@ final class ApplicationSession {
     let serverURLString = ApplicationSession.serverURL
 
     private let store: LocalStore
+    private let rates: ExchangeRates
     private let tokens: TokenStore
     private let api: APIClient
 
     private var pushTask: Task<Void, Never>?
     private var isDemo = false
 
-    init(store: LocalStore, tokens: TokenStore, api: APIClient) {
+    init(store: LocalStore, rates: ExchangeRates, tokens: TokenStore, api: APIClient) {
         self.store = store
+        self.rates = rates
         self.tokens = tokens
         self.api = api
         self.username = UserDefaults.standard.string(forKey: Keys.username)
@@ -46,6 +48,7 @@ final class ApplicationSession {
         }
         identityState = .signedIn
         wireLocalChanges()
+        refreshRates()
         await initialSync()
     }
 
@@ -57,6 +60,7 @@ final class ApplicationSession {
 
         identityState = .signedIn
         wireLocalChanges()
+        refreshRates()
         await initialSync()
     }
 
@@ -78,6 +82,7 @@ final class ApplicationSession {
 
     func applicationBecameActive() {
         guard identityState == .signedIn, !isDemo else { return }
+        refreshRates()
         schedulePush()
     }
 
@@ -88,6 +93,16 @@ final class ApplicationSession {
         identityState = .signedIn
     }
     #endif
+
+    /// Tops up the exchange rates in the background. It never blocks a sync: a stale rate still
+    /// renders, and `ExchangeRates` keeps the last known values when the server can't be reached.
+    private func refreshRates() {
+        guard !isDemo else { return }
+
+        Task { [rates, api] in
+            await rates.refreshIfNeeded(using: api)
+        }
+    }
 
     private func wireLocalChanges() {
         store.onChange = { [weak self] in
