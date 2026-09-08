@@ -100,6 +100,9 @@ struct OperationEditorSheet: View {
             Button("Cancel", role: .cancel) {}
         }
         .onAppear(perform: loadValues)
+        .task(id: selectedDay) {
+            await rates.load(day: selectedDay)
+        }
         .onChange(of: amountText) { _, typed in
             let formatted = Formatting.groupedAmountInput(Formatting.sanitizeAmountInput(typed))
             if formatted != typed { amountText = formatted }
@@ -123,8 +126,18 @@ struct OperationEditorSheet: View {
         Formatting.parseAmount(Formatting.sanitizeAmountInput(amountText)) ?? 0
     }
 
+    private var selectedDay: String {
+        ExchangeRates.day(from: date)
+    }
+
+    /// The rate published on the chosen day. Until it arrives — or when the server can't be reached — the
+    /// current rate stands in, and `db:rerate` can correct it afterwards.
+    private var appliedRate: Double {
+        rates.rate(code: currencyCode, on: selectedDay) ?? currency.rateToEuro
+    }
+
     private var euroAmount: Double {
-        amount * currency.rateToEuro
+        amount * appliedRate
     }
 
     private var isValid: Bool {
@@ -170,7 +183,7 @@ struct OperationEditorSheet: View {
                     .font(Theme.font(13))
                     .foregroundStyle(Theme.accent300)
                     .padding(.top, 4)
-                Text("\(currency.symbol)\(Formatting.decimalInput(amount)) \(currency.code) · rate \(Formatting.rate(currency.rateToEuro))")
+                Text("\(currency.symbol)\(Formatting.decimalInput(amount)) \(currency.code) · rate \(Formatting.rate(appliedRate))")
                     .font(Theme.font(11))
                     .foregroundStyle(Theme.faint)
             }
@@ -356,7 +369,7 @@ struct OperationEditorSheet: View {
             location: trimmedLocation.isEmpty ? nil : trimmedLocation,
             amount: amount,
             currencyCode: currencyCode,
-            rateToEuro: currency.rateToEuro,
+            rateToEuro: appliedRate,
             isOnline: isOnline,
             isRecurring: isRecurring
         )

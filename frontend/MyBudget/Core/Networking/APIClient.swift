@@ -89,6 +89,10 @@ final class APIClient {
         try await send("/v1/rates", method: "GET")
     }
 
+    func getRates(on day: String) async throws -> RateSnapshot {
+        try await send("/v1/rates/\(day)", method: "GET")
+    }
+
     func getState() async throws -> BudgetDocument {
         try await send("/v1/state", method: "GET")
     }

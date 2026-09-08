@@ -47,8 +47,22 @@ final class ExchangeRates {
     private(set) var snapshot: RateSnapshot?
     private(set) var refreshState: RefreshState = .idle
 
-    init() {
+    /// Rates for one past day, keyed by that day. Held for the run only: the server caches them
+    /// permanently, and a finished day's rates never change.
+    private(set) var dated: [String: RateSnapshot] = [:]
+
+    private let api: APIClient
+    private var loading: Set<String> = []
+
+    init(api: APIClient) {
+        self.api = api
         snapshot = Self.stored()
+    }
+
+    /// The calendar day a date falls on, in the viewer's own timezone. Picking the 5th should price an
+    /// operation at the 5th's rate, whatever that instant happens to be in UTC.
+    static func day(from date: Date) -> String {
+        dayFormatter.string(from: date)
     }
 
     /// The catalogue with the latest known rate overlaid onto each currency.
@@ -89,17 +103,43 @@ final class ExchangeRates {
         amount * rate(code: code)
     }
 
+    /// The rate that applied on one day, or nil until that day has been loaded.
+    func rate(code: String, on day: String) -> Double? {
+        guard code != Currency.euro.code else { return 1 }
+
+        return dated[day]?.rates[code]
+    }
+
+    /// The day the rates actually came from, which is the previous working day for a weekend or a holiday.
+    func quoteDate(on day: String) -> String? {
+        dated[day]?.quoteDate
+    }
+
+    /// Loads the rates for one past day, once. A failure leaves the day unloaded so the caller falls back
+    /// to the current rate rather than blocking the entry.
+    func load(day: String) async {
+        guard dated[day] == nil, !loading.contains(day) else { return }
+
+        loading.insert(day)
+
+        defer { loading.remove(day) }
+
+        guard let snapshot = try? await api.getRates(on: day) else { return }
+
+        dated[day] = snapshot
+    }
+
     /// Re-fetches only when the rates have gone stale, so foregrounding the app repeatedly
     /// doesn't turn into a request each time.
-    func refreshIfNeeded(using api: APIClient) async {
+    func refreshIfNeeded() async {
         guard isStale, refreshState != .refreshing else { return }
 
-        await refresh(using: api)
+        await refresh()
     }
 
     /// Pulls the current rates from the server. A failure keeps the last known snapshot in place:
     /// rates that are a little old beat rates that are wrong, and the UI reports their age.
-    func refresh(using api: APIClient) async {
+    func refresh() async {
         refreshState = .refreshing
 
         do {
@@ -127,6 +167,14 @@ final class ExchangeRates {
     }
 
     private static let staleAfter: TimeInterval = 60 * 60
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 
     private enum Keys {
         static let snapshot = "rates.snapshot"

@@ -99,8 +99,8 @@ final class ApplicationSession {
     private func refreshRates() {
         guard !isDemo else { return }
 
-        Task { [rates, api] in
-            await rates.refreshIfNeeded(using: api)
+        Task { [rates] in
+            await rates.refreshIfNeeded()
         }
     }
 

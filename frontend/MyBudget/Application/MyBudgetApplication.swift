@@ -9,9 +9,9 @@ struct MyBudgetApplication: App {
 
     init() {
         let store = LocalStore()
-        let rates = ExchangeRates()
         let tokens = TokenStore()
         let api = APIClient(tokens: tokens)
+        let rates = ExchangeRates(api: api)
         _store = State(initialValue: store)
         _rates = State(initialValue: rates)
         _preferences = State(initialValue: Preferences())
