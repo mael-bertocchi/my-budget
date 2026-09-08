@@ -1,9 +1,8 @@
 import type { FastifyBaseLogger } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 import type { ExchangeRateSnapshot, PrismaClient } from 'prisma/generated/prisma/client';
-import { toIsoDay } from 'src/modules/rates/rates-history';
 import type { ProviderPayload, RatesBody } from 'src/modules/rates/rates-models';
-import { BASE_CURRENCY, PROVIDER_BASE_URL, ProviderPayloadSchema } from 'src/modules/rates/rates-models';
+import { BASE_CURRENCY, PROVIDER_BASE_URL, ProviderPayloadSchema, toIsoDay } from 'src/modules/rates/rates-models';
 import { RequestError } from 'src/shared/models';
 
 /**

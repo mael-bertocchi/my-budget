@@ -21,6 +21,18 @@ export const PROVIDER_BASE_URL = 'https://api.frankfurter.dev/v1';
 export const IsoDaySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 /**
+ * @function toIsoDay
+ * @description Reduces an instant to the UTC calendar day the provider keys its quotes by.
+ *
+ * @param {Date} date The instant to reduce.
+ *
+ * @returns {string} The day in YYYY-MM-DD form.
+ */
+export function toIsoDay(date: Date): string {
+    return date.toISOString().slice(0, 10);
+}
+
+/**
  * @constant CurrencyCodeSchema
  * @description Zod schema for an ISO 4217 alphabetic currency code.
  */
@@ -48,24 +60,6 @@ export const RatesSchema = z.object({
     fetchedAt: z.coerce.date(),
     rates: z.record(CurrencyCodeSchema, z.number().positive())
 });
-
-/**
- * @constant TimeSeriesPayloadSchema
- * @description Zod schema for the upstream payload covering a range of days, keyed by the day each set of
- * quotes was published on. Days the ECB did not publish on are simply absent.
- */
-export const TimeSeriesPayloadSchema = z.object({
-    base: z.literal(BASE_CURRENCY),
-    start_date: IsoDaySchema,
-    end_date: IsoDaySchema,
-    rates: z.record(IsoDaySchema, z.record(CurrencyCodeSchema, z.number().positive()))
-});
-
-/**
- * @type TimeSeriesPayload
- * @description Inferred type for the upstream ranged payload.
- */
-export type TimeSeriesPayload = z.infer<typeof TimeSeriesPayloadSchema>;
 
 /**
  * @constant RatesDayParamsSchema

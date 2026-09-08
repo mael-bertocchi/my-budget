@@ -1,4 +1,4 @@
-import { ProviderPayloadSchema, RatesSchema } from 'src/modules/rates/rates-models';
+import { ProviderPayloadSchema, RatesSchema, toIsoDay } from 'src/modules/rates/rates-models';
 import { describe, expect, it } from 'vitest';
 
 const validProviderPayload = {
@@ -48,5 +48,11 @@ describe('RatesSchema', () => {
         const { quoteDate: _quoteDate, ...withoutQuoteDate } = validRates;
 
         expect(RatesSchema.safeParse(withoutQuoteDate).success).toBe(false);
+    });
+});
+
+describe('toIsoDay', () => {
+    it('reduces an instant to its UTC calendar day', () => {
+        expect(toIsoDay(new Date('2026-09-05T23:30:00.000Z'))).toBe('2026-09-05');
     });
 });

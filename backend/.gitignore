@@ -13,9 +13,6 @@ build/
 # Prisma generated client
 **/prisma/generated/
 
-# Re-rate reports (contain financial data)
-reports/
-
 # Logs
 *.log
 npm-debug.log*
