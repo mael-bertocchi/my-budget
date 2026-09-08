@@ -1,6 +1,6 @@
 import type { FastifyBaseLogger } from 'fastify';
 import type { PrismaClient } from 'prisma/generated/prisma/client';
-import { pullRates } from 'src/modules/rates/rates-service';
+import { pullRates, pullRatesForDay } from 'src/modules/rates/rates-service';
 import { RequestError } from 'src/shared/models';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -127,5 +127,95 @@ describe('pullRates', () => {
         const { logger } = makeLogger();
 
         await expect(pullRates(prisma, logger)).rejects.toBeInstanceOf(RequestError);
+    });
+});
+
+/**
+ * @function isoDay
+ * @description The UTC day a number of days from now, in the form the endpoint takes.
+ */
+function isoDay(offset: number): string {
+    const date = new Date();
+
+    date.setUTCDate(date.getUTCDate() + offset);
+
+    return date.toISOString().slice(0, 10);
+}
+
+describe('pullRatesForDay', () => {
+    it('asks the provider for the day it was given', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ...providerPayload, date: '2026-09-04' }) }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const { prisma } = makePrisma(null);
+        const { logger } = makeLogger();
+        const result = await pullRatesForDay(prisma, logger, '2026-09-07');
+
+        expect(String(fetchMock.mock.calls[0]?.[0])).toContain('/2026-09-07?base=EUR');
+        expect(result.rates.USD).toBeCloseTo(1 / 1.1622, 9);
+    });
+
+    it('names the day the rates actually came from, not the day asked for', async () => {
+        // 2026-09-05 is a Saturday, so the provider answers with Friday's publication.
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ...providerPayload, date: '2026-09-04' }) })));
+
+        const { prisma } = makePrisma(null);
+        const { logger } = makeLogger();
+
+        expect((await pullRatesForDay(prisma, logger, '2026-09-05')).quoteDate).toBe('2026-09-04');
+    });
+
+    it('caches a finished day forever, however old the stored row is', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const { prisma } = makePrisma({
+            id: '2026-09-04',
+            quoteDate: '2026-09-04',
+            rates: { EUR: 1, USD: 0.860437 },
+            fetchedAt: new Date('2026-01-01T00:00:00.000Z')
+        });
+        const { logger } = makeLogger();
+        const result = await pullRatesForDay(prisma, logger, '2026-09-04');
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(result.rates.USD).toBe(0.860437);
+    });
+
+    it('re-checks today, whose rates may not be published yet', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(providerPayload) }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const { prisma } = makePrisma({
+            id: isoDay(0),
+            quoteDate: isoDay(-1),
+            rates: { EUR: 1, USD: 0.859 },
+            fetchedAt: new Date(Date.now() - 12 * 60 * 60 * 1000)
+        });
+        const { logger } = makeLogger();
+
+        await pullRatesForDay(prisma, logger, isoDay(0));
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses a date no timezone could call the past', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const { prisma } = makePrisma(null);
+        const { logger } = makeLogger();
+
+        await expect(pullRatesForDay(prisma, logger, isoDay(2))).rejects.toBeInstanceOf(RequestError);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('allows tomorrow in UTC, which is still today ahead of it', async () => {
+        vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(providerPayload) })));
+
+        const { prisma } = makePrisma(null);
+        const { logger } = makeLogger();
+
+        await expect(pullRatesForDay(prisma, logger, isoDay(1))).resolves.toBeDefined();
     });
 });

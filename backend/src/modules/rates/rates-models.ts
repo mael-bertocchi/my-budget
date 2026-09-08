@@ -1,3 +1,4 @@
+import type { RequestGenericInterface } from 'fastify';
 import { z } from 'zod';
 
 /**
@@ -65,6 +66,24 @@ export const TimeSeriesPayloadSchema = z.object({
  * @description Inferred type for the upstream ranged payload.
  */
 export type TimeSeriesPayload = z.infer<typeof TimeSeriesPayloadSchema>;
+
+/**
+ * @constant RatesDayParamsSchema
+ * @description Zod schema for the day a historical rate lookup asks about.
+ */
+export const RatesDayParamsSchema = z.object({
+    date: IsoDaySchema
+});
+
+/**
+ * @interface RatesDayRequest
+ * @description Fastify request generic for the historical rate endpoint.
+ *
+ * @extends RequestGenericInterface
+ */
+export interface RatesDayRequest extends RequestGenericInterface {
+    Params: z.infer<typeof RatesDayParamsSchema>; /*!< Validated day to quote */
+}
 
 /**
  * @type RatesBody

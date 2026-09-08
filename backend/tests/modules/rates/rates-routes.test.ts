@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import Fastify from 'fastify';
+import { hasZodFastifySchemaValidationErrors, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 import ratesRoutes from 'src/modules/rates/rates-routes';
 import { RequestError } from 'src/shared/models';
@@ -21,11 +22,21 @@ async function buildApp(authenticate: () => Promise<void>): Promise<{ app: Fasti
     const findUnique = vi.fn(() => Promise.resolve(storedSnapshot));
     const app = Fastify();
 
+    app.setValidatorCompiler(validatorCompiler);
+    app.setSerializerCompiler(serializerCompiler);
+
     app.decorate('prisma', { exchangeRateSnapshot: { findUnique, upsert: vi.fn() } } as never);
     app.decorate('identity', { authenticate } as never);
 
+    // Mirrors how the application maps errors, so the statuses here are the ones a client would see.
     app.setErrorHandler((error: Error, _request, reply) => {
-        const code = error instanceof RequestError ? error.code : StatusCodes.INTERNAL_SERVER_ERROR;
+        let code = StatusCodes.INTERNAL_SERVER_ERROR;
+
+        if (error instanceof RequestError) {
+            code = error.code;
+        } else if (hasZodFastifySchemaValidationErrors(error)) {
+            code = StatusCodes.BAD_REQUEST;
+        }
 
         return reply.status(code).send({ message: error.message, data: undefined });
     });
@@ -70,6 +81,38 @@ describe('GET /v1/rates', () => {
     it('is guarded by the identity plugin', async () => {
         const { app, findUnique } = await buildApp(deny);
         const response = await app.inject({ method: 'GET', url: '/v1/rates' });
+
+        expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+        expect(findUnique).not.toHaveBeenCalled();
+
+        await app.close();
+    });
+});
+
+describe('GET /v1/rates/:date', () => {
+    it('serves the rates stored for that day', async () => {
+        const { app } = await buildApp(allow);
+        const response = await app.inject({ method: 'GET', url: '/v1/rates/2026-09-08' });
+
+        expect(response.statusCode).toBe(StatusCodes.OK);
+        expect(response.json<{ data: { quoteDate: string } }>().data.quoteDate).toBe('2026-09-08');
+
+        await app.close();
+    });
+
+    it('rejects a day that is not a calendar date', async () => {
+        const { app, findUnique } = await buildApp(allow);
+        const response = await app.inject({ method: 'GET', url: '/v1/rates/08-09-2026' });
+
+        expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+        expect(findUnique).not.toHaveBeenCalled();
+
+        await app.close();
+    });
+
+    it('is guarded by the identity plugin', async () => {
+        const { app, findUnique } = await buildApp(deny);
+        const response = await app.inject({ method: 'GET', url: '/v1/rates/2026-09-08' });
 
         expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
         expect(findUnique).not.toHaveBeenCalled();

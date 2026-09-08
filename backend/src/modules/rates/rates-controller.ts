@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { pullRates } from 'src/modules/rates/rates-service';
+import type { RatesDayRequest } from 'src/modules/rates/rates-models';
+import { pullRates, pullRatesForDay } from 'src/modules/rates/rates-service';
 
 /**
  * @function getRates
@@ -14,6 +15,20 @@ async function getRates(request: FastifyRequest, reply: FastifyReply): Promise<v
     reply.status(StatusCodes.OK).send({ data: rates });
 }
 
+/**
+ * @function getRatesForDay
+ * @description Returns the reference rates that applied on one past day, for pricing an operation at the rate
+ * of the day it actually happened on.
+ *
+ * @returns {Promise<void>} Resolves when the rate snapshot is sent.
+ */
+async function getRatesForDay(request: FastifyRequest<RatesDayRequest>, reply: FastifyReply): Promise<void> {
+    const rates = await pullRatesForDay(request.server.prisma, request.log, request.params.date);
+
+    reply.status(StatusCodes.OK).send({ data: rates });
+}
+
 export default {
-    getRates
+    getRates,
+    getRatesForDay
 };
