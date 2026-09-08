@@ -237,7 +237,7 @@ struct OperationEditorSheet: View {
                 .buttonStyle(.plain)
 
                 if showDatePicker {
-                    DatePicker("", selection: $date, displayedComponents: .date)
+                    DatePicker("", selection: $date, in: ...Date.now, displayedComponents: .date)
                         .datePickerStyle(.graphical)
                         .tint(Theme.accent)
                         .labelsHidden()
