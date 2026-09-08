@@ -18,7 +18,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:rerate": "tsx src/scripts/rerate-operations.ts"
   },
   "dependencies": {
     "@fastify/env": "^6.0.0",

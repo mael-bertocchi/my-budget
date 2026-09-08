@@ -57,6 +57,11 @@ export default tseslint.config(
     },
   },
   {
+    // The maintenance scripts are command-line tools; their report is stdout.
+    files: ["src/scripts/**"],
+    rules: { "no-console": "off" },
+  },
+  {
     ignores: ["dist/", "node_modules/", "*.js", "prisma.config.ts", "prisma/generated/"],
   },
 );
