@@ -183,7 +183,7 @@ struct OperationEditorSheet: View {
                     .font(Theme.font(13))
                     .foregroundStyle(Theme.accent300)
                     .padding(.top, 4)
-                Text("\(currency.symbol)\(Formatting.decimalInput(amount)) \(currency.code) · rate \(Formatting.rate(appliedRate))")
+                Text("Rate \(Formatting.rate(appliedRate))")
                     .font(Theme.font(11))
                     .foregroundStyle(Theme.faint)
             }
