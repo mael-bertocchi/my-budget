@@ -75,3 +75,14 @@ model BudgetState {
 
   @@map("budget_state")
 }
+
+model ExchangeRateSnapshot {
+  id        String   @id
+  quoteDate String   @map("quote_date")
+  rates     Json
+  fetchedAt DateTime @map("fetched_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("exchange_rate_snapshots")
+}
