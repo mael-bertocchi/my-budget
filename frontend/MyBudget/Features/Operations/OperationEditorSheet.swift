@@ -158,11 +158,7 @@ struct OperationEditorSheet: View {
             return rates.failure(on: selectedDay) ?? "Loading…"
         }
 
-        let shown = "Rate \(Formatting.rate(appliedRate))"
-
-        guard let quoted = rates.quoteDate(on: selectedDay), quoted != selectedDay else { return shown }
-
-        return "\(shown) · from \(Formatting.shortDay(quoted))"
+        return "Rate \(Formatting.rate(appliedRate))"
     }
 
     private var euroAmount: Double? {

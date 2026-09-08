@@ -85,9 +85,6 @@ final class ExchangeRates {
     /// When the server last answered with these rates, or nil while the bundled fallback is in use.
     var updatedAt: Date? { snapshot?.fetchedAt }
 
-    /// The day the reference rates were published, or nil while the bundled fallback is in use.
-    var quoteDate: String? { snapshot?.quoteDate }
-
     /// Whether the rates are old enough to be worth re-fetching.
     var isStale: Bool {
         guard let fetchedAt = snapshot?.fetchedAt else { return true }
@@ -112,11 +109,6 @@ final class ExchangeRates {
         guard code != Currency.euro.code else { return 1 }
 
         return dated[day]?.rates[code]
-    }
-
-    /// The day the rates actually came from, which is the previous working day for a weekend or a holiday.
-    func quoteDate(on day: String) -> String? {
-        dated[day]?.quoteDate
     }
 
     /// Why one day's rates are missing, or nil when nothing went wrong.
