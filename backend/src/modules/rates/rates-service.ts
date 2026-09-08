@@ -38,6 +38,13 @@ const PROVIDER_TIMEOUT = 8 * 1000;
 const REFRESH_AFTER = 6 * 60 * 60 * 1000;
 
 /**
+ * @constant PENDING_REFRESH_AFTER
+ * @description How often to re-check a day that is still waiting on its own publication. Today's rates only
+ * appear around 16:00 CET, so until they do the answer carries an earlier day's rate and is worth chasing.
+ */
+const PENDING_REFRESH_AFTER = 30 * 60 * 1000;
+
+/**
  * @function toEuroRates
  * @description Inverts the provider's "units per euro" quotes into the "euros per unit" values the client stores,
  * and adds the identity rate for the base currency itself.
@@ -96,6 +103,28 @@ async function fetchProvider(day: string): Promise<ProviderPayload> {
 }
 
 /**
+ * @function isStale
+ * @description Whether a stored snapshot is worth replacing. A finished day never is: its rates can no longer
+ * be republished. A day still answered by an earlier day's rate is re-checked often, because its own rate is
+ * yet to come.
+ *
+ * @param {ExchangeRateSnapshot} snapshot The stored snapshot.
+ * @param {string} day The day it was stored for.
+ * @param {boolean} settled Whether that day is over.
+ *
+ * @returns {boolean} Whether to ask the provider again.
+ */
+function isStale(snapshot: ExchangeRateSnapshot, day: string, settled: boolean): boolean {
+    if (settled) {
+        return false;
+    }
+
+    const window = snapshot.quoteDate === day ? REFRESH_AFTER : PENDING_REFRESH_AFTER;
+
+    return Date.now() - snapshot.fetchedAt.getTime() >= window;
+}
+
+/**
  * @function pullSnapshot
  * @description Returns one cached snapshot, refreshing it from the provider when it is missing or stale. A
  * provider outage is never fatal while a snapshot exists: the stored one is served instead, and its
@@ -111,7 +140,7 @@ async function fetchProvider(day: string): Promise<ProviderPayload> {
 async function pullSnapshot(prisma: PrismaClient, logger: FastifyBaseLogger, day: string, settled: boolean): Promise<RatesBody> {
     const cached = await prisma.exchangeRateSnapshot.findUnique({ where: { id: day } });
 
-    if (cached !== null && (settled || Date.now() - cached.fetchedAt.getTime() < REFRESH_AFTER)) {
+    if (cached !== null && !isStale(cached, day, settled)) {
         return toBody(cached);
     }
 

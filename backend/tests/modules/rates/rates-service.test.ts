@@ -219,3 +219,58 @@ describe('pullRatesForDay', () => {
         await expect(pullRatesForDay(prisma, logger, isoDay(1))).resolves.toBeDefined();
     });
 });
+
+describe('pullRatesForDay, waiting on a publication', () => {
+    it('re-checks a day still answered by an earlier one, even minutes later', async () => {
+        const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(providerPayload) }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        // Today, stored 40 minutes ago, still carrying yesterday's quote: its own rate is yet to come.
+        const { prisma } = makePrisma({
+            id: isoDay(0),
+            quoteDate: isoDay(-1),
+            rates: { EUR: 1, USD: 0.859 },
+            fetchedAt: new Date(Date.now() - 40 * 60 * 1000)
+        });
+        const { logger } = makeLogger();
+
+        await pullRatesForDay(prisma, logger, isoDay(0));
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('sits on a day that already carries its own rate', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const { prisma } = makePrisma({
+            id: isoDay(0),
+            quoteDate: isoDay(0),
+            rates: { EUR: 1, USD: 0.861 },
+            fetchedAt: new Date(Date.now() - 40 * 60 * 1000)
+        });
+        const { logger } = makeLogger();
+
+        await pullRatesForDay(prisma, logger, isoDay(0));
+
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('never re-checks a finished day, however it was answered', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        // A past Saturday: answered by Friday, and no rate of its own will ever appear.
+        const { prisma } = makePrisma({
+            id: '2026-09-05',
+            quoteDate: '2026-09-04',
+            rates: { EUR: 1, USD: 0.860437 },
+            fetchedAt: new Date('2026-09-05T12:00:00.000Z')
+        });
+        const { logger } = makeLogger();
+        const result = await pullRatesForDay(prisma, logger, '2026-09-05');
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(result.quoteDate).toBe('2026-09-04');
+    });
+});
