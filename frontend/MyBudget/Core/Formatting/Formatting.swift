@@ -39,6 +39,21 @@ enum Formatting {
         return formatter
     }()
 
+    private static let isoDay: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    /// Renders a YYYY-MM-DD day the way the rest of the interface writes dates.
+    static func shortDay(_ day: String) -> String {
+        guard let date = isoDay.date(from: day) else { return day }
+
+        return date.formatted(.dateTime.day().month(.abbreviated))
+    }
+
     static func euro(_ amount: Double) -> String {
         "€" + (euroCompact.string(from: NSNumber(value: amount.rounded())) ?? "0")
     }

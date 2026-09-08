@@ -130,18 +130,49 @@ struct OperationEditorSheet: View {
         ExchangeRates.day(from: date)
     }
 
-    /// The rate published on the chosen day. Until it arrives — or when the server can't be reached — the
-    /// current rate stands in, and `db:rerate` can correct it afterwards.
-    private var appliedRate: Double {
-        rates.rate(code: currencyCode, on: selectedDay) ?? currency.rateToEuro
+    /// The rate the operation was saved at, while its date and currency are still the ones it was saved with.
+    /// It is a real published rate, so it stands in perfectly well until the day's rate arrives.
+    private var storedRate: Double? {
+        guard case .edit(let operationId) = route,
+              let operation = store.operation(id: operationId),
+              operation.currencyCode == currencyCode,
+              ExchangeRates.day(from: operation.date) == selectedDay else { return nil }
+
+        return operation.rateToEuro
     }
 
-    private var euroAmount: Double {
-        amount * appliedRate
+    /// The rate to price this operation at, or nil while none is known. Nothing is ever guessed here: a
+    /// rate the app invented must never be shown as though it were published.
+    private var appliedRate: Double? {
+        rates.rate(code: currencyCode, on: selectedDay) ?? storedRate
+    }
+
+    /// The reason there is no rate to show, or nil when there is one.
+    private var rateProblem: String? {
+        appliedRate == nil ? (rates.failure(on: selectedDay) ?? "Loading…") : nil
+    }
+
+    /// The rate, or why there isn't one yet.
+    private var rateLine: String {
+        guard let appliedRate else {
+            return rates.failure(on: selectedDay) ?? "Loading…"
+        }
+
+        let shown = "Rate \(Formatting.rate(appliedRate))"
+
+        guard let quoted = rates.quoteDate(on: selectedDay), quoted != selectedDay else { return shown }
+
+        return "\(shown) · from \(Formatting.shortDay(quoted))"
+    }
+
+    private var euroAmount: Double? {
+        guard let appliedRate else { return nil }
+
+        return amount * appliedRate
     }
 
     private var isValid: Bool {
-        amount > 0 && !name.trimmingCharacters(in: .whitespaces).isEmpty && !categoryId.isEmpty
+        amount > 0 && !name.trimmingCharacters(in: .whitespaces).isEmpty && !categoryId.isEmpty && appliedRate != nil
     }
 
     private var amountBlock: some View {
@@ -179,13 +210,16 @@ struct OperationEditorSheet: View {
             .padding(.top, 2)
 
             if currency.code != Currency.euro.code {
-                Text(Formatting.euroPrecise(euroAmount))
-                    .font(Theme.font(13))
-                    .foregroundStyle(Theme.accent300)
-                    .padding(.top, 4)
-                Text("Rate \(Formatting.rate(appliedRate))")
+                if let euroAmount {
+                    Text(Formatting.euroPrecise(euroAmount))
+                        .font(Theme.font(13))
+                        .foregroundStyle(Theme.accent300)
+                        .padding(.top, 4)
+                }
+                Text(rateLine)
                     .font(Theme.font(11))
-                    .foregroundStyle(Theme.faint)
+                    .foregroundStyle(rateProblem == nil ? Theme.faint : Theme.warning)
+                    .padding(.top, euroAmount == nil ? 4 : 0)
             }
         }
         .frame(maxWidth: .infinity)
@@ -359,6 +393,8 @@ struct OperationEditorSheet: View {
             if case .edit(let operationId) = route { return operationId }
             return nil
         }()
+
+        guard let appliedRate else { return }
 
         let operation = Operation(
             id: existingId ?? UUID().uuidString,
