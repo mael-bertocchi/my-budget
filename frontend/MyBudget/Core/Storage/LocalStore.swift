@@ -28,8 +28,9 @@ final class LocalStore {
 
     init() {
         load()
-        if categories.isEmpty {
-            categories = Category.defaults
+        let stored = categories
+        mergeCatalog()
+        if categories != stored {
             save()
         }
     }
@@ -50,6 +51,7 @@ final class LocalStore {
         operations = document.operations
         budget = document.budget
         budgetHistory = document.budgetHistory
+        mergeCatalog()
         sortOperations()
         persist()
     }
@@ -210,5 +212,15 @@ final class LocalStore {
 
     private func sortOperations() {
         operations.sort { $0.date > $1.date }
+    }
+
+    /// Lines the stored categories up with the shipped catalog, so a document written before a
+    /// category existed gains it instead of silently missing it. The stored copy wins whenever the
+    /// catalog already knows the id, keeping the limits set on the device, and anything outside the
+    /// catalog is left alone at the end of the list.
+    private func mergeCatalog() {
+        let stored = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let catalogIds = Set(Category.defaults.map(\.id))
+        categories = Category.defaults.map { stored[$0.id] ?? $0 } + categories.filter { !catalogIds.contains($0.id) }
     }
 }

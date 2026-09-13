@@ -92,6 +92,7 @@ struct MonthlyBudget: Codable, Equatable {
 enum CategoryPalette {
     static let groceries: UInt32 = 0x3ECF8E
     static let restaurant: UInt32 = 0xFFA23E
+    static let bar: UInt32 = 0x8FE05C
     static let transport: UInt32 = 0x4D9BFF
     static let rent: UInt32 = 0xA78BFA
     static let shopping: UInt32 = 0xFF6BA8
@@ -105,6 +106,7 @@ extension Category {
     static let defaults: [Category] = [
         Category(id: "groceries", name: "Groceries", symbol: "cart", colorHex: CategoryPalette.groceries, monthlyLimit: 400),
         Category(id: "restaurant", name: "Restaurant", symbol: "fork.knife", colorHex: CategoryPalette.restaurant, monthlyLimit: 250),
+        Category(id: "bar", name: "Bar", symbol: "wineglass", colorHex: CategoryPalette.bar, monthlyLimit: 100),
         Category(id: "transport", name: "Transport", symbol: "tram", colorHex: CategoryPalette.transport, monthlyLimit: 150),
         Category(id: "rent", name: "Rent", symbol: "house", colorHex: CategoryPalette.rent, monthlyLimit: 1150),
         Category(id: "shopping", name: "Shopping", symbol: "bag", colorHex: CategoryPalette.shopping, monthlyLimit: 180),
