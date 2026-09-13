@@ -82,9 +82,6 @@ final class ExchangeRates {
         }
     }
 
-    /// When the server last answered with these rates, or nil while the bundled fallback is in use.
-    var updatedAt: Date? { snapshot?.fetchedAt }
-
     /// Whether the rates are old enough to be worth re-fetching.
     var isStale: Bool {
         guard let fetchedAt = snapshot?.fetchedAt else { return true }
