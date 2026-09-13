@@ -25,9 +25,10 @@ enum DebugSeed {
         let operations: [Operation] = [
             Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", amount: 54.20, currencyCode: usd.code, rateToEuro: usd.rateToEuro),
             Operation(date: day(0, hour: 9), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 12.90),
-            Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", amount: 4.20),
+            Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "coffee", location: "Mitte", amount: 4.20),
             Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro, isOnline: true),
             Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "restaurant", location: "Kreuzberg", amount: 48),
+            Operation(date: day(2, hour: 8), name: "Bonanza Coffee", categoryId: "coffee", location: "Prenzlauer Berg", amount: 4.50),
             Operation(date: day(2, hour: 22), name: "Klunkerkranich", categoryId: "bar", location: "Neukölln", amount: 18.50),
             Operation(date: day(3, hour: 8), name: "Rent", categoryId: "rent", location: "Landlord", amount: 1150, isRecurring: true),
             Operation(date: day(3, hour: 19), name: "FitX Gym", categoryId: "health", location: "Prenzlauer Berg", amount: 29.90, isRecurring: true),
@@ -41,12 +42,18 @@ enum DebugSeed {
 
             Operation(date: dayOfMonth(15), name: "Sushi Bar", categoryId: "restaurant", location: "Rosenthaler Platz", amount: 38.50),
             Operation(date: dayOfMonth(10), name: "Zenkichi", categoryId: "restaurant", location: "Mitte", amount: 52),
-            Operation(date: dayOfMonth(7), name: "The Barn Coffee", categoryId: "restaurant", location: "Mitte", amount: 4.80),
             Operation(date: dayOfMonth(5), name: "Burgermeister", categoryId: "restaurant", location: "Schlesisches Tor", amount: 22.50),
             Operation(date: dayOfMonth(2), name: "Café Kranzler", categoryId: "restaurant", location: "Charlottenburg", amount: 18),
 
             Operation(date: dayOfMonth(14, hour: 21), name: "Buck and Breck", categoryId: "bar", location: "Mitte", amount: 32),
             Operation(date: dayOfMonth(9, hour: 19), name: "Prater Garten", categoryId: "bar", location: "Prenzlauer Berg", amount: 24.50),
+
+            Operation(date: dayOfMonth(16, hour: 8), name: "Five Elephant", categoryId: "coffee", location: "Kreuzberg", amount: 5.20),
+            Operation(date: dayOfMonth(13, hour: 8), name: "Bonanza Coffee", categoryId: "coffee", location: "Prenzlauer Berg", amount: 4.50),
+            Operation(date: dayOfMonth(11, hour: 9), name: "Companion Coffee", categoryId: "coffee", location: "Kreuzberg", amount: 4.60),
+            Operation(date: dayOfMonth(7, hour: 8), name: "The Barn Coffee", categoryId: "coffee", location: "Mitte", amount: 4.80),
+            Operation(date: dayOfMonth(5, hour: 9), name: "Five Elephant", categoryId: "coffee", location: "Kreuzberg", amount: 5.40),
+            Operation(date: dayOfMonth(3, hour: 9), name: "Bonanza Coffee", categoryId: "coffee", location: "Prenzlauer Berg", amount: 4.50),
 
             Operation(date: dayOfMonth(1), name: "BVG Monthly", categoryId: "transport", location: "Berlin", amount: 49, isRecurring: true),
             Operation(date: dayOfMonth(11), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 22.60),
