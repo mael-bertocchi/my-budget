@@ -13,6 +13,7 @@ BUILD_DIR="$FRONTEND_DIR/build/device"
 PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
 
 DEVICE="${MY_BUDGET_DEVICE:-}"
+DEVICE_NAME=""
 LAUNCH=1
 STATUS_ONLY=0
 
@@ -77,14 +78,20 @@ import json, sys
 with open(sys.argv[1]) as handle:
     devices = json.load(handle)["result"]["devices"]
 
+# devicectl lists booted simulators alongside real hardware, and a simulator holds a connected
+# tunnel while a phone reached over the network does not — so it would win the sort below and
+# quietly become the install target. Anything explicitly simulated is dropped first.
 candidates = [
     device for device in devices
     if device["hardwareProperties"]["deviceType"] == "iPhone"
+    and device["hardwareProperties"].get("reality") != "simulated"
     and device["connectionProperties"].get("pairingState") == "paired"
 ]
 candidates.sort(key=lambda d: d["connectionProperties"].get("tunnelState") == "connected", reverse=True)
 
-print(candidates[0]["identifier"] if candidates else "")
+if candidates:
+    chosen = candidates[0]
+    print(chosen["identifier"], chosen.get("deviceProperties", {}).get("name", "iPhone"), sep="\t")
 PY
 }
 
@@ -110,9 +117,13 @@ if [[ $STATUS_ONLY -eq 1 ]]; then
 fi
 
 if [[ -z "$DEVICE" ]]; then
-    DEVICE="$(resolve_device)"
+    resolved="$(resolve_device)"
+    DEVICE="${resolved%%$'\t'*}"
+    DEVICE_NAME="${resolved#*$'\t'}"
     [[ -n "$DEVICE" ]] || fail "no paired iPhone found — pair one in Xcode (Window > Devices and Simulators)"
 fi
+
+log "targeting ${DEVICE_NAME:-$DEVICE}"
 
 log "building $SCHEME ($CONFIGURATION)"
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration "$CONFIGURATION" -destination "id=$DEVICE" -derivedDataPath "$BUILD_DIR" -allowProvisioningUpdates build >/dev/null || fail "build failed — run the same command by hand to see why"
