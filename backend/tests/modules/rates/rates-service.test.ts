@@ -144,7 +144,7 @@ function isoDay(offset: number): string {
 
 describe('pullRatesForDay', () => {
     it('asks the provider for the day it was given', async () => {
-        const fetchMock = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({ ...providerPayload, date: '2026-09-04' }) }));
+        const fetchMock = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve({ ok: true, json: () => Promise.resolve({ ...providerPayload, date: '2026-09-04' }) }));
         vi.stubGlobal('fetch', fetchMock);
 
         const { prisma } = makePrisma(null);
