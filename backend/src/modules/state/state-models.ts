@@ -40,32 +40,20 @@ export const OperationSchema = z.object({
 });
 
 /**
- * @constant FixedCostSchema
- * @description Zod schema for one charge of the same amount every month, taken off the budget before any operation is counted.
- */
-export const FixedCostSchema = z.object({
-    id: IdSchema,
-    name: z.string().min(1).max(60),
-    amount: z.number().min(0).max(1_000_000)
-});
-
-/**
  * @constant BudgetSettingsSchema
- * @description Zod schema for the overall monthly budget settings. A client from before fixed costs existed pushes none, and gets an empty list.
+ * @description Zod schema for the overall monthly budget settings.
  */
 export const BudgetSettingsSchema = z.object({
-    monthlyLimit: z.number().min(0).max(1_000_000),
-    fixedCosts: z.array(FixedCostSchema).max(MAX_ITEMS).default([])
+    monthlyLimit: z.number().min(0).max(1_000_000)
 });
 
 /**
  * @constant MonthlyBudgetSchema
- * @description Zod schema for the budget frozen against one finished month. Months sealed before fixed costs existed had none, so the total defaults to zero.
+ * @description Zod schema for the budget frozen against one finished month.
  */
 export const MonthlyBudgetSchema = z.object({
     monthlyLimit: z.number().min(0).max(1_000_000),
-    categoryLimits: z.record(IdSchema, z.number().min(0).max(1_000_000)),
-    fixedCostsTotal: z.number().min(0).max(1_000_000).default(0)
+    categoryLimits: z.record(IdSchema, z.number().min(0).max(1_000_000))
 });
 
 /**
