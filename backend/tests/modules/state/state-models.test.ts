@@ -1,4 +1,4 @@
-import { CategorySchema, OperationSchema, StateSchema } from 'src/modules/state/state-models';
+import { BudgetSettingsSchema, CategorySchema, FixedCostSchema, MonthlyBudgetSchema, OperationSchema, StateSchema } from 'src/modules/state/state-models';
 import { describe, expect, it } from 'vitest';
 
 const validCategory = {
@@ -7,6 +7,12 @@ const validCategory = {
     symbol: 'cart',
     colorHex: 0x3ecf8e,
     monthlyLimit: 400
+};
+
+const validFixedCost = {
+    id: 'rent',
+    name: 'Rent',
+    amount: 1150
 };
 
 const validOperation = {
@@ -67,14 +73,53 @@ describe('OperationSchema', () => {
     });
 });
 
+describe('FixedCostSchema', () => {
+    it('accepts a valid fixed cost', () => {
+        expect(FixedCostSchema.safeParse(validFixedCost).success).toBe(true);
+    });
+
+    it('rejects a blank name', () => {
+        expect(FixedCostSchema.safeParse({ ...validFixedCost, name: '' }).success).toBe(false);
+    });
+
+    it('rejects a negative amount', () => {
+        expect(FixedCostSchema.safeParse({ ...validFixedCost, amount: -1 }).success).toBe(false);
+    });
+});
+
+describe('BudgetSettingsSchema', () => {
+    it('keeps the pushed fixed costs', () => {
+        const parsed = BudgetSettingsSchema.safeParse({ monthlyLimit: 3000, fixedCosts: [validFixedCost] });
+
+        expect(parsed.success).toBe(true);
+        expect(parsed.data?.fixedCosts).toHaveLength(1);
+    });
+
+    it('defaults the list when a client from before fixed costs pushes none', () => {
+        const parsed = BudgetSettingsSchema.safeParse({ monthlyLimit: 3000 });
+
+        expect(parsed.success).toBe(true);
+        expect(parsed.data?.fixedCosts).toEqual([]);
+    });
+});
+
+describe('MonthlyBudgetSchema', () => {
+    it('defaults the fixed-costs total for a month sealed before they existed', () => {
+        const parsed = MonthlyBudgetSchema.safeParse({ monthlyLimit: 2800, categoryLimits: { groceries: 380 } });
+
+        expect(parsed.success).toBe(true);
+        expect(parsed.data?.fixedCostsTotal).toBe(0);
+    });
+});
+
 describe('StateSchema', () => {
     it('accepts a complete budget document', () => {
         const state = {
             categories: [validCategory],
             operations: [validOperation],
-            budget: { monthlyLimit: 3000 },
+            budget: { monthlyLimit: 3000, fixedCosts: [validFixedCost] },
             budgetHistory: {
-                '2026-07': { monthlyLimit: 2800, categoryLimits: { groceries: 380 } }
+                '2026-07': { monthlyLimit: 2800, categoryLimits: { groceries: 380 }, fixedCostsTotal: 1150 }
             }
         };
 
