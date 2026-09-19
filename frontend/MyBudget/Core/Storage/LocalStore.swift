@@ -126,8 +126,7 @@ final class LocalStore {
     var liveBudget: MonthlyBudget {
         MonthlyBudget(
             monthlyLimit: budget.monthlyLimit,
-            categoryLimits: Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0.monthlyLimit) }),
-            fixedCostsTotal: budget.fixedCostsTotal
+            categoryLimits: Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0.monthlyLimit) })
         )
     }
 
@@ -158,14 +157,6 @@ final class LocalStore {
 
     func setMonthlyLimit(_ limit: Double) {
         budget.monthlyLimit = max(0, limit)
-        save()
-    }
-
-    /// Replaces the whole list, since the sheet editing it hands back every row at once.
-    func setFixedCosts(_ fixedCosts: [FixedCost]) {
-        budget.fixedCosts = fixedCosts.map {
-            FixedCost(id: $0.id, name: $0.name, amount: max(0, $0.amount))
-        }
         save()
     }
 

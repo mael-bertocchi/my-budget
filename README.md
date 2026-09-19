@@ -18,7 +18,6 @@ Log an operation, scan the history ledger, and watch the monthly budget — in a
 - 🧾 **A ledger you can read** — operations grouped by day, with day totals, search, and filters by category.
 - 🌍 **Any currency, always in euros** — enter in USD, CHF, KRW… the euro equivalent is computed live and shown next to the original amount.
 - 🚦 **Limits that speak up** — per-category limits, with the bar and the amount turning red the moment you go over.
-- 🔁 **Fixed costs, set aside** — rent and the other charges that never change are taken off the top, so the ring counts only what is genuinely left to spend.
 - ☁️ **Saved on your own server** — sign in once and every change syncs to a self-hosted backend; the app keeps working offline and reconciles when it's back.
 - 🔒 **Yours to own** — a single account, its password living only in the backend's environment. No sign-ups, no third parties.
 

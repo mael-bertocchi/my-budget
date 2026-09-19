@@ -90,7 +90,7 @@ enum BudgetMath {
     ) -> MonthSummary {
         let spent = self.operations(operations, in: month).reduce(0) { $0 + $1.euroAmount }
         return MonthSummary(
-            limit: budget.spendable,
+            limit: budget.monthlyLimit,
             spent: spent,
             daysLeft: daysLeft(in: month, now: now)
         )
@@ -115,10 +115,8 @@ enum BudgetMath {
         categories.reduce(0) { $0 + budget.limit(for: $1.id) }
     }
 
-    /// Category limits share out the spendable budget, not the whole one: the fixed charges are already
-    /// spoken for before the first operation of the month is logged.
     static func toDispatch(categories: [Category], budget: MonthlyBudget) -> Double {
-        budget.spendable - allocatedLimits(categories: categories, budget: budget)
+        budget.monthlyLimit - allocatedLimits(categories: categories, budget: budget)
     }
 
     static func dayGroups(_ operations: [Operation]) -> [DayGroup] {

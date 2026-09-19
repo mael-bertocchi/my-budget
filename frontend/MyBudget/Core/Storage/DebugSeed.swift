@@ -70,10 +70,7 @@ enum DebugSeed {
         store.replaceAll(
             categories: Category.defaults,
             operations: operations,
-            budget: BudgetSettings(
-                monthlyLimit: 3000,
-                fixedCosts: [FixedCost(id: "rent", name: "Rent", amount: 1150)]
-            )
+            budget: BudgetSettings(monthlyLimit: 3000)
         )
     }
 

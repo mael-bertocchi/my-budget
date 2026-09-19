@@ -5,7 +5,6 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 ## Highlights
 
 - **Budget ring** — left to spend, spent, days left, and a per-day allowance that recomputes as the month runs down.
-- **Fixed costs** — rent, a transport pass, a subscription: named charges of the same amount every month, taken off the budget before anything else, so they never have to be logged and the ring only ever counts money that is still free to spend.
 - **Per-category limits** — a tinted tile, a progress bar, and an over-budget state that turns everything red.
 - **Month stepper** — walk back through previous months; every figure recomputes.
 - **History ledger** — day groups with day totals, a search field, and filter chips for each category.
@@ -28,7 +27,7 @@ MyBudget/
 ├─ Core/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
 │  ├─ Formatting/  Euro, amount, rate and date formatting
-│  ├─ Models/      Domain types (Category, Operation, FixedCost, BudgetSettings)
+│  ├─ Models/      Domain types (Category, Operation, BudgetSettings)
 │  ├─ Money/       Currencies and euro exchange rates
 │  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store
 │  ├─ Preferences/ Last-used currency, default payment method, haptics

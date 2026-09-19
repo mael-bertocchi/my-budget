@@ -36,9 +36,7 @@ struct CategoryLimitsSheet: View {
                 .padding(.horizontal, 12)
                 .frame(minHeight: Theme.inputHeight)
                 .glassInput()
-                .padding(.bottom, fixedCostsTotal > 0 ? 10 : 22)
-
-                fixedCostsNote
+                .padding(.bottom, 22)
 
                 HStack {
                     SectionLabel("Category limits")
@@ -76,44 +74,12 @@ struct CategoryLimitsSheet: View {
         .onAppear(perform: loadValues)
     }
 
-    private var fixedCostsTotal: Double {
-        store.budget.fixedCostsTotal
-    }
-
-    /// What is left of the typed budget once the fixed charges are set aside — the pot the category
-    /// limits actually share out.
-    private var spendable: Double {
-        max(0, (Formatting.parseAmount(monthlyLimit) ?? 0) - fixedCostsTotal)
-    }
-
     private var toDispatch: Double {
+        let budget = Formatting.parseAmount(monthlyLimit) ?? 0
         let allocated = store.categories.reduce(0) { total, category in
             total + (Formatting.parseAmount(limits[category.id] ?? "") ?? 0)
         }
-        return spendable - allocated
-    }
-
-    @ViewBuilder
-    private var fixedCostsNote: some View {
-        if fixedCostsTotal > 0 {
-            HStack(spacing: 10) {
-                IconTile(symbol: "repeat", color: Theme.accent, size: 28, glyphSize: 14)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("− " + Formatting.euro(fixedCostsTotal) + " of fixed costs")
-                        .font(Theme.font(13))
-                        .foregroundStyle(Theme.text)
-                    Text("Leaves " + Formatting.euro(spendable) + " to share out below")
-                        .font(Theme.font(11))
-                        .foregroundStyle(Theme.muted)
-                }
-                Spacer(minLength: 8)
-            }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .glassCard()
-            .padding(.bottom, 22)
-            .accessibilityElement(children: .combine)
-        }
+        return budget - allocated
     }
 
     private var dispatchText: String {
