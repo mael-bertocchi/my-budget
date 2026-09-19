@@ -131,7 +131,8 @@ struct OperationEditorSheet: View {
     }
 
     /// The rate the operation was saved at, while its date and currency are still the ones it was saved with.
-    /// It is a real published rate, so it stands in perfectly well until the day's rate arrives.
+    /// It came from a real published rate, markup included, so it stands in perfectly well until the day's
+    /// rate arrives.
     private var storedRate: Double? {
         guard case .edit(let operationId) = route,
               let operation = store.operation(id: operationId),

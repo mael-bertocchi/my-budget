@@ -23,10 +23,10 @@ enum DebugSeed {
         let chf = Currency.named("CHF")
 
         let operations: [Operation] = [
-            Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", amount: 54.20, currencyCode: usd.code, rateToEuro: usd.rateToEuro),
+            Operation(date: day(0, hour: 18), name: "Whole Foods", categoryId: "groceries", location: "Berlin Mitte", amount: 54.20, currencyCode: usd.code, rateToEuro: Currency.bankRate(usd.rateToEuro, code: usd.code)),
             Operation(date: day(0, hour: 9), name: "Deutsche Bahn", categoryId: "transport", location: "Hauptbahnhof", amount: 12.90),
             Operation(date: day(0, hour: 8), name: "The Barn Coffee", categoryId: "coffee", location: "Mitte", amount: 4.20),
-            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", amount: 38, currencyCode: chf.code, rateToEuro: chf.rateToEuro, isOnline: true),
+            Operation(date: day(1, hour: 20), name: "Amazon", categoryId: "shopping", amount: 38, currencyCode: chf.code, rateToEuro: Currency.bankRate(chf.rateToEuro, code: chf.code), isOnline: true),
             Operation(date: day(1, hour: 21), name: "Trattoria Dinner", categoryId: "restaurant", location: "Kreuzberg", amount: 48),
             Operation(date: day(2, hour: 8), name: "Bonanza Coffee", categoryId: "coffee", location: "Prenzlauer Berg", amount: 4.50),
             Operation(date: day(2, hour: 22), name: "Klunkerkranich", categoryId: "bar", location: "Neukölln", amount: 18.50),

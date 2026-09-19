@@ -131,6 +131,12 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
+                Text("Includes the \(Formatting.percent(Currency.bankMarkup)) your bank adds on top of the reference rate.")
+                    .font(Theme.font(11))
+                    .foregroundStyle(Theme.muted)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 2)
+
                 SectionLabel("Data")
                     .padding(.top, 22)
                     .padding(.bottom, 10)

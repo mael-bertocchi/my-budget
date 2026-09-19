@@ -25,6 +25,19 @@ extension Currency {
     static func named(_ code: String) -> Currency {
         all.first { $0.code == code } ?? euro
     }
+
+    /// What the bank adds on top of the reference rate. A card payment abroad is not settled at the ECB
+    /// rate: the bank takes its cut on the way, so the operation lands on the statement about a percent
+    /// dearer than the published rate suggests.
+    static let bankMarkup = 0.01
+
+    /// The rate the app applies: the published reference rate with the bank's markup on top, so a euro
+    /// amount matches what is actually charged. The euro itself is never marked up — it is never converted.
+    static func bankRate(_ referenceRate: Double, code: String) -> Double {
+        guard code != euro.code else { return referenceRate }
+
+        return referenceRate * (1 + bankMarkup)
+    }
 }
 
 /// One set of reference rates as published by the server. `rates` maps a currency code to the
@@ -69,16 +82,19 @@ final class ExchangeRates {
         dayFormatter.string(from: date)
     }
 
-    /// The catalogue with the latest known rate overlaid onto each currency.
+    /// The catalogue with the latest known rate overlaid onto each currency, carrying the bank's markup:
+    /// every rate the app hands out is one it would actually charge at.
     var currencies: [Currency] {
-        guard let rates = snapshot?.rates else { return Currency.all }
+        Currency.all.map { currency in
+            var applied = currency
 
-        return Currency.all.map { currency in
-            guard let rate = rates[currency.code], rate > 0 else { return currency }
+            if let live = snapshot?.rates[currency.code], live > 0 {
+                applied.rateToEuro = live
+            }
 
-            var live = currency
-            live.rateToEuro = rate
-            return live
+            applied.rateToEuro = Currency.bankRate(applied.rateToEuro, code: currency.code)
+
+            return applied
         }
     }
 
@@ -101,11 +117,12 @@ final class ExchangeRates {
         amount * rate(code: code)
     }
 
-    /// The rate that applied on one day, or nil until that day has been loaded.
+    /// The rate that applied on one day, markup included, or nil until that day has been loaded.
     func rate(code: String, on day: String) -> Double? {
         guard code != Currency.euro.code else { return 1 }
+        guard let published = dated[day]?.rates[code] else { return nil }
 
-        return dated[day]?.rates[code]
+        return Currency.bankRate(published, code: code)
     }
 
     /// Whether a day's rates may still be replaced. A day answered by an earlier day's rate is provisional
