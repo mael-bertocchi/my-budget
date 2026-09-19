@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(ApplicationSession.self) private var session
 
     @State private var showLimits = false
+    @State private var showFixedCosts = false
     @State private var showCurrencyPicker = false
     @State private var showResetConfirmation = false
     @State private var showSignOutConfirmation = false
@@ -62,6 +63,15 @@ struct SettingsView: View {
                         value: Formatting.euro(store.budget.monthlyLimit)
                     ) {
                         showLimits = true
+                    }
+                    RowDivider()
+                    valueRow(
+                        symbol: "repeat",
+                        color: Theme.accent,
+                        title: "Fixed costs",
+                        value: Formatting.euro(store.budget.fixedCostsTotal)
+                    ) {
+                        showFixedCosts = true
                     }
                 }
                 .glassCard()
@@ -160,6 +170,9 @@ struct SettingsView: View {
         .scrollTopBlur()
         .sheet(isPresented: $showLimits) {
             CategoryLimitsSheet()
+        }
+        .sheet(isPresented: $showFixedCosts) {
+            FixedCostsSheet()
         }
         .sheet(isPresented: $showCurrencyPicker) {
             CurrencyPickerSheet(selection: $preferences.lastUsedCurrencyCode)

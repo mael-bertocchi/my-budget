@@ -27,6 +27,8 @@ struct BudgetView: View {
                 .padding(.top, 18)
                 .padding(.bottom, 6)
 
+                fixedCostsNote
+
                 statCards
                     .padding(.top, 14)
                     .padding(.bottom, 22)
@@ -89,6 +91,23 @@ struct BudgetView: View {
 
     private var toDispatch: Double {
         BudgetMath.toDispatch(categories: store.categories, budget: monthlyBudget)
+    }
+
+    private var fixedCostsTotal: Double {
+        monthlyBudget.fixedCostsTotal
+    }
+
+    /// The ring counts down the spendable budget, not the whole one, so the month's fixed charges are
+    /// spelled out underneath rather than silently shrinking the number above.
+    @ViewBuilder
+    private var fixedCostsNote: some View {
+        if fixedCostsTotal > 0 {
+            Text(Formatting.euro(monthlyBudget.monthlyLimit) + " budget · " + Formatting.euro(fixedCostsTotal) + " fixed costs set aside")
+                .font(Theme.font(12))
+                .foregroundStyle(Theme.muted)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 10)
+        }
     }
 
     private var canGoForward: Bool {
