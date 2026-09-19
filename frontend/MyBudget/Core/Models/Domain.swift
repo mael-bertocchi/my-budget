@@ -116,6 +116,11 @@ extension Category {
         Category(id: "miscellaneous", name: "Miscellaneous", symbol: "square.grid.2x2", colorHex: CategoryPalette.miscellaneous, monthlyLimit: 100)
     ]
 
+    /// Ids that shipped as categories once and no longer do. A document written before they were
+    /// retired still carries them, so the catalog merge needs to know they are gone on purpose —
+    /// otherwise it keeps them for good as unknown categories parked at the end of the list.
+    static let retired: Set<String> = ["rent"]
+
     static let fallback = Category(
         id: "uncategorized",
         name: "Uncategorized",

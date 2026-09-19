@@ -217,10 +217,18 @@ final class LocalStore {
     /// Lines the stored categories up with the shipped catalog, so a document written before a
     /// category existed gains it instead of silently missing it. The stored copy wins whenever the
     /// catalog already knows the id, keeping the limits set on the device, and anything outside the
-    /// catalog is left alone at the end of the list.
+    /// catalog is left alone at the end of the list — unless it was retired, in which case it is
+    /// dropped once nothing is filed under it. A retired category still holding operations stays,
+    /// so history never loses the name and icon its rows are drawn with.
     private func mergeCatalog() {
         let stored = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let catalogIds = Set(Category.defaults.map(\.id))
-        categories = Category.defaults.map { stored[$0.id] ?? $0 } + categories.filter { !catalogIds.contains($0.id) }
+        let used = Set(operations.map(\.categoryId))
+
+        categories = Category.defaults.map { stored[$0.id] ?? $0 } + categories.filter { category in
+            guard !catalogIds.contains(category.id) else { return false }
+
+            return !Category.retired.contains(category.id) || used.contains(category.id)
+        }
     }
 }
