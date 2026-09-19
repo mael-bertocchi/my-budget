@@ -64,24 +64,9 @@ final class LocalStore {
         category(id: id) ?? .fallback
     }
 
-    func upsertCategory(_ category: Category) {
-        if let index = categories.firstIndex(where: { $0.id == category.id }) {
-            categories[index] = category
-        } else {
-            categories.append(category)
-        }
-        save()
-    }
-
     func updateLimit(categoryId: String, limit: Double) {
         guard let index = categories.firstIndex(where: { $0.id == categoryId }) else { return }
         categories[index].monthlyLimit = max(0, limit)
-        save()
-    }
-
-    func deleteCategory(id: String) {
-        categories.removeAll { $0.id == id }
-        operations.removeAll { $0.categoryId == id }
         save()
     }
 
