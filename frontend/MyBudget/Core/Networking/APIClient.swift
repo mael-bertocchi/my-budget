@@ -10,9 +10,40 @@ struct MeResponse: Codable {
     var username: String
 }
 
+/// The budget document as the server stores it, with the revision a push has to name to replace it.
+struct RemoteState: Decodable {
+    var document: BudgetDocument
+    var revision: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case revision
+    }
+
+    init(from decoder: Decoder) throws {
+        document = try BudgetDocument(from: decoder)
+        revision = try decoder.container(keyedBy: CodingKeys.self).decode(Int.self, forKey: .revision)
+    }
+}
+
+private struct StatePush: Encodable {
+    let document: BudgetDocument
+    let revision: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case revision
+    }
+
+    func encode(to encoder: Encoder) throws {
+        try document.encode(to: encoder)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(revision, forKey: .revision)
+    }
+}
+
 enum APIError: Error, LocalizedError {
     case notConfigured
     case unauthorized
+    case conflict
     case server(status: Int, message: String)
     case transport(Error)
     case decoding(Error)
@@ -21,6 +52,7 @@ enum APIError: Error, LocalizedError {
         switch self {
         case .notConfigured: return "No server is configured."
         case .unauthorized: return "Your session has expired."
+        case .conflict: return "The budget changed on the server."
         case .server(_, let message): return message
         case .transport: return "Can't reach the server."
         case .decoding: return "The server sent an unexpected response."
@@ -93,13 +125,15 @@ final class APIClient {
         try await send("/v1/rates/\(day)", method: "GET")
     }
 
-    func getState() async throws -> BudgetDocument {
+    func getState() async throws -> RemoteState {
         try await send("/v1/state", method: "GET")
     }
 
+    /// Stores the document, provided the server still holds `revision`. Throws `APIError.conflict` when someone
+    /// else wrote since, leaving the server untouched.
     @discardableResult
-    func putState(_ document: BudgetDocument) async throws -> BudgetDocument {
-        try await send("/v1/state", method: "PUT", body: document)
+    func putState(_ document: BudgetDocument, revision: Int) async throws -> RemoteState {
+        try await send("/v1/state", method: "PUT", body: StatePush(document: document, revision: revision))
     }
 
     private struct EmptyResponse: Decodable {}
@@ -153,6 +187,10 @@ final class APIClient {
 
         if http.statusCode == 401 {
             throw APIError.unauthorized
+        }
+
+        if http.statusCode == 409 {
+            throw APIError.conflict
         }
 
         guard (200..<300).contains(http.statusCode) else {

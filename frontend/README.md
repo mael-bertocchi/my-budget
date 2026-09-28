@@ -32,7 +32,7 @@ MyBudget/
 │  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store
 │  ├─ Preferences/ Last-used currency, default payment method, haptics
 │  ├─ Session/     ApplicationSession — auth state + pull/push sync
-│  ├─ Storage/     LocalStore (JSON snapshot), BudgetDocument, debug seed
+│  ├─ Storage/     LocalStore (JSON snapshot), BudgetDocument, sync base & merge, debug seed
 │  └─ Theme/       Design tokens, haptics
 ├─ Features/       One folder per screen (Identity, Budget, History, Operations, Settings)
 └─ UIComponents/   Liquid glass surfaces, buttons, progress, tiles
@@ -42,7 +42,13 @@ State lives in `@Observable` objects injected through the environment: `LocalSto
 
 ### Sync model
 
-The local JSON store is the working copy; the server holds the durable one. On sign-in the app pulls the server's budget document (or, if the server is empty, uploads what's on the device). After that, every mutation debounces a full-document `PUT /v1/state`; a failed push flips the Settings badge to **Offline** and retries when the app next becomes active. Access tokens refresh automatically on a `401`; when the refresh token is gone, the app returns to the sign-in screen.
+The local JSON store is the working copy; the server holds the durable one, and the app is not its only writer — the web interface writes to it too. The app keeps the last document both sides agreed on, and its revision, as a *base* (`sync-base.json`).
+
+- Every mutation debounces a full-document `PUT /v1/state` naming the base's revision. If someone else wrote since, the server answers `409` and the push turns into a reconcile.
+- On launch, on sign-in and each time the app becomes active, it **reconciles**: it pulls the server's document, merges it with the local one against the base (`DocumentMerge`), applies the result and pushes it back if the server lacks anything. Each side's edits are kept; only when both changed the same entry does the device win, and an edit always beats a deletion.
+- Without a base — a first sign-in, or a server that was reset — the server wins, unless it is empty, in which case the device's budget seeds it.
+
+A failed push flips the Settings badge to **Offline**, and the next reconcile catches up. Access tokens refresh automatically on a `401`; when the refresh token is gone, the app returns to the sign-in screen.
 
 The app talks to a fixed HTTPS endpoint — `https://my-budget.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
 

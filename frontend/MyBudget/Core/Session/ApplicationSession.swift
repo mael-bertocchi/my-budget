@@ -30,6 +30,8 @@ final class ApplicationSession {
     private let api: APIClient
 
     private var pushTask: Task<Void, Never>?
+    private var syncTask: Task<Void, Never>?
+    private var base: SyncBase?
     private var isDemo = false
 
     init(store: LocalStore, rates: ExchangeRates, tokens: TokenStore, api: APIClient) {
@@ -38,6 +40,7 @@ final class ApplicationSession {
         self.tokens = tokens
         self.api = api
         self.username = UserDefaults.standard.string(forKey: Keys.username)
+        self.base = SyncBase.load()
         api.setBaseURL(URL(string: serverURLString))
     }
 
@@ -49,7 +52,7 @@ final class ApplicationSession {
         identityState = .signedIn
         wireLocalChanges()
         refreshRates()
-        await initialSync()
+        await reconcile()
         repriceRecentOperations()
     }
 
@@ -62,7 +65,7 @@ final class ApplicationSession {
         identityState = .signedIn
         wireLocalChanges()
         refreshRates()
-        await initialSync()
+        await reconcile()
         repriceRecentOperations()
     }
 
@@ -71,6 +74,8 @@ final class ApplicationSession {
         store.onChange = nil
         await api.logout()
         tokens.clear()
+        base = nil
+        SyncBase.clear()
         username = nil
         syncState = .idle
         lastSyncedAt = nil
@@ -82,11 +87,16 @@ final class ApplicationSession {
         await push()
     }
 
+    /// Picks up what was written elsewhere while the app sat in the background — in the web interface, say —
+    /// before anything is pushed, so coming back to the app never erases it.
     func applicationBecameActive() {
         guard identityState == .signedIn, !isDemo else { return }
         refreshRates()
-        repriceRecentOperations()
-        schedulePush()
+
+        Task {
+            await reconcile()
+            repriceRecentOperations()
+        }
     }
 
     #if DEBUG
@@ -149,24 +159,6 @@ final class ApplicationSession {
         }
     }
 
-    private func initialSync() async {
-        syncState = .syncing
-        do {
-            let remote = try await api.getState()
-            if !remote.isEmpty {
-                store.applyRemote(remote)
-            } else if !store.document().isEmpty {
-                try await api.putState(store.document())
-            }
-            syncState = .idle
-            lastSyncedAt = .now
-        } catch let error as APIError {
-            handle(error)
-        } catch {
-            syncState = .error(error.localizedDescription)
-        }
-    }
-
     private func schedulePush() {
         pushTask?.cancel()
         pushTask = Task { [weak self] in
@@ -178,14 +170,123 @@ final class ApplicationSession {
 
     private func push() async {
         guard !isDemo else { return }
+        await enqueueSync { [weak self] in await self?.performPush() }
+    }
+
+    private func reconcile() async {
+        guard !isDemo else { return }
+        await enqueueSync { [weak self] in await self?.performReconcile() }
+    }
+
+    /// Runs sync passes one after the other. A push and a reconcile interleaving at their awaits would each work
+    /// from a base the other is about to replace.
+    private func enqueueSync(_ work: @escaping @MainActor () async -> Void) async {
+        let previous = syncTask
+        let task = Task { @MainActor in
+            await previous?.value
+            await work()
+        }
+        syncTask = task
+        await task.value
+    }
+
+    /// Sends the local document on top of the revision it was edited from. The server refuses it if someone else
+    /// wrote in the meantime, and the push turns into a reconcile.
+    private func performPush() async {
+        guard let base else {
+            await performReconcile()
+            return
+        }
+
+        let document = store.document()
+
+        guard !DocumentMerge.sameContent(document, base.document) else {
+            markSynced()
+            return
+        }
+
         syncState = .syncing
         do {
-            try await api.putState(store.document())
-            syncState = .idle
-            lastSyncedAt = .now
-        } catch let error as APIError {
-            handle(error)
+            let stored = try await api.putState(document, revision: base.revision)
+            commit(document, revision: stored.revision)
+        } catch APIError.conflict {
+            await performReconcile()
         } catch {
+            fail(error)
+        }
+    }
+
+    /// Pulls the server's document, merges it with the local one against the last agreed base, applies the result
+    /// and sends it back if it holds anything the server lacks. Once merged in, the pulled document is the new base:
+    /// the device now holds everything in it. Another writer landing between the pull and the push makes the server
+    /// refuse it, and the pass starts over from a fresh pull.
+    private func performReconcile() async {
+        syncState = .syncing
+        do {
+            for _ in 0..<Self.reconcileAttempts {
+                let remote = try await api.getState()
+                let merged = resolve(remote)
+
+                if !DocumentMerge.sameContent(merged, store.document()) {
+                    store.applyRemote(merged)
+                }
+
+                adopt(remote.document, revision: remote.revision)
+
+                let result = store.document()
+
+                if DocumentMerge.sameContent(result, remote.document) {
+                    markSynced()
+                    return
+                }
+
+                do {
+                    let stored = try await api.putState(result, revision: remote.revision)
+                    commit(result, revision: stored.revision)
+                    return
+                } catch APIError.conflict {
+                    continue
+                }
+            }
+            syncState = .error(APIError.conflict.localizedDescription)
+        } catch {
+            fail(error)
+        }
+    }
+
+    /// What the device should hold once it has seen the server's document. Without a base to measure edits against
+    /// — a first sign-in, or a server whose revision went backwards because it was reset — the server wins unless
+    /// it is empty, in which case the device's budget seeds it.
+    private func resolve(_ remote: RemoteState) -> BudgetDocument {
+        let local = store.document()
+
+        guard let base, remote.revision >= base.revision else {
+            return remote.document.isEmpty && !local.isEmpty ? local : remote.document
+        }
+
+        return DocumentMerge.merge(base: base.document, local: local, remote: remote.document)
+    }
+
+    private func commit(_ document: BudgetDocument, revision: Int) {
+        adopt(document, revision: revision)
+        markSynced()
+    }
+
+    private func adopt(_ document: BudgetDocument, revision: Int) {
+        let synced = SyncBase(document: document, revision: revision)
+        base = synced
+        synced.save()
+    }
+
+    private func markSynced() {
+        syncState = .idle
+        lastSyncedAt = .now
+    }
+
+    private func fail(_ error: Error) {
+        if let error = error as? APIError {
+            handle(error)
+        } else {
             syncState = .error(error.localizedDescription)
         }
     }
@@ -206,6 +307,9 @@ final class ApplicationSession {
 
     /// The smallest rate difference worth rewriting an operation for.
     private static let rateEpsilon = 1e-9
+
+    /// How many pull-merge-push rounds a reconcile tries before giving up on a server that keeps changing under it.
+    private static let reconcileAttempts = 3
 
     private enum Keys {
         static let username = "session.username"
