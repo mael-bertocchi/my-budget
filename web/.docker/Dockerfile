@@ -1,4 +1,4 @@
-# --- Builder Stage ---
+# Build stage
 FROM node:24-alpine AS builder
 
 # Set the working directory
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy the rest of the code
 COPY . .
@@ -16,18 +16,11 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# --- Production Stage ---
-FROM nginxinc/nginx-unprivileged:alpine
+# Production stage
+FROM caddy:alpine
 
-# Copy the server configuration, rendered from the template with API_URL on startup
-COPY .docker/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
-COPY .docker/nginx/default.conf.template /etc/nginx/templates/default.conf.template
+# Copy the built files to Caddy's web root
+COPY --from=builder /app/dist /usr/share/caddy
 
-# Copy the built application
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# The backend every /v1 request is forwarded to, without a trailing slash
-ENV API_URL=https://my-budget.mael-bertocchi.fr
-
-# Serve on an unprivileged port
-EXPOSE 8080
+# Copy your Caddyfile config
+COPY .docker/Caddyfile /etc/caddy/Caddyfile

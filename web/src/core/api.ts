@@ -5,6 +5,19 @@ import type { Maybe } from '@/models';
 import type { z } from 'zod';
 
 /**
+ * @constant PRODUCTION_API_URL
+ * @description Where the budget API lives, the same server the app talks to.
+ */
+const PRODUCTION_API_URL = 'https://api-budget.mael-bertocchi.fr';
+
+/**
+ * @constant API_URL
+ * @description The origin every request goes to. A build can point elsewhere with `VITE_API_URL`; in development the
+ * page calls its own origin, which the development server forwards to the local backend.
+ */
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : PRODUCTION_API_URL);
+
+/**
  * @constant STORAGE_KEY
  * @description Where the session's tokens are kept. Session storage survives a reload but not closing the tab, so the
  * page asks for the code again each time it is opened.
@@ -16,6 +29,12 @@ const STORAGE_KEY = 'my-budget.identity';
  * @description How long to wait on the server before calling it unreachable.
  */
 const REQUEST_TIMEOUT = 15 * 1000;
+
+/**
+ * @constant GATEWAY_ERRORS
+ * @description What the proxy in front of the backend answers when it can't reach it: unreachable, not refused.
+ */
+const GATEWAY_ERRORS = new Set([502, 503, 504]);
 
 /**
  * @function readTokens
@@ -49,9 +68,8 @@ function writeTokens(tokens: Maybe<IdentityTokens>): void {
 
 /**
  * @class ApiClient
- * @description Talks to the budget server on the page's own origin — the development server and the production image
- * both forward `/v1` to it. It signs in with the six-digit code, renews its tokens when they lapse, and reports when the
- * session is gone for good.
+ * @description Talks to the budget server, which answers the page across origins. It signs in with the six-digit code,
+ * renews its tokens when they lapse, and reports when the session is gone for good.
  */
 export class ApiClient {
     private tokens: Maybe<IdentityTokens> = readTokens(); /*!> The session's tokens */
@@ -221,7 +239,7 @@ export class ApiClient {
         }
 
         try {
-            return await fetch(path, { ...init, headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT) });
+            return await fetch(`${API_URL}${path}`, { ...init, headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT) });
         } catch {
             throw new ApiError(0, "Can't reach the server.");
         }
@@ -236,11 +254,13 @@ export class ApiClient {
         const payload: unknown = await response.json().catch(() => null);
 
         if (!response.ok) {
-            const message = typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string'
-                ? payload.message
-                : 'The server refused the request.';
+            const hasMessage = typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string';
 
-            throw new ApiError(response.status, message);
+            if (!hasMessage && GATEWAY_ERRORS.has(response.status)) {
+                throw new ApiError(0, "Can't reach the server.");
+            }
+
+            throw new ApiError(response.status, hasMessage ? String(payload.message) : 'The server refused the request.');
         }
 
         const parsed = schema.safeParse(typeof payload === 'object' && payload !== null && 'data' in payload ? payload.data : undefined);

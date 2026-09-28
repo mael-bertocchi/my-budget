@@ -33,7 +33,7 @@ Log an operation, scan the history ledger, and watch the monthly budget — on y
 ## Under the hood
 
 **Application** — Swift · SwiftUI · Observation · iOS 26 Liquid Glass materials
-**Web** — React 19 · TypeScript · Vite · Tailwind CSS · nginx
+**Web** — React 19 · TypeScript · Vite · Tailwind CSS · Caddy
 **Backend** — Node 24 · Fastify 5 · TypeScript · Prisma 7 · PostgreSQL · JWT
 
 ## Layout

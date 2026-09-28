@@ -13,7 +13,7 @@ The **web interface** of My Budget: the same budget as the iOS app, in the brows
 
 ## Stack
 
-React 19 · TypeScript · Vite · Tailwind CSS · React Router · lucide · Zod — served by nginx.
+React 19 · TypeScript · Vite · Tailwind CSS · React Router · lucide · Zod — served by Caddy.
 
 ## Signing in
 
@@ -51,7 +51,7 @@ npm install
 cp .env.example .env
 ```
 
-`API_URL` is where `/v1` is forwarded — `http://localhost:8080` by default.
+In development the page calls its own origin, and the development server forwards `/v1` to `API_URL` — `http://localhost:8080` by default — so no CORS setup is needed locally.
 
 3. Start it
 
@@ -71,14 +71,12 @@ npm run dev
 
 ## Docker
 
-A multi-stage, non-root image lives at `.docker/Dockerfile`. nginx serves the page and forwards `/v1` to the backend, so the browser only ever talks to one origin:
+A multi-stage image lives at `.docker/Dockerfile`: the build is served as static files by Caddy (`.docker/Caddyfile`), on port 80 over plain HTTP — TLS belongs to the proxy in front of it.
 
 ```bash
 docker build -f .docker/Dockerfile -t my-budget-web .
 ```
 
-```bash
-docker run -p 8080:8080 -e API_URL=https://my-budget.mael-bertocchi.fr my-budget-web
-```
+The page calls the API on its own domain, `https://api-budget.mael-bertocchi.fr`, from the browser. The backend lets it through with CORS, so its `CORS_ORIGIN` must list the page's origin (`https://budget.mael-bertocchi.fr`). To build for another API, set `VITE_API_URL` when building, and add that origin to `connect-src` in the Caddyfile's Content-Security-Policy.
 
-`API_URL` defaults to the production backend and must not end with a slash. The page is served with a strict Content-Security-Policy and is kept out of search engines.
+The page is served with a strict Content-Security-Policy and kept out of search engines.
