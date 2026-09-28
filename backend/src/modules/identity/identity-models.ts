@@ -3,11 +3,10 @@ import { z } from 'zod';
 
 /**
  * @constant LoginSchema
- * @description Zod schema for the login request body.
+ * @description Zod schema for the login request body: the account's six-digit code.
  */
 export const LoginSchema = z.object({
-    username: z.string().min(1),
-    password: z.string().min(1)
+    code: z.string().regex(/^\d{6}$/)
 });
 
 /**

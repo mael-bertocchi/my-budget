@@ -6,14 +6,28 @@ import { RequestError } from 'src/shared/models';
 
 /**
  * @function login
- * @description Verifies the username and password against the env-configured account and returns a fresh access/refresh token pair.
+ * @description Checks the six-digit code against the one in the environment and returns a fresh access/refresh token pair. While
+ * too many wrong codes have come in recently, every code is refused unchecked.
  *
  * @returns {Promise<void>} Resolves when the tokens are sent.
  */
 async function login(request: FastifyRequest<LoginRequest>, reply: FastifyReply): Promise<void> {
-    if (!request.server.identity.verifyCredentials(request.body.username, request.body.password)) {
-        throw new RequestError(StatusCodes.UNAUTHORIZED, 'Invalid username or password');
+    const { identity } = request.server;
+    const wait = identity.throttle.retryAfter();
+
+    if (wait > 0) {
+        const minutes = Math.ceil(wait / 60_000);
+
+        throw new RequestError(StatusCodes.TOO_MANY_REQUESTS, `Too many wrong codes. Try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`, { retryAfter: Math.ceil(wait / 1000) });
     }
+
+    if (!identity.verifyCode(request.body.code)) {
+        identity.throttle.recordFailure();
+
+        throw new RequestError(StatusCodes.UNAUTHORIZED, 'Wrong code');
+    }
+
+    identity.throttle.reset();
 
     const tokens = await request.server.identity.issueTokens(OWNER_ID);
 
@@ -51,7 +65,7 @@ async function logout(request: FastifyRequest<LogoutRequest>, reply: FastifyRepl
  * @returns {Promise<void>} Resolves when the profile is sent.
  */
 function me(request: FastifyRequest, reply: FastifyReply): void {
-    reply.status(StatusCodes.OK).send({ data: { id: request.user.id, username: request.server.variables.IDENTITY_USERNAME } });
+    reply.status(StatusCodes.OK).send({ data: { id: request.user.id } });
 }
 
 export default {

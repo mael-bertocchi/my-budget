@@ -9,6 +9,12 @@ import { LoginSchema, LogoutSchema, RefreshSchema } from 'src/modules/identity/i
  */
 export default function (fastify: FastifyInstance): void {
     fastify.post<LoginRequest>('/login', {
+        config: {
+            rateLimit: {
+                max: 5,
+                timeWindow: '1 minute'
+            }
+        },
         schema: {
             body: LoginSchema
         }

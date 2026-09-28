@@ -4,6 +4,7 @@ import fastifyJwt from '@fastify/jwt';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
+import { SignInThrottle } from 'src/modules/identity/identity-throttle';
 import { RequestError } from 'src/shared/models';
 
 /**
@@ -36,7 +37,8 @@ export interface IdentityTokens {
  * @description Public interface exposed on the Fastify instance.
  */
 export interface IdentityService {
-    verifyCredentials: (username: string, password: string) => boolean; /*!< Constant-time check of the env-configured username and password */
+    verifyCode: (code: string) => boolean; /*!< Constant-time check of the env-configured six-digit code */
+    throttle: SignInThrottle; /*!< Caps wrong codes across every caller */
     issueTokens: (userId: string) => Promise<IdentityTokens>; /*!< Creates a refresh session and returns a token pair */
     rotateTokens: (refreshToken: string) => Promise<IdentityTokens>; /*!< Validates and rotates a refresh token into a new pair */
     revokeSession: (userId: string, refreshToken: string) => Promise<void>; /*!< Invalidates a single refresh session (logout) */
@@ -56,7 +58,8 @@ function constantTimeEquals(left: string, right: string): boolean {
 
 /**
  * @function identityPlugin
- * @description Registers JWT signing/verification, persisted refresh sessions, and the route guard for the single env-configured account.
+ * @description Registers JWT signing/verification, persisted refresh sessions, and the route guard for the single account, opened with the
+ * six-digit code set in the environment.
  */
 export default fp(async function (fastify: FastifyInstance): Promise<void> {
     await fastify.register(fastifyJwt, {
@@ -113,12 +116,11 @@ export default fp(async function (fastify: FastifyInstance): Promise<void> {
     };
 
     fastify.decorate('identity', {
-        verifyCredentials(username: string, password: string): boolean {
-            const usernameMatches = constantTimeEquals(username, fastify.variables.IDENTITY_USERNAME);
-            const passwordMatches = constantTimeEquals(password, fastify.variables.IDENTITY_PASSWORD);
-
-            return usernameMatches && passwordMatches;
+        verifyCode(code: string): boolean {
+            return constantTimeEquals(code, fastify.variables.IDENTITY_CODE);
         },
+
+        throttle: new SignInThrottle(),
 
         issueTokens,
 

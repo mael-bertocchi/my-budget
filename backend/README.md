@@ -5,7 +5,7 @@ The **Fastify + TypeScript** server that saves My Budget's data and guards it be
 ## Features
 
 - **REST API** — versioned under `/v1`, split into focused modules (identity, state, health).
-- **Single-user identity** — one username and password, read straight from the environment. No user table, no registration. JWT access + refresh sessions, per-route rate limiting.
+- **Single-user identity** — one six-digit code, read straight from the environment. No user table, no registration. JWT access + refresh sessions, and wrong codes throttled across every caller.
 - **Document sync** — clients pull and replace the whole budget document (`GET`/`PUT /v1/state`), stored relationally and written in one transaction. Each write bumps a revision, and a write made from an older revision is refused, so the app and the web interface never erase each other's changes.
 - **Hardened** — Helmet, rate limiting, Zod request validation, and a non-root Docker image.
 
@@ -17,7 +17,7 @@ Node 24 · Fastify 5 · TypeScript · Prisma 7 · PostgreSQL · Zod
 
 | Method & path | Access | Purpose |
 | --- | --- | --- |
-| `POST /v1/identity/login` | — | Exchange `{ username, password }` for an access/refresh token pair |
+| `POST /v1/identity/login` | — | Exchange `{ code }` for an access/refresh token pair |
 | `POST /v1/identity/refresh` | — | Rotate a refresh token into a new pair |
 | `POST /v1/identity/logout` | access | Revoke the caller's refresh session |
 | `GET /v1/identity/me` | access | Return the signed-in account |
@@ -45,7 +45,7 @@ npm install
 cp .env.example .env
 ```
 
-Fill in `DATABASE_URL`, choose your `IDENTITY_USERNAME` / `IDENTITY_PASSWORD`, and set a long random `JWT_SECRET` (≥ 32 chars).
+Fill in `DATABASE_URL`, choose your six-digit `IDENTITY_CODE`, and set a long random `JWT_SECRET` (≥ 32 chars).
 
 3. Apply the database migrations
 
@@ -63,14 +63,15 @@ The API is live; verify it with `GET /v1/health`.
 
 ## Identity
 
-The only account is the one in your environment:
+The only account is opened by the code in your environment:
 
 ```bash
-IDENTITY_USERNAME="You"
-IDENTITY_PASSWORD="something-long-and-secret"
+IDENTITY_CODE="483921"
 ```
 
-`POST /v1/identity/login` compares the submitted credentials against these values in constant time and, on success, returns a short-lived access token plus a long-lived refresh token whose session is persisted (so logout and rotation are real). To change the credentials, edit the environment and restart — any existing tokens simply stop matching.
+`POST /v1/identity/login` compares the submitted code against this one in constant time and, on success, returns a short-lived access token plus a long-lived refresh token whose session is persisted (so logout and rotation are real). To change the code, edit the environment and restart — sessions already open stay open until they are signed out or lapse.
+
+A six-digit code has only a million values, so guessing is kept expensive: each address gets five attempts a minute, and after ten wrong codes in fifteen minutes — from anywhere — every sign-in is refused until the oldest one ages out. Devices already signed in are unaffected.
 
 ## Scripts
 

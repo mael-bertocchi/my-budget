@@ -12,8 +12,7 @@ export const variables = Type.Object({
     NODE_ENV: Type.Union([Type.Literal('development'), Type.Literal('production'), Type.Literal('test')]),
     PORT: Type.Number(),
     DATABASE_URL: Type.String({ minLength: 1 }),
-    IDENTITY_USERNAME: Type.String({ minLength: 1 }),
-    IDENTITY_PASSWORD: Type.String({ minLength: 8 }),
+    IDENTITY_CODE: Type.String({ pattern: '^\\d{6}$' }),
     JWT_SECRET: Type.String({ minLength: 32 }),
     JWT_ACCESS_EXPIRY: Type.String({ minLength: 1 }),
     JWT_REFRESH_EXPIRY: Type.String({ minLength: 1 })
