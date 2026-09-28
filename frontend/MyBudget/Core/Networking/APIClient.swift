@@ -5,11 +5,6 @@ struct IdentityTokens: Codable {
     var refreshToken: String
 }
 
-struct MeResponse: Codable {
-    var id: String
-    var username: String
-}
-
 /// The budget document as the server stores it, with the revision a push has to name to replace it.
 struct RemoteState: Decodable {
     var document: BudgetDocument
@@ -93,19 +88,14 @@ final class APIClient {
         let message: String
     }
 
-    func login(username: String, password: String) async throws -> MeResponse {
+    func login(code: String) async throws {
         let tokens: IdentityTokens = try await send(
             "/v1/identity/login",
             method: "POST",
-            body: ["username": username, "password": password],
+            body: ["code": code],
             authorized: false
         )
         self.tokens.store(access: tokens.accessToken, refresh: tokens.refreshToken)
-        return try await fetchMe()
-    }
-
-    func fetchMe() async throws -> MeResponse {
-        try await send("/v1/identity/me", method: "GET")
     }
 
     func logout() async {
@@ -185,7 +175,7 @@ final class APIClient {
             throw APIError.server(status: 0, message: "Invalid response")
         }
 
-        if http.statusCode == 401 {
+        if http.statusCode == 401, authorized {
             throw APIError.unauthorized
         }
 

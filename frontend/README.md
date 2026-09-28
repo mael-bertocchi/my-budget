@@ -9,7 +9,7 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **Month stepper** — walk back through previous months; every figure recomputes.
 - **History ledger** — day groups with day totals, a search field, and filter chips for each category.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at. Every rate carries the 1% a bank adds on top of the reference rate, so the euro figure matches the statement rather than the mid-market quote.
-- **Sign in & sync** — one account (its password lives in the backend's environment); every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns.
+- **Sign in & sync** — one account, opened with a six-digit code that lives in the backend's environment; every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns, and edits made in the web interface merge in rather than being overwritten.
 
 ## Screens
 
@@ -90,7 +90,7 @@ If the profile has already expired, the reinstall works but the launch is refuse
 
 ## Signing in
 
-The app needs the backend running at `https://my-budget.mael-bertocchi.fr`. Sign in with the username and password set in the backend's environment (`IDENTITY_USERNAME` / `IDENTITY_PASSWORD`).
+The app needs the backend running at `https://my-budget.mael-bertocchi.fr`. Sign in with the six-digit code set in the backend's environment (`IDENTITY_CODE`); the sixth digit submits it.
 
 ## Running Demonstration
 

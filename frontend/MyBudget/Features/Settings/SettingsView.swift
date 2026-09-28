@@ -24,7 +24,7 @@ struct SettingsView: View {
                 VStack(spacing: 0) {
                     HStack(spacing: 12) {
                         IconTile(symbol: "person.crop.circle", color: Theme.accent)
-                        Text(session.username ?? "Signed in")
+                        Text("Signed in")
                             .font(Theme.font(14))
                             .foregroundStyle(Theme.text)
                         Spacer(minLength: 8)

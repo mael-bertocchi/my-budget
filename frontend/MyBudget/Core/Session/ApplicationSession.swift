@@ -18,7 +18,6 @@ final class ApplicationSession {
     }
 
     private(set) var identityState: IdentityState = .loading
-    private(set) var username: String?
     private(set) var syncState: SyncState = .idle
     private(set) var lastSyncedAt: Date?
 
@@ -39,7 +38,6 @@ final class ApplicationSession {
         self.rates = rates
         self.tokens = tokens
         self.api = api
-        self.username = UserDefaults.standard.string(forKey: Keys.username)
         self.base = SyncBase.load()
         api.setBaseURL(URL(string: serverURLString))
     }
@@ -56,11 +54,8 @@ final class ApplicationSession {
         repriceRecentOperations()
     }
 
-    func signIn(username: String, password: String) async throws {
-        let me = try await api.login(username: username, password: password)
-
-        self.username = me.username
-        UserDefaults.standard.set(me.username, forKey: Keys.username)
+    func signIn(code: String) async throws {
+        try await api.login(code: code)
 
         identityState = .signedIn
         wireLocalChanges()
@@ -76,7 +71,6 @@ final class ApplicationSession {
         tokens.clear()
         base = nil
         SyncBase.clear()
-        username = nil
         syncState = .idle
         lastSyncedAt = nil
         identityState = .signedOut
@@ -102,7 +96,6 @@ final class ApplicationSession {
     #if DEBUG
     func enterDemo() {
         isDemo = true
-        username = UserDefaults.standard.string(forKey: Keys.username) ?? "Demo"
         identityState = .signedIn
     }
     #endif
@@ -310,10 +303,6 @@ final class ApplicationSession {
 
     /// How many pull-merge-push rounds a reconcile tries before giving up on a server that keeps changing under it.
     private static let reconcileAttempts = 3
-
-    private enum Keys {
-        static let username = "session.username"
-    }
 
     static let serverURL = "https://my-budget.mael-bertocchi.fr"
 }

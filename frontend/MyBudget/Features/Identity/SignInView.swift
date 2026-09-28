@@ -4,17 +4,14 @@ struct SignInView: View {
     @Environment(ApplicationSession.self) private var session
     @Environment(Preferences.self) private var preferences
 
-    @State private var username = ""
-    @State private var password = ""
+    @State private var code = ""
     @State private var isSubmitting = false
     @State private var errorMessage: String?
+    @State private var failures = 0
 
-    @FocusState private var focus: Field?
+    @FocusState private var isFocused: Bool
 
-    private enum Field {
-        case username
-        case password
-    }
+    private static let length = 6
 
     var body: some View {
         ZStack {
@@ -23,26 +20,10 @@ struct SignInView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     header
-                        .padding(.bottom, 28)
+                        .padding(.bottom, 32)
 
-                    VStack(spacing: 12) {
-                        field(
-                            label: "Username",
-                            prompt: "You",
-                            text: $username,
-                            focus: .username,
-                            secure: false,
-                            submit: { focus = .password }
-                        )
-                        field(
-                            label: "Password",
-                            prompt: "••••••••",
-                            text: $password,
-                            focus: .password,
-                            secure: true,
-                            submit: submit
-                        )
-                    }
+                    codeField
+                        .modifier(Shake(animatableData: CGFloat(failures)))
 
                     if let errorMessage {
                         Text(errorMessage)
@@ -52,7 +33,7 @@ struct SignInView: View {
                             .transition(.opacity)
                     }
 
-                    PrimaryButton(title: "Sign in", isDisabled: !canSubmit || isSubmitting) {
+                    PrimaryButton(title: "Sign in", isDisabled: code.count < Self.length || isSubmitting) {
                         submit()
                     }
                     .padding(.top, 22)
@@ -60,18 +41,11 @@ struct SignInView: View {
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.top, 80)
                 .padding(.bottom, 40)
-                .background(
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture { focus = nil }
-                )
             }
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
         }
-        .onAppear {
-            username = session.username ?? ""
-        }
+        .onAppear { isFocused = true }
     }
 
     private var header: some View {
@@ -89,66 +63,95 @@ struct SignInView: View {
                 .font(Theme.font(30, .semibold))
                 .tracking(-0.5)
                 .foregroundStyle(Theme.text)
-            Text("Sign in to sync your budget across devices.")
+            Text("Enter your code to open your budget.")
                 .font(Theme.font(14))
                 .foregroundStyle(Theme.muted)
         }
     }
 
-    private var canSubmit: Bool {
-        !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty
-    }
+    /// Six boxes drawn over one hidden field. The field owns the keyboard, pasting and one-time-code autofill;
+    /// the boxes only show how many digits it holds, as dots like a passcode, and where the next one goes.
+    private var codeField: some View {
+        ZStack {
+            TextField("", text: digitsOnly)
+                .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
+                .focused($isFocused)
+                .opacity(0.001)
+                .accessibilityLabel("Code")
 
-    private func field(
-        label: String,
-        prompt: String,
-        text: Binding<String>,
-        focus field: Field,
-        secure: Bool,
-        submit: @escaping () -> Void
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            FieldLabel(label)
-            Group {
-                if secure {
-                    SecureField("", text: text, prompt: Text(prompt).foregroundStyle(Theme.faint))
-                        .onSubmit(submit)
-                } else {
-                    TextField("", text: text, prompt: Text(prompt).foregroundStyle(Theme.faint))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .onSubmit(submit)
+            HStack(spacing: 10) {
+                ForEach(0..<Self.length, id: \.self) { index in
+                    digitBox(index)
                 }
             }
-            .font(Theme.font(15))
-            .foregroundStyle(Theme.text)
-            .focused($focus, equals: field)
-            .padding(.horizontal, 14)
-            .frame(minHeight: 50)
-            .glassInput(radius: Theme.controlRadius)
-            .accessibilityLabel(label)
+            .contentShape(Rectangle())
+            .onTapGesture { isFocused = true }
+            .accessibilityHidden(true)
         }
     }
 
+    /// Keeps the field to six digits and submits as the sixth arrives. It runs on every edit, however fast the digits
+    /// come — typed, pasted or autofilled all at once.
+    private var digitsOnly: Binding<String> {
+        Binding(
+            get: { code },
+            set: { typed in
+                code = String(typed.filter(\.isNumber).prefix(Self.length))
+
+                if code.count == Self.length {
+                    submit()
+                }
+            }
+        )
+    }
+
+    private func digitBox(_ index: Int) -> some View {
+        let digits = Array(code)
+        let isNext = isFocused && !isSubmitting && index == min(digits.count, Self.length - 1)
+
+        return Circle()
+            .fill(Theme.text)
+            .frame(width: 12, height: 12)
+            .opacity(index < digits.count ? 1 : 0)
+            .frame(maxWidth: .infinity)
+            .frame(height: 60)
+            .glassInput(radius: Theme.controlRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                    .strokeBorder(isNext ? Theme.accent : .clear, lineWidth: 1.5)
+            )
+            .animation(.easeOut(duration: 0.12), value: isNext)
+    }
+
     private func submit() {
-        guard canSubmit, !isSubmitting else { return }
+        guard code.count == Self.length, !isSubmitting else { return }
         preferences.tap()
-        focus = nil
         isSubmitting = true
         withAnimation { errorMessage = nil }
 
         Task {
             do {
-                try await session.signIn(
-                    username: username.trimmingCharacters(in: .whitespaces),
-                    password: password
-                )
+                try await session.signIn(code: code)
                 preferences.success()
             } catch {
                 let message = (error as? APIError)?.errorDescription ?? error.localizedDescription
-                withAnimation { errorMessage = message }
+                withAnimation(.default) {
+                    failures += 1
+                    errorMessage = message
+                }
+                code = ""
                 isSubmitting = false
+                isFocused = true
             }
         }
+    }
+}
+
+private struct Shake: GeometryEffect {
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        ProjectionTransform(CGAffineTransform(translationX: 8 * sin(animatableData * .pi * 3), y: 0))
     }
 }
