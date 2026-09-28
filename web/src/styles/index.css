@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-canvas font-sans text-ink;
+        font-feature-settings: "ss01", "cv11";
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0.45;
+        cursor: pointer;
+    }
+
+    :focus-visible {
+        outline: 2px solid theme('colors.accent.DEFAULT');
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    .card {
+        @apply rounded-card bg-white shadow-card;
+    }
+
+    .field {
+        @apply h-11 w-full rounded-xl bg-fill px-3.5 text-[15px] text-ink outline-none transition placeholder:text-ink-quaternary focus:bg-white focus:ring-2 focus:ring-accent/40;
+    }
+
+    .field-label {
+        @apply mb-1.5 block text-[13px] font-medium text-ink-secondary;
+    }
+
+    .eyebrow {
+        @apply text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-tertiary;
+    }
+
+    .button-primary {
+        @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-accent text-[16px] font-semibold text-white transition hover:bg-accent-strong active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-fill-strong disabled:text-ink-quaternary;
+    }
+
+    .sheet {
+        @apply m-auto flex max-h-[min(88vh,880px)] w-[min(560px,calc(100vw-32px))] flex-col overflow-hidden rounded-sheet bg-white p-0 text-ink shadow-sheet;
+    }
+
+    .sheet[open] {
+        animation: sheet-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .sheet::backdrop {
+        background: rgb(0 0 0 / 0.28);
+        backdrop-filter: blur(6px);
+        animation: fade-in 0.2s ease-out;
+    }
+
+    .alert {
+        @apply m-auto w-[min(300px,calc(100vw-48px))] overflow-hidden rounded-[18px] bg-white/95 p-0 text-ink shadow-sheet backdrop-blur-xl;
+    }
+
+    .alert[open] {
+        animation: alert-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .alert::backdrop {
+        background: rgb(0 0 0 / 0.28);
+    }
+
+    @media (max-width: 639px) {
+        .sheet {
+            @apply mb-0 mt-auto w-full max-w-full rounded-b-none;
+            max-height: 94dvh;
+        }
+
+        .sheet[open] {
+            animation: sheet-up 0.36s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+    }
+}
+
+@layer utilities {
+    .no-scrollbar {
+        scrollbar-width: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@keyframes sheet-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: none; }
+}
+
+@keyframes alert-in {
+    from { opacity: 0; transform: scale(1.08); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
