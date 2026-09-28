@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import stateController from 'src/modules/state/state-controller';
 import type { StatePushRequest } from 'src/modules/state/state-models';
-import { StateSchema } from 'src/modules/state/state-models';
+import { StatePushSchema } from 'src/modules/state/state-models';
 
 /**
  * @function stateRoutes
@@ -15,7 +15,7 @@ export default function (fastify: FastifyInstance): void {
     fastify.put<StatePushRequest>('/', {
         preHandler: [fastify.identity.authenticate],
         schema: {
-            body: StateSchema
+            body: StatePushSchema
         }
     }, stateController.putState);
 }

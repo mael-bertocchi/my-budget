@@ -5,7 +5,7 @@ import { pullState, pushState } from 'src/modules/state/state-service';
 
 /**
  * @function getState
- * @description Returns the owner's whole budget document (categories, operations, budget settings).
+ * @description Returns the owner's whole budget document (categories, operations, budget settings) and its revision.
  *
  * @returns {Promise<void>} Resolves when the document is sent.
  */
@@ -17,7 +17,8 @@ async function getState(request: FastifyRequest, reply: FastifyReply): Promise<v
 
 /**
  * @function putState
- * @description Replaces the owner's whole budget document with the pushed one and returns the stored result.
+ * @description Replaces the owner's whole budget document with the pushed one and returns the stored result. Answers
+ * 409 when the push was edited from a revision the server has since moved past.
  *
  * @returns {Promise<void>} Resolves when the stored document is sent.
  */

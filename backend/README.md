@@ -6,7 +6,7 @@ The **Fastify + TypeScript** server that saves My Budget's data and guards it be
 
 - **REST API** — versioned under `/v1`, split into focused modules (identity, state, health).
 - **Single-user identity** — one username and password, read straight from the environment. No user table, no registration. JWT access + refresh sessions, per-route rate limiting.
-- **Document sync** — the client pulls and replaces its whole budget document (`GET`/`PUT /v1/state`), stored relationally and written in one transaction.
+- **Document sync** — clients pull and replace the whole budget document (`GET`/`PUT /v1/state`), stored relationally and written in one transaction. Each write bumps a revision, and a write made from an older revision is refused, so the app and the web interface never erase each other's changes.
 - **Hardened** — Helmet, rate limiting, Zod request validation, and a non-root Docker image.
 
 ## Stack
@@ -21,8 +21,10 @@ Node 24 · Fastify 5 · TypeScript · Prisma 7 · PostgreSQL · Zod
 | `POST /v1/identity/refresh` | — | Rotate a refresh token into a new pair |
 | `POST /v1/identity/logout` | access | Revoke the caller's refresh session |
 | `GET /v1/identity/me` | access | Return the signed-in account |
-| `GET /v1/state` | access | Read the whole budget document |
-| `PUT /v1/state` | access | Replace the whole budget document |
+| `GET /v1/state` | access | Read the whole budget document and its `revision` |
+| `PUT /v1/state` | access | Replace the whole budget document — `409` if the `revision` it names is out of date |
+| `GET /v1/rates` | access | The latest euro reference rates |
+| `GET /v1/rates/:date` | access | The reference rates of one past day |
 | `GET /v1/health` | — | Liveness and database connectivity |
 
 Every response is wrapped in `{ "data": … }`; errors are `{ "message": …, "data": … }`.

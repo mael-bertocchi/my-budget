@@ -1,6 +1,9 @@
-import type { PrismaClient } from 'prisma/generated/prisma/client';
-import type { StateBody } from 'src/modules/state/state-models';
+import { StatusCodes } from 'http-status-codes';
+import type { Prisma, PrismaClient } from 'prisma/generated/prisma/client';
+import type { StatePushBody, StoredStateBody } from 'src/modules/state/state-models';
 import { OWNER_ID } from 'src/plugins/identity';
+import type { Perhaps } from 'src/shared/models';
+import { RequestError } from 'src/shared/models';
 
 /**
  * @constant DEFAULT_MONTHLY_LIMIT
@@ -9,14 +12,21 @@ import { OWNER_ID } from 'src/plugins/identity';
 const DEFAULT_MONTHLY_LIMIT = 3000;
 
 /**
+ * @constant TRANSACTION_TIMEOUT
+ * @description How long a push may hold its transaction open. It rewrites every row of the document, which for a
+ * few thousand operations outlasts Prisma's five-second default.
+ */
+const TRANSACTION_TIMEOUT = 30 * 1000;
+
+/**
  * @function pullState
  * @description Reads the whole budget document back for the owner, in the order the client expects to render it.
  *
  * @param {PrismaClient} prisma The database client.
  *
- * @returns {Promise<StateBody>} The full budget document.
+ * @returns {Promise<StoredStateBody>} The full budget document and its revision.
  */
-export async function pullState(prisma: PrismaClient): Promise<StateBody> {
+export async function pullState(prisma: PrismaClient): Promise<StoredStateBody> {
     const [categories, operations, history, state] = await Promise.all([
         prisma.category.findMany({ orderBy: { position: 'asc' } }),
         prisma.operation.findMany({ orderBy: { date: 'desc' } }),
@@ -55,25 +65,59 @@ export async function pullState(prisma: PrismaClient): Promise<StateBody> {
                     categoryLimits: entry.categoryLimits as Record<string, number>
                 }
             ])
-        )
+        ),
+        revision: state?.revision ?? 0
     };
+}
+
+/**
+ * @function claimRevision
+ * @description Moves the document on to its next revision, provided it still sits at the one the push was edited
+ * from. The conditional update takes the row lock, so of two pushes racing from the same revision the second waits
+ * for the first to commit, then finds the revision moved on and is turned away.
+ *
+ * @param {Prisma.TransactionClient} transaction The open transaction.
+ * @param {Perhaps<number>} expected The revision the push was edited from, or undefined to overwrite unconditionally.
+ * @param {number} monthlyLimit The pushed monthly budget, stored on the same row.
+ *
+ * @returns {Promise<void>} Resolves once the revision is claimed.
+ */
+async function claimRevision(transaction: Prisma.TransactionClient, expected: Perhaps<number>, monthlyLimit: number): Promise<void> {
+    const claimed = await transaction.budgetState.updateMany({
+        where: expected === undefined ? { id: OWNER_ID } : { id: OWNER_ID, revision: expected },
+        data: { monthlyLimit, revision: { increment: 1 } }
+    });
+
+    if (claimed.count === 0) {
+        throw new RequestError(StatusCodes.CONFLICT, 'The budget changed on the server since it was last read');
+    }
 }
 
 /**
  * @function pushState
  * @description Replaces the owner's whole budget document with the pushed one inside a single transaction, then returns the persisted result.
+ * A push naming a revision the server has moved past is rejected with a conflict and changes nothing.
  *
  * @param {PrismaClient} prisma The database client.
- * @param {StateBody} body The full budget document to store.
+ * @param {StatePushBody} body The full budget document to store, and the revision it was edited from.
  *
- * @returns {Promise<StateBody>} The stored budget document, read back after the write.
+ * @returns {Promise<StoredStateBody>} The stored budget document and its new revision, read back after the write.
  */
-export async function pushState(prisma: PrismaClient, body: StateBody): Promise<StateBody> {
-    await prisma.$transaction([
-        prisma.category.deleteMany(),
-        prisma.operation.deleteMany(),
-        prisma.budgetHistory.deleteMany(),
-        prisma.category.createMany({
+export async function pushState(prisma: PrismaClient, body: StatePushBody): Promise<StoredStateBody> {
+    await prisma.budgetState.upsert({
+        where: { id: OWNER_ID },
+        update: {},
+        create: { id: OWNER_ID, monthlyLimit: DEFAULT_MONTHLY_LIMIT }
+    });
+
+    await prisma.$transaction(async (transaction) => {
+        await claimRevision(transaction, body.revision, body.budget.monthlyLimit);
+
+        await transaction.category.deleteMany();
+        await transaction.operation.deleteMany();
+        await transaction.budgetHistory.deleteMany();
+
+        await transaction.category.createMany({
             data: body.categories.map((category, index) => ({
                 id: category.id,
                 name: category.name,
@@ -82,8 +126,9 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 monthlyLimit: category.monthlyLimit,
                 position: index
             }))
-        }),
-        prisma.operation.createMany({
+        });
+
+        await transaction.operation.createMany({
             data: body.operations.map((operation) => ({
                 id: operation.id,
                 date: operation.date,
@@ -97,20 +142,16 @@ export async function pushState(prisma: PrismaClient, body: StateBody): Promise<
                 isOnline: operation.isOnline,
                 isRecurring: operation.isRecurring
             }))
-        }),
-        prisma.budgetHistory.createMany({
+        });
+
+        await transaction.budgetHistory.createMany({
             data: Object.entries(body.budgetHistory).map(([month, snapshot]) => ({
                 month,
                 monthlyLimit: snapshot.monthlyLimit,
                 categoryLimits: snapshot.categoryLimits
             }))
-        }),
-        prisma.budgetState.upsert({
-            where: { id: OWNER_ID },
-            update: { monthlyLimit: body.budget.monthlyLimit },
-            create: { id: OWNER_ID, monthlyLimit: body.budget.monthlyLimit }
-        })
-    ]);
+        });
+    }, { timeout: TRANSACTION_TIMEOUT });
 
     return await pullState(prisma);
 }

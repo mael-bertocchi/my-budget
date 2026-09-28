@@ -71,6 +71,7 @@ model BudgetHistory {
 model BudgetState {
   id           String   @id
   monthlyLimit Float    @default(3000) @map("monthly_limit")
+  revision     Int      @default(0)
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("budget_state")

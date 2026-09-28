@@ -74,11 +74,33 @@ export const StateSchema = z.object({
 export type StateBody = z.infer<typeof StateSchema>;
 
 /**
+ * @constant StatePushSchema
+ * @description Zod schema for a push: the whole document, plus the revision it was edited from. A push naming a
+ * revision is only stored if the server still holds that revision; one that names none overwrites whatever is
+ * there, which is how clients predating revisions keep working.
+ */
+export const StatePushSchema = StateSchema.extend({
+    revision: z.number().int().min(0).optional()
+});
+
+/**
+ * @type StatePushBody
+ * @description Inferred body type for the state-push endpoint.
+ */
+export type StatePushBody = z.infer<typeof StatePushSchema>;
+
+/**
+ * @type StoredStateBody
+ * @description The budget document as stored, with the revision a later push has to name to replace it.
+ */
+export type StoredStateBody = StateBody & { revision: number };
+
+/**
  * @interface StatePushRequest
  * @description Fastify request generic for the state-push endpoint.
  *
  * @extends RequestGenericInterface
  */
 export interface StatePushRequest extends RequestGenericInterface {
-    Body: StateBody; /*!< Validated full budget document */
+    Body: StatePushBody; /*!< Validated full budget document and the revision it was edited from */
 }
