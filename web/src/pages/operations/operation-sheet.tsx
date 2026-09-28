@@ -184,7 +184,7 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
 
             <div className="border-t border-hairline pt-5">
                 <p className="field-label">Category</p>
-                <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                <div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-5">
                     {categories.map((category) => {
                         const isSelected = category.id === categoryId;
 
@@ -194,10 +194,12 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => setCategoryId(category.id)}
-                                className={`flex flex-col items-center gap-1.5 rounded-2xl px-1 pb-2 pt-2.5 transition ${isSelected ? 'bg-accent-soft ring-2 ring-accent' : 'bg-fill hover:bg-fill-strong'}`}
+                                className="group flex flex-col items-center gap-1.5 rounded-2xl py-1 focus-visible:outline-none"
                             >
-                                <CategoryIconComponent category={category} size={30} />
-                                <span className="w-full truncate text-center text-[12px] font-medium">{category.name}</span>
+                                <span className={`rounded-[16px] p-[3px] ring-2 transition ${isSelected ? 'ring-accent' : 'ring-transparent group-hover:ring-fill-strong group-focus-visible:ring-accent/50'}`}>
+                                    <CategoryIconComponent category={category} size={44} />
+                                </span>
+                                <span className={`w-full truncate text-center text-[12px] transition ${isSelected ? 'font-semibold text-accent' : 'font-medium text-ink-secondary'}`}>{category.name}</span>
                             </button>
                         );
                     })}
