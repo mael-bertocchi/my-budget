@@ -1,5 +1,4 @@
 import { useSession } from '@application/session-context';
-import LogoComponent from '@components/logo';
 import SpinnerComponent from '@components/spinner';
 import { messageOf } from '@core/errors';
 import { useEffect, useRef, useState, type ClipboardEvent, type JSX, type KeyboardEvent } from 'react';
@@ -129,10 +128,7 @@ function SignInPage(): JSX.Element {
     return (
         <main className="flex min-h-dvh items-center justify-center px-5">
             <div className="w-full max-w-[420px] animate-rise text-center">
-                <div className="mx-auto w-fit rounded-[18px] shadow-card">
-                    <LogoComponent size={68} />
-                </div>
-                <h1 className="mt-6 text-[34px] font-semibold tracking-tight">My Budget</h1>
+                <h1 className="text-[34px] font-semibold tracking-tight">My Budget</h1>
                 <p className="mt-2 text-[17px] text-ink-secondary">Enter your code to open your budget.</p>
 
                 <div key={attempts} className={`mt-10 flex justify-center gap-2 sm:gap-2.5 ${attempts > 0 ? 'animate-shake' : ''}`} role="group" aria-label="Six-digit code">
