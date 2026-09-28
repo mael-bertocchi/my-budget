@@ -13,6 +13,7 @@ export const variables = Type.Object({
     PORT: Type.Number(),
     DATABASE_URL: Type.String({ minLength: 1 }),
     IDENTITY_CODE: Type.String({ pattern: '^\\d{6}$' }),
+    CORS_ORIGIN: Type.String({ default: '' }),
     JWT_SECRET: Type.String({ minLength: 32 }),
     JWT_ACCESS_EXPIRY: Type.String({ minLength: 1 }),
     JWT_REFRESH_EXPIRY: Type.String({ minLength: 1 })

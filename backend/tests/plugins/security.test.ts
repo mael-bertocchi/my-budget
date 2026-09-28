@@ -1,0 +1,70 @@
+import Fastify from 'fastify';
+import fp from 'fastify-plugin';
+import securityPlugin, { allowedOrigins } from 'src/plugins/security';
+import { describe, expect, it } from 'vitest';
+
+const WEB = 'https://budget.example.fr';
+
+/**
+ * @function makeServer
+ * @description A server with the security plugin, a stand-in environment and one route.
+ */
+async function makeServer(corsOrigin: string) {
+    const fastify = Fastify();
+
+    await fastify.register(fp((instance, _options, done) => {
+        instance.decorate('variables', { CORS_ORIGIN: corsOrigin } as never);
+        done();
+    }, { name: 'environment' }));
+    await fastify.register(securityPlugin);
+
+    fastify.get('/v1/state', (_request, reply) => {
+        void reply.send({ data: 'ok' });
+    });
+
+    return await fastify;
+}
+
+describe('allowedOrigins', () => {
+    it('reads a comma-separated list, trimming spaces and trailing slashes', () => {
+        expect(allowedOrigins(' https://a.fr/ , https://b.fr ')).toEqual(['https://a.fr', 'https://b.fr']);
+        expect(allowedOrigins('')).toEqual([]);
+    });
+});
+
+describe('CORS', () => {
+    it('answers the web interface’s preflight', async () => {
+        const fastify = await makeServer(WEB);
+        const response = await fastify.inject({
+            method: 'OPTIONS',
+            url: '/v1/state',
+            headers: { 'Origin': WEB, 'Access-Control-Request-Method': 'PUT', 'Access-Control-Request-Headers': 'authorization,content-type' }
+        });
+
+        expect(response.statusCode).toBe(204);
+        expect(response.headers['access-control-allow-origin']).toBe(WEB);
+        expect(response.headers['access-control-allow-methods']).toContain('PUT');
+        expect(response.headers['access-control-allow-headers']).toContain('Authorization');
+    });
+
+    it('lets the web interface read a response', async () => {
+        const fastify = await makeServer(WEB);
+        const response = await fastify.inject({ method: 'GET', url: '/v1/state', headers: { Origin: WEB } });
+
+        expect(response.headers['access-control-allow-origin']).toBe(WEB);
+    });
+
+    it('opens nothing to any other site', async () => {
+        const fastify = await makeServer(WEB);
+        const response = await fastify.inject({ method: 'GET', url: '/v1/state', headers: { Origin: 'https://evil.example' } });
+
+        expect(response.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    it('stays closed when no origin is configured', async () => {
+        const fastify = await makeServer('');
+        const response = await fastify.inject({ method: 'GET', url: '/v1/state', headers: { Origin: WEB } });
+
+        expect(response.headers['access-control-allow-origin']).toBeUndefined();
+    });
+});

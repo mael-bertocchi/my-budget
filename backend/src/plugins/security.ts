@@ -1,3 +1,4 @@
+import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import type { errorResponseBuilderContext } from '@fastify/rate-limit';
 import fastifyRateLimit from '@fastify/rate-limit';
@@ -6,11 +7,42 @@ import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
 
 /**
+ * @constant PREFLIGHT_CACHE
+ * @description How long, in seconds, a browser may reuse a preflight answer before asking again.
+ */
+const PREFLIGHT_CACHE = 10 * 60;
+
+/**
+ * @function allowedOrigins
+ * @description The web origins allowed to call the API from a browser, read from the comma-separated `CORS_ORIGIN`.
+ *
+ * @param {string} value The variable's value.
+ *
+ * @returns {string[]} The origins, none when the variable is empty.
+ */
+export function allowedOrigins(value: string): string[] {
+    return value.split(',').map((origin) => origin.trim().replace(/\/+$/, '')).filter((origin) => origin !== '');
+}
+
+/**
  * @function securityPlugin
- * @description Registers security-related plugins such as Helmet and rate limiting
+ * @description Registers security-related plugins such as Helmet, CORS and rate limiting. CORS only opens the API to the
+ * origins listed in `CORS_ORIGIN` — the web interface's — and to nothing at all when it is empty; the app isn't a
+ * browser and needs none. It is registered before the rate limit so a refused request still reaches the page readable.
  */
 export default fp(async function (fastify: FastifyInstance): Promise<void> {
     await fastify.register(fastifyHelmet);
+
+    const origins = allowedOrigins(fastify.variables.CORS_ORIGIN);
+
+    if (origins.length > 0) {
+        await fastify.register(fastifyCors, {
+            origin: origins,
+            methods: ['GET', 'POST', 'PUT'],
+            allowedHeaders: ['Authorization', 'Content-Type'],
+            maxAge: PREFLIGHT_CACHE
+        });
+    }
 
     await fastify.register(fastifyRateLimit, {
         timeWindow: '1 minute',

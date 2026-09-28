@@ -7,7 +7,7 @@ The **Fastify + TypeScript** server that saves My Budget's data and guards it be
 - **REST API** — versioned under `/v1`, split into focused modules (identity, state, health).
 - **Single-user identity** — one six-digit code, read straight from the environment. No user table, no registration. JWT access + refresh sessions, and wrong codes throttled across every caller.
 - **Document sync** — clients pull and replace the whole budget document (`GET`/`PUT /v1/state`), stored relationally and written in one transaction. Each write bumps a revision, and a write made from an older revision is refused, so the app and the web interface never erase each other's changes.
-- **Hardened** — Helmet, rate limiting, Zod request validation, and a non-root Docker image.
+- **Hardened** — Helmet, CORS open to the web interface's origin only, rate limiting, Zod request validation, and a non-root Docker image.
 
 ## Stack
 
@@ -45,7 +45,7 @@ npm install
 cp .env.example .env
 ```
 
-Fill in `DATABASE_URL`, choose your six-digit `IDENTITY_CODE`, and set a long random `JWT_SECRET` (≥ 32 chars).
+Fill in `DATABASE_URL`, choose your six-digit `IDENTITY_CODE`, set a long random `JWT_SECRET` (≥ 32 chars), and list the web interface's origin in `CORS_ORIGIN` (comma-separated if there are several; leave it empty to allow no browser origin at all — the iOS app doesn't need it).
 
 3. Apply the database migrations
 
