@@ -50,7 +50,7 @@ The local JSON store is the working copy; the server holds the durable one, and 
 
 A failed push flips the Settings badge to **Offline**, and the next reconcile catches up. Access tokens refresh automatically on a `401`; when the refresh token is gone, the app returns to the sign-in screen.
 
-The app talks to a fixed HTTPS endpoint — `https://my-budget.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
+The app talks to a fixed HTTPS endpoint — `https://api-budget.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
 
 ## Local Development
 
@@ -90,7 +90,7 @@ If the profile has already expired, the reinstall works but the launch is refuse
 
 ## Signing in
 
-The app needs the backend running at `https://my-budget.mael-bertocchi.fr`. Sign in with the six-digit code set in the backend's environment (`IDENTITY_CODE`); the sixth digit submits it.
+The app needs the backend running at `https://api-budget.mael-bertocchi.fr`. Sign in with the six-digit code set in the backend's environment (`IDENTITY_CODE`); the sixth digit submits it.
 
 ## Running Demonstration
 
