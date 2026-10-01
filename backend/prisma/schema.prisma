@@ -1,4 +1,4 @@
-// my-budget — personal budget tracker backend.
+// Obole — personal budget tracker backend.
 // Conventions: string PKs (the client mints stable ids such as "groceries" or a UUID),
 // camelCase fields mapped to snake_case columns/tables, created/updated timestamps.
 // Single tenant: the whole dataset belongs to the one env-configured owner, so the

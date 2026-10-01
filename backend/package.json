@@ -1,6 +1,6 @@
 {
-  "name": "@my-budget/backend",
-  "description": "The Fastify backend for my-budget, a personal budget tracker.",
+  "name": "@obole/backend",
+  "description": "The Fastify backend for Obole, a personal budget tracker.",
   "version": "4.1.1",
   "private": true,
   "type": "module",

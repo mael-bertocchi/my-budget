@@ -1,6 +1,6 @@
-# ⚙️ My Budget — Backend
+# ⚙️ Obole — Backend
 
-The **Fastify + TypeScript** server that saves My Budget's data and guards it behind a single account — backed by PostgreSQL.
+The **Fastify + TypeScript** server that saves Obole's data and guards it behind a single account — backed by PostgreSQL.
 
 ## Features
 
@@ -90,5 +90,5 @@ A six-digit code has only a million values, so guessing is kept expensive: each 
 A multi-stage, non-root image lives at `.docker/Dockerfile`:
 
 ```bash
-docker build -f .docker/Dockerfile -t my-budget-backend .
+docker build -f .docker/Dockerfile -t obole-backend .
 ```
