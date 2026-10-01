@@ -111,7 +111,7 @@ extension Category {
         Category(id: "transport", name: "Transport", symbol: "tram", colorHex: CategoryPalette.transport, monthlyLimit: 150),
         Category(id: "shopping", name: "Shopping", symbol: "bag", colorHex: CategoryPalette.shopping, monthlyLimit: 180),
         Category(id: "fun", name: "Fun", symbol: "film", colorHex: CategoryPalette.fun, monthlyLimit: 120),
-        Category(id: "health", name: "Health", symbol: "dumbbell", colorHex: CategoryPalette.health, monthlyLimit: 80),
+        Category(id: "health", name: "Health", symbol: "cross.case", colorHex: CategoryPalette.health, monthlyLimit: 80),
         Category(id: "school", name: "School", symbol: "graduationcap", colorHex: CategoryPalette.school, monthlyLimit: 120),
         Category(id: "miscellaneous", name: "Miscellaneous", symbol: "square.grid.2x2", colorHex: CategoryPalette.miscellaneous, monthlyLimit: 100)
     ]

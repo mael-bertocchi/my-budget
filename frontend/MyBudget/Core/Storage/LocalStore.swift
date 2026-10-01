@@ -200,17 +200,26 @@ final class LocalStore {
     }
 
     /// Lines the stored categories up with the shipped catalog, so a document written before a
-    /// category existed gains it instead of silently missing it. The stored copy wins whenever the
-    /// catalog already knows the id, keeping the limits set on the device, and anything outside the
-    /// catalog is left alone at the end of the list — unless it was retired, in which case it is
-    /// dropped once nothing is filed under it. A retired category still holding operations stays,
-    /// so history never loses the name and icon its rows are drawn with.
+    /// category existed gains it instead of silently missing it. For an id the catalog knows, the
+    /// catalog owns how the category looks — name, symbol and colour — and the stored copy only its
+    /// limit, so a new icon reaches documents written before it while the limits set on the device
+    /// stay. Anything outside the catalog is left alone at the end of the list — unless it was
+    /// retired, in which case it is dropped once nothing is filed under it. A retired category still
+    /// holding operations stays, so history never loses the name and icon its rows are drawn with.
     private func mergeCatalog() {
         let stored = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let catalogIds = Set(Category.defaults.map(\.id))
         let used = Set(operations.map(\.categoryId))
 
-        categories = Category.defaults.map { stored[$0.id] ?? $0 } + categories.filter { category in
+        let shipped = Category.defaults.map { category in
+            guard let limit = stored[category.id]?.monthlyLimit else { return category }
+
+            var merged = category
+            merged.monthlyLimit = limit
+            return merged
+        }
+
+        categories = shipped + categories.filter { category in
             guard !catalogIds.contains(category.id) else { return false }
 
             return !Category.retired.contains(category.id) || used.contains(category.id)
