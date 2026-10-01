@@ -33,7 +33,7 @@ struct SignInView: View {
                             .transition(.opacity)
                     }
 
-                    PrimaryButton(title: "Sign in", isDisabled: code.count < Self.length || isSubmitting) {
+                    PrimaryButton(title: String(appLocalized: "Sign in"), isDisabled: code.count < Self.length || isSubmitting) {
                         submit()
                     }
                     .padding(.top, 22)
@@ -59,7 +59,7 @@ struct SignInView: View {
                     .foregroundStyle(Theme.accent)
             }
             .padding(.bottom, 6)
-            Text("My Budget")
+            Text(verbatim: "My Budget")
                 .font(Theme.font(30, .semibold))
                 .tracking(-0.5)
                 .foregroundStyle(Theme.text)

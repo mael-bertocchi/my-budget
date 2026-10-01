@@ -18,16 +18,16 @@ struct CategoryLimitsSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                SheetHeader(title: "Edit limits") { dismiss() }
+                SheetHeader(title: String(appLocalized: "Edit limits")) { dismiss() }
                     .padding(.bottom, 20)
 
-                FieldLabel("Monthly budget")
+                FieldLabel(String(appLocalized: "Monthly budget"))
                     .padding(.bottom, 6)
                 HStack(spacing: 6) {
-                    Text("€")
+                    Text(verbatim: "€")
                         .font(Theme.font(15))
                         .foregroundStyle(Theme.muted)
-                    TextField("", text: $monthlyLimit, prompt: Text("3000").foregroundStyle(Theme.faint))
+                    TextField("", text: $monthlyLimit, prompt: Text(verbatim: "3000").foregroundStyle(Theme.faint))
                         .focused($focus, equals: .monthly)
                         .keyboardType(.decimalPad)
                         .font(Theme.font(15, .medium))
@@ -39,7 +39,7 @@ struct CategoryLimitsSheet: View {
                 .padding(.bottom, 22)
 
                 HStack {
-                    SectionLabel("Category limits")
+                    SectionLabel(String(appLocalized: "Category limits"))
                     Spacer(minLength: 12)
                     Text(dispatchText)
                         .font(Theme.font(12))
@@ -53,7 +53,7 @@ struct CategoryLimitsSheet: View {
                     }
                 }
 
-                PrimaryButton(title: "Save limits") {
+                PrimaryButton(title: String(appLocalized: "Save limits")) {
                     save()
                 }
                 .padding(.top, 24)
@@ -72,20 +72,28 @@ struct CategoryLimitsSheet: View {
         .screenBackground()
         .presentationDragIndicator(.visible)
         .onAppear(perform: loadValues)
+        .onChange(of: monthlyLimit) { _, typed in
+            let formatted = Formatting.groupedAmountInput(Formatting.sanitizeAmountInput(typed))
+            if formatted != typed { monthlyLimit = formatted }
+        }
+        .onChange(of: limits) { _, typed in
+            let formatted = typed.mapValues { Formatting.groupedAmountInput(Formatting.sanitizeAmountInput($0)) }
+            if formatted != typed { limits = formatted }
+        }
     }
 
     private var toDispatch: Double {
-        let budget = Formatting.parseAmount(monthlyLimit) ?? 0
+        let budget = Formatting.parseAmountInput(monthlyLimit) ?? 0
         let allocated = store.categories.reduce(0) { total, category in
-            total + (Formatting.parseAmount(limits[category.id] ?? "") ?? 0)
+            total + (Formatting.parseAmountInput(limits[category.id] ?? "") ?? 0)
         }
         return budget - allocated
     }
 
     private var dispatchText: String {
-        if toDispatch > 0 { return Formatting.euro(toDispatch) + " to dispatch" }
-        if toDispatch < 0 { return Formatting.euro(-toDispatch) + " over budget" }
-        return "Fully dispatched"
+        if toDispatch > 0 { return String(appLocalized: "\(Formatting.euro(toDispatch)) to dispatch") }
+        if toDispatch < 0 { return String(appLocalized: "\(Formatting.euro(-toDispatch)) over budget") }
+        return String(appLocalized: "Fully dispatched")
     }
 
     private var dispatchColor: Color {
@@ -97,12 +105,12 @@ struct CategoryLimitsSheet: View {
     private func limitRow(_ category: Category) -> some View {
         HStack(spacing: 11) {
             IconTile(symbol: category.symbol, color: category.color)
-            Text(category.name)
+            Text(category.title)
                 .font(Theme.font(14))
                 .foregroundStyle(Theme.text)
             Spacer(minLength: 8)
             HStack(spacing: 4) {
-                Text("€")
+                Text(verbatim: "€")
                     .font(Theme.font(14))
                     .foregroundStyle(Theme.muted)
                 TextField(
@@ -111,7 +119,7 @@ struct CategoryLimitsSheet: View {
                         get: { limits[category.id] ?? "" },
                         set: { limits[category.id] = $0 }
                     ),
-                    prompt: Text("0").foregroundStyle(Theme.faint)
+                    prompt: Text(verbatim: "0").foregroundStyle(Theme.faint)
                 )
                 .focused($focus, equals: .category(category.id))
                 .keyboardType(.decimalPad)
@@ -130,18 +138,18 @@ struct CategoryLimitsSheet: View {
     }
 
     private func loadValues() {
-        monthlyLimit = Formatting.decimalInput(store.budget.monthlyLimit)
+        monthlyLimit = Formatting.amountInput(store.budget.monthlyLimit)
         limits = Dictionary(
-            uniqueKeysWithValues: store.categories.map { ($0.id, Formatting.decimalInput($0.monthlyLimit)) }
+            uniqueKeysWithValues: store.categories.map { ($0.id, Formatting.amountInput($0.monthlyLimit)) }
         )
     }
 
     private func save() {
-        if let value = Formatting.parseAmount(monthlyLimit) {
+        if let value = Formatting.parseAmountInput(monthlyLimit) {
             store.setMonthlyLimit(value)
         }
         for (categoryId, text) in limits {
-            guard let value = Formatting.parseAmount(text) else { continue }
+            guard let value = Formatting.parseAmountInput(text) else { continue }
             store.updateLimit(categoryId: categoryId, limit: value)
         }
         preferences.success()

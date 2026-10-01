@@ -25,7 +25,7 @@ struct HistoryView: View {
     private var headerBlock: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
-                ScreenTitle("History")
+                ScreenTitle(String(appLocalized: "History"))
                 Spacer(minLength: 12)
                 HeaderAddButton {
                     preferences.tap()
@@ -34,16 +34,16 @@ struct HistoryView: View {
             }
             .padding(.bottom, 12)
 
-            SearchField(text: $query, prompt: "Search operations")
+            SearchField(text: $query, prompt: String(appLocalized: "Search operations"))
                 .padding(.bottom, 12)
 
             ScrollView(.horizontal) {
                 HStack(spacing: 8) {
-                    FilterChip(title: "All", isActive: filter == .all) {
+                    FilterChip(title: String(appLocalized: "All"), isActive: filter == .all) {
                         select(.all)
                     }
                     ForEach(store.categories) { category in
-                        FilterChip(title: category.name, isActive: filter == .category(category.id)) {
+                        FilterChip(title: category.title, isActive: filter == .category(category.id)) {
                             select(.category(category.id))
                         }
                     }
@@ -112,9 +112,9 @@ struct HistoryView: View {
 
     private var emptyMessage: String {
         if !query.isEmpty || filter != .all {
-            return "No operations match this search."
+            return String(appLocalized: "No operations match this search.")
         }
-        return "No operations yet. Tap ＋ to log your first expense."
+        return String(appLocalized: "No operations yet. Tap ＋ to log your first expense.")
     }
 
     private var groups: [DayGroup] {
@@ -136,7 +136,7 @@ struct HistoryView: View {
 
     private func matchesQuery(_ operation: Operation, _ query: String) -> Bool {
         guard !query.isEmpty else { return true }
-        let category = store.categoryOrFallback(id: operation.categoryId).name
+        let category = store.categoryOrFallback(id: operation.categoryId).title
         let haystack = [operation.name, operation.description ?? "", operation.location ?? "", category]
         return haystack.contains { $0.localizedCaseInsensitiveContains(query) }
     }
@@ -233,7 +233,7 @@ struct OperationRow: View {
             parts.append(location)
         }
         if hasDescription {
-            parts.append("has a note")
+            parts.append(String(appLocalized: "has a note"))
         }
         return parts.joined(separator: ", ")
     }

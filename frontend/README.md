@@ -9,6 +9,7 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 - **Month stepper** — walk back through previous months; every figure recomputes.
 - **History ledger** — day groups with day totals, a search field, and filter chips for each category.
 - **Multi-currency** — pick the entry currency; the euro equivalent recomputes live and is stored with the operation, so past entries keep the rate they were logged at. Every rate carries the 1% a bank adds on top of the reference rate, so the euro figure matches the statement rather than the mid-market quote.
+- **English & French** — the language follows the device, or the one picked in Settings, and switches on the spot. Amounts and dates follow it too: `€1,234.50` in English, `1 234,50 €` in French.
 - **Sign in & sync** — one account, opened with a six-digit code that lives in the backend's environment; every change is pushed to the server and restored on a fresh device. Offline changes stay local and reconcile when the connection returns, and edits made in the web interface merge in rather than being overwritten.
 
 ## Screens
@@ -26,17 +27,22 @@ MyBudget/
 ├─ Application/    App entry, root shell (auth gate + native TabView)
 ├─ Core/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
-│  ├─ Formatting/  Euro, amount, rate and date formatting
+│  ├─ Formatting/  Euro, amount, rate and date formatting, in the interface's language
 │  ├─ Models/      Domain types (Category, Operation, BudgetSettings)
+│  ├─ Localization/ Interface language (automatic, English, French) and lookups in it
 │  ├─ Money/       Currencies and euro exchange rates
 │  ├─ Networking/  APIClient (bearer + refresh-on-401), Keychain token store
-│  ├─ Preferences/ Last-used currency, default payment method, haptics
+│  ├─ Preferences/ Last-used currency, haptics, language
 │  ├─ Session/     ApplicationSession — auth state + pull/push sync
 │  ├─ Storage/     LocalStore (JSON snapshot), BudgetDocument, sync base & merge, debug seed
 │  └─ Theme/       Design tokens, haptics
 ├─ Features/       One folder per screen (Identity, Budget, History, Operations, Settings)
 └─ UIComponents/   Liquid glass surfaces, buttons, progress, tiles
 ```
+
+### Languages
+
+Every string lives in `MyBudget/Localizable.xcstrings`, with English as the source and a French translation. The language can change while the app runs, which the main bundle can't follow, so the root sets the chosen locale in the environment — `Text("…")` resolves in it — and strings built outside a view go through `String(appLocalized:)`, which looks them up in that locale. Category names stay in English in the synced document and are translated by id when shown, so the app and the web never fight over them.
 
 State lives in `@Observable` objects injected through the environment: `LocalStore` (data, persisted to Application Support as JSON), `ExchangeRates` (currencies), `Preferences` (UserDefaults), and `ApplicationSession` (auth + sync). Views read them directly and derive everything else through `BudgetMath` — no view models.
 

@@ -78,6 +78,7 @@ struct MainShell: View {
                     .screenBackground()
             }
         }
+        .id(preferences.language)
         .tabBarMinimizeBehavior(.onScrollDown)
         .sheet(item: $editorRoute) { route in
             OperationEditorSheet(route: route)

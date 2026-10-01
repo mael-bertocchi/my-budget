@@ -128,4 +128,24 @@ extension Category {
         colorHex: 0xA78BFA,
         monthlyLimit: 0
     )
+
+    /// The name to show. The document keeps the English `name` whatever language each device runs in, so the
+    /// categories the app knows are translated by id, and anything else shows the name it was stored with.
+    var title: String {
+        switch id {
+        case "groceries": return String(appLocalized: "Groceries")
+        case "restaurant": return String(appLocalized: "Restaurant")
+        case "bar": return String(appLocalized: "Bar")
+        case "coffee": return String(appLocalized: "Coffee")
+        case "transport": return String(appLocalized: "Transport")
+        case "shopping": return String(appLocalized: "Shopping")
+        case "fun": return String(appLocalized: "Fun")
+        case "health": return String(appLocalized: "Health")
+        case "school": return String(appLocalized: "School")
+        case "miscellaneous": return String(appLocalized: "Miscellaneous")
+        case "rent": return String(appLocalized: "Rent")
+        case Category.fallback.id: return String(appLocalized: "Uncategorized")
+        default: return name
+        }
+    }
 }

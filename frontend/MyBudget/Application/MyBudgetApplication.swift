@@ -18,6 +18,12 @@ struct MyBudgetApplication: App {
         _session = State(initialValue: ApplicationSession(store: store, rates: rates, tokens: tokens, api: api))
     }
 
+    /// Read through `preferences` so the scene redraws in a language picked in Settings.
+    private var interfaceLocale: Locale {
+        _ = preferences.language
+        return Localization.locale
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -25,6 +31,7 @@ struct MyBudgetApplication: App {
                 .environment(rates)
                 .environment(preferences)
                 .environment(session)
+                .environment(\.locale, interfaceLocale)
                 .tint(Theme.accent)
                 .preferredColorScheme(.dark)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)

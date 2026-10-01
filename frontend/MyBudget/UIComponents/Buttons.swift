@@ -146,7 +146,7 @@ struct FilterChip: View {
 
 struct SearchField: View {
     @Binding var text: String
-    var prompt: String = "Search"
+    var prompt: String = String(appLocalized: "Search")
 
     var body: some View {
         HStack(spacing: 8) {
@@ -236,7 +236,7 @@ struct ScreenTitle: View {
 }
 
 struct HeaderAddButton: View {
-    var accessibilityLabel: String = "New operation"
+    var accessibilityLabel: String = String(appLocalized: "New operation")
     let action: () -> Void
 
     var body: some View {

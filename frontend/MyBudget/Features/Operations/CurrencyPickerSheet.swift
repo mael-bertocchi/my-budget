@@ -10,7 +10,7 @@ struct CurrencyPickerSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                SheetHeader(title: "Currency") { dismiss() }
+                SheetHeader(title: String(appLocalized: "Currency")) { dismiss() }
                     .padding(.bottom, 16)
 
                 VStack(spacing: 0) {
@@ -45,7 +45,7 @@ struct CurrencyPickerSheet: View {
                 Text(currency.code)
                     .font(Theme.font(14))
                     .foregroundStyle(Theme.text)
-                Text(currency.name)
+                Text(currency.title)
                     .font(Theme.font(12))
                     .foregroundStyle(Theme.muted)
             }

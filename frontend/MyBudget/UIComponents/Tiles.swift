@@ -54,7 +54,7 @@ struct CategoryChip: View {
                 Image(systemName: category.symbol)
                     .font(.system(size: 20, weight: .regular))
                     .frame(height: 24)
-                Text(category.name)
+                Text(category.title)
                     .font(Theme.font(10))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -74,7 +74,7 @@ struct CategoryChip: View {
             .contentShape(RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(category.name)
+        .accessibilityLabel(category.title)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }

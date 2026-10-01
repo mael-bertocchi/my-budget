@@ -38,19 +38,30 @@ private struct StatePush: Encodable {
 enum APIError: Error, LocalizedError {
     case notConfigured
     case unauthorized
+    case wrongCode
+    case throttled(retryAfter: Int?)
     case conflict
     case server(status: Int, message: String)
     case transport(Error)
     case decoding(Error)
 
+    /// What to tell the person, in the interface's language. The server words its own messages in English for
+    /// whoever reads its logs, so they are kept for that and never shown.
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "No server is configured."
-        case .unauthorized: return "Your session has expired."
-        case .conflict: return "The budget changed on the server."
-        case .server(_, let message): return message
-        case .transport: return "Can't reach the server."
-        case .decoding: return "The server sent an unexpected response."
+        case .notConfigured: return String(appLocalized: "No server is configured.")
+        case .unauthorized: return String(appLocalized: "Your session has expired.")
+        case .wrongCode: return String(appLocalized: "Wrong code.")
+        case .throttled(let retryAfter):
+            guard let retryAfter else { return String(appLocalized: "Too many attempts. Try again in a moment.") }
+
+            let minutes = max(1, Int((Double(retryAfter) / 60).rounded(.up)))
+            return String(appLocalized: "Too many wrong codes. Try again in \(minutes) min.")
+        case .conflict: return String(appLocalized: "The budget changed on the server.")
+        case .server(let status, _) where status >= 500: return String(appLocalized: "The server is unavailable right now.")
+        case .server: return String(appLocalized: "The server refused the request.")
+        case .transport: return String(appLocalized: "Can't reach the server.")
+        case .decoding: return String(appLocalized: "The server sent an unexpected response.")
         }
     }
 
@@ -88,14 +99,27 @@ final class APIClient {
         let message: String
     }
 
+    /// The body of a refusal from the sign-in throttle, which says how many seconds are left before it lets codes through again.
+    private struct ThrottleEnvelope: Decodable {
+        struct Details: Decodable {
+            let retryAfter: Int
+        }
+
+        let data: Details
+    }
+
     func login(code: String) async throws {
-        let tokens: IdentityTokens = try await send(
-            "/v1/identity/login",
-            method: "POST",
-            body: ["code": code],
-            authorized: false
-        )
-        self.tokens.store(access: tokens.accessToken, refresh: tokens.refreshToken)
+        do {
+            let tokens: IdentityTokens = try await send(
+                "/v1/identity/login",
+                method: "POST",
+                body: ["code": code],
+                authorized: false
+            )
+            self.tokens.store(access: tokens.accessToken, refresh: tokens.refreshToken)
+        } catch APIError.server(status: 401, message: _) {
+            throw APIError.wrongCode
+        }
     }
 
     func logout() async {
@@ -181,6 +205,11 @@ final class APIClient {
 
         if http.statusCode == 409 {
             throw APIError.conflict
+        }
+
+        if http.statusCode == 429 {
+            let retryAfter = (try? JSONCoding.decoder.decode(ThrottleEnvelope.self, from: data))?.data.retryAfter
+            throw APIError.throttled(retryAfter: retryAfter)
         }
 
         guard (200..<300).contains(http.statusCode) else {

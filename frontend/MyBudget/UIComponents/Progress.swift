@@ -70,6 +70,6 @@ struct BudgetRing: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(caption) \(amount) \(subtitle)")
+        .accessibilityLabel([caption, amount, subtitle].joined(separator: " "))
     }
 }

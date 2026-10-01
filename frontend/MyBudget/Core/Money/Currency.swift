@@ -26,6 +26,17 @@ extension Currency {
         all.first { $0.code == code } ?? euro
     }
 
+    /// The name to show, in the interface's language.
+    var title: String {
+        switch code {
+        case "EUR": return String(appLocalized: "Euro")
+        case "USD": return String(appLocalized: "United States Dollar")
+        case "CHF": return String(appLocalized: "Swiss Franc")
+        case "KRW": return String(appLocalized: "South Korean Won")
+        default: return name
+        }
+    }
+
     /// What the bank adds on top of the reference rate. A card payment abroad is not settled at the ECB
     /// rate: the bank takes its cut on the way, so the operation lands on the statement about a percent
     /// dearer than the published rate suggests.

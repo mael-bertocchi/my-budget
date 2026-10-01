@@ -52,14 +52,14 @@ struct OperationEditorSheet: View {
                 RowDivider()
                     .padding(.vertical, 18)
 
-                FieldLabel("Category")
+                FieldLabel(String(appLocalized: "Category"))
                     .padding(.bottom, 10)
                 categoryGrid
                     .padding(.bottom, 20)
 
                 fields
 
-                PrimaryButton(title: isEditing ? "Save changes" : "Save operation", isDisabled: !isValid) {
+                PrimaryButton(title: isEditing ? String(appLocalized: "Save changes") : String(appLocalized: "Save operation"), isDisabled: !isValid) {
                     save()
                 }
                 .padding(.top, 20)
@@ -123,7 +123,7 @@ struct OperationEditorSheet: View {
     }
 
     private var amount: Double {
-        Formatting.parseAmount(Formatting.sanitizeAmountInput(amountText)) ?? 0
+        Formatting.parseAmountInput(amountText) ?? 0
     }
 
     private var selectedDay: String {
@@ -150,16 +150,16 @@ struct OperationEditorSheet: View {
 
     /// The reason there is no rate to show, or nil when there is one.
     private var rateProblem: String? {
-        appliedRate == nil ? (rates.failure(on: selectedDay) ?? "Loading…") : nil
+        appliedRate == nil ? (rates.failure(on: selectedDay) ?? String(appLocalized: "Loading…")) : nil
     }
 
     /// The rate, or why there isn't one yet.
     private var rateLine: String {
         guard let appliedRate else {
-            return rates.failure(on: selectedDay) ?? "Loading…"
+            return rates.failure(on: selectedDay) ?? String(appLocalized: "Loading…")
         }
 
-        return "Rate \(Formatting.rate(appliedRate))"
+        return String(appLocalized: "Rate \(Formatting.rate(appliedRate))")
     }
 
     private var euroAmount: Double? {
@@ -174,9 +174,9 @@ struct OperationEditorSheet: View {
 
     private var amountBlock: some View {
         VStack(spacing: 4) {
-            FieldLabel("Amount")
+            FieldLabel(String(appLocalized: "Amount"))
             HStack(alignment: .center, spacing: 6) {
-                TextField("", text: $amountText, prompt: Text("0.00").foregroundStyle(Theme.faint))
+                TextField("", text: $amountText, prompt: Text(verbatim: Formatting.groupedAmountInput("0.00")).foregroundStyle(Theme.faint))
                     .font(Theme.font(44, .semibold))
                     .tracking(-0.88)
                     .foregroundStyle(Theme.text)
@@ -202,7 +202,7 @@ struct OperationEditorSheet: View {
                     .background(Theme.neutral900, in: RoundedRectangle(cornerRadius: Theme.inputRadius, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Currency, \(currency.name)")
+                .accessibilityLabel("Currency, \(currency.title)")
             }
             .padding(.top, 2)
 
@@ -237,13 +237,13 @@ struct OperationEditorSheet: View {
 
     private var fields: some View {
         VStack(alignment: .leading, spacing: 12) {
-            GlassField(label: "Name") {
+            GlassField(label: String(appLocalized: "Name")) {
                 TextField("", text: $name, prompt: Text("Whole Foods").foregroundStyle(Theme.faint))
                     .focused($focus, equals: .name)
                     .accessibilityLabel("Name")
             }
 
-            GlassField(label: "Description") {
+            GlassField(label: String(appLocalized: "Description")) {
                 TextField(
                     "",
                     text: $description,
@@ -256,7 +256,7 @@ struct OperationEditorSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                FieldLabel("Date")
+                FieldLabel(String(appLocalized: "Date"))
                 Button {
                     preferences.tap()
                     focus = nil
@@ -293,7 +293,7 @@ struct OperationEditorSheet: View {
             onlineRow
 
             if !isOnline {
-                GlassField(label: "Location") {
+                GlassField(label: String(appLocalized: "Location")) {
                     HStack(spacing: 8) {
                         Image(systemName: "mappin")
                             .font(.system(size: 14))
@@ -365,7 +365,7 @@ struct OperationEditorSheet: View {
             location = store.latestLocation ?? ""
             return
         }
-        amountText = Formatting.groupedAmountInput(Formatting.decimalInput(operation.amount))
+        amountText = Formatting.amountInput(operation.amount)
         currencyCode = operation.currencyCode
         categoryId = operation.categoryId
         name = operation.name

@@ -16,10 +16,10 @@ struct SettingsView: View {
 
         return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                ScreenTitle("Settings")
+                ScreenTitle(String(appLocalized: "Settings"))
                     .padding(.bottom, 20)
 
-                SectionLabel("Account")
+                SectionLabel(String(appLocalized: "Account"))
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
                     HStack(spacing: 12) {
@@ -51,14 +51,14 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
-                SectionLabel("Budget")
+                SectionLabel(String(appLocalized: "Budget"))
                     .padding(.top, 22)
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
                     valueRow(
                         symbol: "target",
                         color: Theme.accent,
-                        title: "Budget & limits",
+                        title: String(appLocalized: "Budget & limits"),
                         value: Formatting.euro(store.budget.monthlyLimit)
                     ) {
                         showLimits = true
@@ -66,14 +66,14 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
-                SectionLabel("Entry")
+                SectionLabel(String(appLocalized: "Entry"))
                     .padding(.top, 22)
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
                     valueRow(
                         symbol: "eurosign.circle",
                         color: Theme.accent,
-                        title: "Default currency",
+                        title: String(appLocalized: "Default currency"),
                         value: preferences.lastUsedCurrencyCode
                     ) {
                         showCurrencyPicker = true
@@ -95,7 +95,13 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
-                SectionLabel("Exchange rates")
+                SectionLabel(String(appLocalized: "General"))
+                    .padding(.top, 22)
+                    .padding(.bottom, 10)
+                languageRow
+                    .glassCard()
+
+                SectionLabel(String(appLocalized: "Exchange rates"))
                     .padding(.top, 22)
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
@@ -104,11 +110,11 @@ struct SettingsView: View {
                             Text(currency.code)
                                 .font(Theme.mono(14, .medium))
                                 .foregroundStyle(Theme.text)
-                            Text(currency.name)
+                            Text(currency.title)
                                 .font(Theme.font(13))
                                 .foregroundStyle(Theme.muted)
                             Spacer(minLength: 8)
-                            Text("1 \(currency.code) = \(Formatting.rate(currency.rateToEuro)) €")
+                            Text(verbatim: "1 \(currency.code) = \(Formatting.rate(currency.rateToEuro)) €")
                                 .font(Theme.font(12))
                                 .foregroundStyle(Theme.muted)
                         }
@@ -127,13 +133,13 @@ struct SettingsView: View {
                     .padding(.top, 8)
                     .padding(.horizontal, 2)
 
-                SectionLabel("Data")
+                SectionLabel(String(appLocalized: "Data"))
                     .padding(.top, 22)
                     .padding(.bottom, 10)
                 VStack(spacing: 0) {
-                    infoRow(symbol: "list.bullet", title: "Operations", value: "\(store.operations.count)")
+                    infoRow(symbol: "list.bullet", title: String(appLocalized: "Operations"), value: "\(store.operations.count)")
                     RowDivider()
-                    infoRow(symbol: "square.grid.2x2", title: "Categories", value: "\(store.categories.count)")
+                    infoRow(symbol: "square.grid.2x2", title: String(appLocalized: "Categories"), value: "\(store.categories.count)")
                     RowDivider()
                     Button {
                         showResetConfirmation = true
@@ -153,7 +159,7 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
-                Text("My Budget \(applicationVersion)")
+                Text(verbatim: "My Budget \(applicationVersion)")
                     .font(Theme.font(11))
                     .foregroundStyle(Theme.faint)
                     .frame(maxWidth: .infinity)
@@ -213,6 +219,46 @@ struct SettingsView: View {
                     .foregroundStyle(Theme.muted)
             }
         }
+    }
+
+    /// Picking a language redraws every screen in it on the spot, so a menu is enough — no sheet to come back from.
+    private var languageRow: some View {
+        let selection = Binding(
+            get: { preferences.language },
+            set: { language in
+                preferences.tap()
+                preferences.language = language
+            }
+        )
+
+        return Menu {
+            Picker(selection: selection) {
+                ForEach(InterfaceLanguage.allCases) { language in
+                    Text(verbatim: language.title).tag(language)
+                }
+            } label: {
+                Text("Language")
+            }
+            .pickerStyle(.inline)
+        } label: {
+            HStack(spacing: 12) {
+                IconTile(symbol: "character.bubble", color: Theme.accent)
+                Text("Language")
+                    .font(Theme.font(14))
+                    .foregroundStyle(Theme.text)
+                Spacer(minLength: 8)
+                Text(verbatim: preferences.language.title)
+                    .font(Theme.font(13))
+                    .foregroundStyle(Theme.muted)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.faint)
+            }
+            .padding(.vertical, 11)
+            .padding(.horizontal, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var applicationVersion: String {

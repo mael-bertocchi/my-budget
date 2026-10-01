@@ -18,9 +18,9 @@ struct BudgetView: View {
 
                 BudgetRing(
                     progress: hasOperations ? summary.progress : 0,
-                    caption: isOverBudget ? "Overspent" : "Left to spend",
+                    caption: isOverBudget ? String(appLocalized: "Overspent") : String(appLocalized: "Left to spend"),
                     amount: hasOperations ? Formatting.euro(abs(summary.left)) : "—",
-                    subtitle: hasOperations ? "of " + Formatting.euro(summary.limit) : "No operations",
+                    subtitle: hasOperations ? String(appLocalized: "of \(Formatting.euro(summary.limit))") : String(appLocalized: "No operations"),
                     color: isOverBudget ? Theme.negative : Theme.accent
                 )
                 .frame(maxWidth: .infinity)
@@ -35,7 +35,7 @@ struct BudgetView: View {
                     .padding(.bottom, showDispatchNote ? 6 : 12)
 
                 if showDispatchNote {
-                    Text(Formatting.euro(toDispatch) + " of the budget is not dispatched yet")
+                    Text("\(Formatting.euro(toDispatch)) of the budget is not dispatched yet")
                         .font(Theme.font(12))
                         .foregroundStyle(Theme.accent300)
                         .padding(.bottom, 12)
@@ -117,18 +117,18 @@ struct BudgetView: View {
 
     private var statCards: some View {
         HStack(spacing: 10) {
-            StatCard(label: "Spent", value: hasOperations ? Formatting.euro(summary.spent) : "—")
-            StatCard(label: "Days left", value: hasOperations ? "\(summary.daysLeft)" : "—")
-            StatCard(label: "Per day", value: hasOperations ? Formatting.euro(summary.perDay) : "—")
+            StatCard(label: String(appLocalized: "Spent"), value: hasOperations ? Formatting.euro(summary.spent) : "—")
+            StatCard(label: String(appLocalized: "Days left"), value: hasOperations ? "\(summary.daysLeft)" : "—")
+            StatCard(label: String(appLocalized: "Per day"), value: hasOperations ? Formatting.euro(summary.perDay) : "—")
         }
     }
 
     private var categoryHeader: some View {
         HStack {
-            SectionLabel("By category")
+            SectionLabel(String(appLocalized: "By category"))
             Spacer(minLength: 12)
             if isCurrentMonth {
-                InlineLink(title: "Edit limits") {
+                InlineLink(title: String(appLocalized: "Edit limits")) {
                     preferences.tap()
                     showLimits = true
                 }
@@ -139,9 +139,9 @@ struct BudgetView: View {
     @ViewBuilder
     private var categoryList: some View {
         if !hasOperations {
-            EmptyStateCard(message: "No operations in this month.")
+            EmptyStateCard(message: String(appLocalized: "No operations in this month."))
         } else if spends.isEmpty {
-            EmptyStateCard(message: "No spending yet this month. Log an operation and your categories will fill in here.")
+            EmptyStateCard(message: String(appLocalized: "No spending yet this month. Log an operation and your categories will fill in here."))
         } else {
             VStack(spacing: 16) {
                 ForEach(spends) { spend in
@@ -172,7 +172,7 @@ private struct CategoryProgressRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 11) {
                 IconTile(symbol: spend.category.symbol, color: spend.category.color)
-                Text(spend.category.name)
+                Text(spend.category.title)
                     .font(Theme.font(14))
                     .foregroundStyle(Theme.text)
                 Spacer(minLength: 8)
@@ -187,7 +187,7 @@ private struct CategoryProgressRow: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(spend.category.name), \(rangeText)")
+        .accessibilityLabel(spend.category.title + ", " + rangeText)
     }
 
     private var rangeText: String {
