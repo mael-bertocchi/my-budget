@@ -19,7 +19,7 @@ struct BudgetView: View {
                 BudgetRing(
                     progress: hasOperations ? summary.progress : 0,
                     caption: isOverBudget ? String(appLocalized: "Overspent") : String(appLocalized: "Left to spend"),
-                    amount: hasOperations ? Formatting.euro(abs(summary.left)) : "—",
+                    amount: hasOperations ? Formatting.euro(abs(summary.left)) : "•",
                     subtitle: hasOperations ? String(appLocalized: "of \(Formatting.euro(summary.limit))") : String(appLocalized: "No operations"),
                     color: isOverBudget ? Theme.negative : Theme.accent
                 )
@@ -117,9 +117,9 @@ struct BudgetView: View {
 
     private var statCards: some View {
         HStack(spacing: 10) {
-            StatCard(label: String(appLocalized: "Spent"), value: hasOperations ? Formatting.euro(summary.spent) : "—")
-            StatCard(label: String(appLocalized: "Days left"), value: hasOperations ? "\(summary.daysLeft)" : "—")
-            StatCard(label: String(appLocalized: "Per day"), value: hasOperations ? Formatting.euro(summary.perDay) : "—")
+            StatCard(label: String(appLocalized: "Spent"), value: hasOperations ? Formatting.euro(summary.spent) : "•")
+            StatCard(label: String(appLocalized: "Days left"), value: hasOperations ? "\(summary.daysLeft)" : "•")
+            StatCard(label: String(appLocalized: "Per day"), value: hasOperations ? Formatting.euro(summary.perDay) : "•")
         }
     }
 
