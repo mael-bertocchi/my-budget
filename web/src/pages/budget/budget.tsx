@@ -101,13 +101,13 @@ function BudgetPage(): JSX.Element {
                 <section className="card flex flex-col items-center p-6 sm:p-8 lg:sticky lg:top-24 lg:col-span-2 lg:self-start">
                     <RingComponent progress={hasOperations ? figures.progress : 0} color={isOverBudget ? NEGATIVE : ACCENT}>
                         <p className={`text-[14px] font-medium ${isOverBudget ? 'text-negative-text' : 'text-ink-secondary'}`}>{isOverBudget ? t('budget.overspent') : t('budget.leftToSpend')}</p>
-                        <p className="mt-0.5 text-[40px] font-semibold leading-none tracking-tight tabular-nums">{hasOperations ? euro(Math.abs(figures.left)) : '—'}</p>
+                        <p className="mt-0.5 text-[40px] font-semibold leading-none tracking-tight tabular-nums">{hasOperations ? euro(Math.abs(figures.left)) : '•'}</p>
                         <p className="mt-2 text-[14px] text-ink-tertiary">{hasOperations ? t('budget.of', { amount: euro(figures.limit) }) : t('budget.noOperations')}</p>
                     </RingComponent>
                     <div className="mt-8 grid w-full grid-cols-3 gap-2.5">
-                        <StatTile label={t('budget.spent')} value={hasOperations ? euro(figures.spent) : '—'} />
-                        <StatTile label={t('budget.daysLeft')} value={hasOperations ? String(figures.daysLeft) : '—'} />
-                        <StatTile label={t('budget.perDay')} value={hasOperations ? euro(figures.perDay) : '—'} />
+                        <StatTile label={t('budget.spent')} value={hasOperations ? euro(figures.spent) : '•'} />
+                        <StatTile label={t('budget.daysLeft')} value={hasOperations ? String(figures.daysLeft) : '•'} />
+                        <StatTile label={t('budget.perDay')} value={hasOperations ? euro(figures.perDay) : '•'} />
                     </div>
                 </section>
 

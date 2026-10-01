@@ -155,7 +155,7 @@ function SettingsPage(): JSX.Element {
 
                     return (
                         <Row key={option.code} title={<span><span className="font-mono text-[14px] font-medium">{option.code}</span> <span className="ml-1.5 text-ink-secondary">{currencyName(option)}</span></span>}>
-                            <span className="text-[14px] text-ink-secondary tabular-nums">{reference === undefined ? '—' : `1 ${option.code} = ${rate(bankRate(reference, option.code))} €`}</span>
+                            <span className="text-[14px] text-ink-secondary tabular-nums">{reference === undefined ? '•' : `1 ${option.code} = ${rate(bankRate(reference, option.code))} €`}</span>
                         </Row>
                     );
                 })}
