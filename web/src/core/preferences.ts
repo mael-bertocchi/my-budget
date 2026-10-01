@@ -4,7 +4,7 @@ import { EURO, isSupportedCurrency } from '@core/currencies';
  * @constant CURRENCY_KEY
  * @description Where the default currency is kept.
  */
-const CURRENCY_KEY = 'my-budget.currency';
+const CURRENCY_KEY = 'obole.currency';
 
 /**
  * @function defaultCurrency

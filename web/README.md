@@ -1,6 +1,6 @@
-# 🖥️ My Budget — Web
+# 🖥️ Obole — Web
 
-The **web interface** of My Budget: the same budget as the iOS app, in the browser — light, calm and Apple-like. Open it, type your six-digit code, and everything is there.
+The **web interface** of Obole: the same budget as the iOS app, in the browser — light, calm and Apple-like. Open it, type your six-digit code, and everything is there.
 
 ## Features
 
@@ -75,9 +75,9 @@ npm run dev
 A multi-stage image lives at `.docker/Dockerfile`: the build is served as static files by Caddy (`.docker/Caddyfile`), on port 80 over plain HTTP — TLS belongs to the proxy in front of it.
 
 ```bash
-docker build -f .docker/Dockerfile -t my-budget-web .
+docker build -f .docker/Dockerfile -t obole-web .
 ```
 
-The page calls the API on its own domain, `https://api-budget.mael-bertocchi.fr`, from the browser. The backend lets it through with CORS, so its `CORS_ORIGIN` must list the page's origin (`https://budget.mael-bertocchi.fr`). To build for another API, set `VITE_API_URL` when building, and add that origin to `connect-src` in the Caddyfile's Content-Security-Policy.
+The page calls the API on its own domain, `https://api-obole.mael-bertocchi.fr`, from the browser. The backend lets it through with CORS, so its `CORS_ORIGIN` must list the page's origin (`https://obole.mael-bertocchi.fr`). To build for another API, set `VITE_API_URL` when building, and add that origin to `connect-src` in the Caddyfile's Content-Security-Policy.
 
 The page is served with a strict Content-Security-Policy and kept out of search engines.

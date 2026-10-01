@@ -129,7 +129,7 @@ function SignInPage(): JSX.Element {
     return (
         <main className="flex min-h-dvh items-center justify-center px-5">
             <div className="w-full max-w-[420px] animate-rise text-center">
-                <h1 className="text-[34px] font-semibold tracking-tight">My Budget</h1>
+                <h1 className="text-[34px] font-semibold tracking-tight">Obole</h1>
                 <p className="mt-2 text-[17px] text-ink-secondary">{t('signIn.prompt')}</p>
 
                 <div key={attempts} className={`mt-10 flex justify-center gap-2 sm:gap-2.5 ${attempts > 0 ? 'animate-shake' : ''}`} role="group" aria-label={t('signIn.code')}>

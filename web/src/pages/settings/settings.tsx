@@ -171,7 +171,7 @@ function SettingsPage(): JSX.Element {
                 <Row icon={<IconTileComponent icon={Trash2} color={NEGATIVE} size={30} />} title={t('settings.reset')} destructive onClick={() => setConfirming('reset')} />
             </Group>
 
-            <p className="mt-10 text-center text-[12px] text-ink-quaternary">My Budget Web {__APP_VERSION__}</p>
+            <p className="mt-10 text-center text-[12px] text-ink-quaternary">Obole Web {__APP_VERSION__}</p>
 
             <LimitsSheet open={showLimits} onClose={() => setShowLimits(false)} />
             <AlertComponent

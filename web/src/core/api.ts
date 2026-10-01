@@ -9,7 +9,7 @@ import { z } from 'zod';
  * @constant PRODUCTION_API_URL
  * @description Where the budget API lives, the same server the app talks to.
  */
-const PRODUCTION_API_URL = 'https://api-budget.mael-bertocchi.fr';
+const PRODUCTION_API_URL = 'https://api-obole.mael-bertocchi.fr';
 
 /**
  * @constant API_URL
@@ -23,7 +23,7 @@ const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '' : PROD
  * @description Where the session's tokens are kept. Session storage survives a reload but not closing the tab, so the
  * page asks for the code again each time it is opened.
  */
-const STORAGE_KEY = 'my-budget.identity';
+const STORAGE_KEY = 'obole.identity';
 
 /**
  * @constant REQUEST_TIMEOUT

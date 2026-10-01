@@ -35,7 +35,7 @@ const MESSAGES: Record<Language, Messages> = { en, fr };
  * @constant CHOICE_KEY
  * @description Where the language picked in Settings is kept.
  */
-const CHOICE_KEY = 'my-budget.language';
+const CHOICE_KEY = 'obole.language';
 
 /**
  * @function isLanguage
