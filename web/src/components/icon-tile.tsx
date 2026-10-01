@@ -1,9 +1,9 @@
 import { hexColor } from '@core/categories';
 import type { Category } from '@core/models';
 import {
+    BriefcaseMedical,
     CircleDashed,
     Coffee,
-    Dumbbell,
     Film,
     GraduationCap,
     House,
@@ -30,7 +30,7 @@ const SYMBOL_ICONS: Readonly<Record<string, LucideIcon>> = {
     'tram': TramFront,
     'bag': ShoppingBag,
     'film': Film,
-    'dumbbell': Dumbbell,
+    'cross.case': BriefcaseMedical,
     'graduationcap': GraduationCap,
     'square.grid.2x2': LayoutGrid,
     'circle.dashed': CircleDashed,

@@ -12,7 +12,7 @@ export const DEFAULT_CATEGORIES: readonly Category[] = [
     { id: 'transport', name: 'Transport', symbol: 'tram', colorHex: 0x4d9bff, monthlyLimit: 150 },
     { id: 'shopping', name: 'Shopping', symbol: 'bag', colorHex: 0xff6ba8, monthlyLimit: 180 },
     { id: 'fun', name: 'Fun', symbol: 'film', colorHex: 0x38d6d6, monthlyLimit: 120 },
-    { id: 'health', name: 'Health', symbol: 'dumbbell', colorHex: 0xff8a5c, monthlyLimit: 80 },
+    { id: 'health', name: 'Health', symbol: 'cross.case', colorHex: 0xff8a5c, monthlyLimit: 80 },
     { id: 'school', name: 'School', symbol: 'graduationcap', colorHex: 0xffd166, monthlyLimit: 120 },
     { id: 'miscellaneous', name: 'Miscellaneous', symbol: 'square.grid.2x2', colorHex: 0x9ba1b0, monthlyLimit: 100 }
 ];
@@ -38,15 +38,31 @@ export function hexColor(value: number): string {
 }
 
 /**
+ * @constant CATALOGUE
+ * @description The shipped categories, by id.
+ */
+const CATALOGUE = new Map(DEFAULT_CATEGORIES.map((category) => [category.id, category]));
+
+/**
  * @function categoriesOf
- * @description The categories to offer: the stored ones, or the shipped catalogue when none were ever stored.
+ * @description The categories to offer: the stored ones, or the shipped catalogue when none were ever stored. As in the
+ * app, the catalogue owns how a shipped category looks — its name, symbol and colour — and the stored copy only its
+ * limit, so a new icon reaches a budget stored before it.
  *
  * @param {readonly Category[]} categories The stored categories.
  *
  * @returns {readonly Category[]} The categories to offer.
  */
 export function categoriesOf(categories: readonly Category[]): readonly Category[] {
-    return categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+    if (categories.length === 0) {
+        return DEFAULT_CATEGORIES;
+    }
+
+    return categories.map((category) => {
+        const shipped = CATALOGUE.get(category.id);
+
+        return shipped === undefined ? category : { ...category, name: shipped.name, symbol: shipped.symbol, colorHex: shipped.colorHex };
+    });
 }
 
 /**
