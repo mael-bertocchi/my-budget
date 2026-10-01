@@ -1,3 +1,4 @@
+import { t } from '@core/i18n';
 import { useEffect, useRef, type JSX } from 'react';
 
 /**
@@ -48,7 +49,7 @@ function AlertComponent({ open, title, message, action, onConfirm, onCancel }: A
                 {message !== undefined && <p className="mt-1 text-[13px] text-ink-secondary">{message}</p>}
             </div>
             <div className="grid grid-cols-2 border-t border-hairline">
-                <button type="button" onClick={onCancel} className="h-11 text-[17px] text-accent transition hover:bg-fill">Cancel</button>
+                <button type="button" onClick={onCancel} className="h-11 text-[17px] text-accent transition hover:bg-fill">{t('common.cancel')}</button>
                 <button type="button" onClick={onConfirm} className="h-11 border-l border-hairline text-[17px] font-semibold text-negative-text transition hover:bg-fill">{action}</button>
             </div>
         </dialog>

@@ -2,8 +2,9 @@ import { useDocument } from '@application/hooks';
 import { useServices } from '@application/services';
 import { CategoryIconComponent } from '@components/icon-tile';
 import SheetComponent from '@components/sheet';
-import { categoriesOf } from '@core/categories';
+import { categoriesOf, categoryName } from '@core/categories';
 import { euro } from '@core/formatting';
+import { t } from '@core/i18n';
 import { amountInputOf, groupAmountInput, sanitizeAmountInput } from '@core/operations';
 import { useState, type JSX } from 'react';
 
@@ -31,12 +32,12 @@ function LimitsForm({ onDone }: { onDone: () => void }): JSX.Element {
     const budget = parseLimit(monthly) ?? 0;
     const remaining = budget - categories.reduce((total, category) => total + (parseLimit(limits[category.id] ?? '') ?? 0), 0);
 
-    let dispatch = { text: 'Fully dispatched', className: 'text-positive-text' };
+    let dispatch = { text: t('limits.dispatched'), className: 'text-positive-text' };
 
     if (remaining > 0) {
-        dispatch = { text: `${euro(remaining)} to dispatch`, className: 'text-accent' };
+        dispatch = { text: t('limits.toDispatch', { amount: euro(remaining) }), className: 'text-accent' };
     } else if (remaining < 0) {
-        dispatch = { text: `${euro(-remaining)} over budget`, className: 'text-negative-text' };
+        dispatch = { text: t('limits.overBudget', { amount: euro(-remaining) }), className: 'text-negative-text' };
     }
 
     /**
@@ -63,28 +64,28 @@ function LimitsForm({ onDone }: { onDone: () => void }): JSX.Element {
                 save();
             }}
         >
-            <label className="field-label" htmlFor="monthly-limit">Monthly budget</label>
+            <label className="field-label" htmlFor="monthly-limit">{t('limits.monthly')}</label>
             <div className="relative">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] text-ink-tertiary">€</span>
                 <input id="monthly-limit" className="field pl-8 text-[17px] font-semibold tabular-nums" inputMode="decimal" value={monthly} onChange={(event) => setMonthly(groupAmountInput(sanitizeAmountInput(event.target.value)))} placeholder="3000" />
             </div>
 
             <div className="mb-2 mt-7 flex items-baseline justify-between">
-                <h3 className="text-[15px] font-semibold">Category limits</h3>
+                <h3 className="text-[15px] font-semibold">{t('limits.categories')}</h3>
                 <span className={`text-[13px] font-medium ${dispatch.className}`}>{dispatch.text}</span>
             </div>
             <div className="divide-y divide-hairline rounded-2xl bg-fill/60">
                 {categories.map((category) => (
                     <label key={category.id} className="flex items-center gap-3 px-3.5 py-2.5">
                         <CategoryIconComponent category={category} size={30} />
-                        <span className="flex-1 text-[15px]">{category.name}</span>
+                        <span className="flex-1 text-[15px]">{categoryName(category)}</span>
                         <span className="text-[15px] text-ink-tertiary">€</span>
                         <input
                             className="h-9 w-24 rounded-lg bg-white px-2.5 text-right text-[15px] font-medium tabular-nums outline-none ring-1 ring-hairline transition focus:ring-2 focus:ring-accent/50"
                             inputMode="decimal"
                             value={limits[category.id] ?? ''}
                             placeholder="0"
-                            aria-label={`${category.name} limit`}
+                            aria-label={t('limits.categoryLimit', { category: categoryName(category) })}
                             onChange={(event) => setLimits({ ...limits, [category.id]: groupAmountInput(sanitizeAmountInput(event.target.value)) })}
                         />
                     </label>
@@ -100,7 +101,7 @@ function LimitsForm({ onDone }: { onDone: () => void }): JSX.Element {
  */
 function LimitsSheet({ open, onClose }: { open: boolean; onClose: () => void }): JSX.Element {
     return (
-        <SheetComponent open={open} title="Edit limits" onClose={onClose} footer={<button type="submit" form="limits-form" className="button-primary">Save limits</button>}>
+        <SheetComponent open={open} title={t('limits.title')} onClose={onClose} footer={<button type="submit" form="limits-form" className="button-primary">{t('limits.save')}</button>}>
             <LimitsForm onDone={onClose} />
         </SheetComponent>
     );

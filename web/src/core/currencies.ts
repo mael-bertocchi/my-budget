@@ -1,3 +1,5 @@
+import { isMessageKey, t } from '@core/i18n';
+
 /**
  * @interface Currency
  * @description A currency an operation can be entered in.
@@ -42,6 +44,20 @@ export const BANK_MARKUP = 0.01;
  */
 export function currencyNamed(code: string): Currency {
     return CURRENCIES.find((currency) => currency.code === code) ?? EURO;
+}
+
+/**
+ * @function currencyName
+ * @description A currency's name in the page's language.
+ *
+ * @param {Currency} currency The currency.
+ *
+ * @returns {string} Its name.
+ */
+export function currencyName(currency: Currency): string {
+    const key = `currency.${currency.code}`;
+
+    return isMessageKey(key) ? t(key) : currency.name;
 }
 
 /**

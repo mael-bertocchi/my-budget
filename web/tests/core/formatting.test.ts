@@ -1,6 +1,7 @@
 import { currencyNamed } from '@core/currencies';
 import { amountInput, dayShort, euro, euroPrecise, fieldDate, money, monthWithYear, percent, rate, relativeDay, truncate } from '@core/formatting';
-import { describe, expect, it } from 'vitest';
+import { chooseLanguage } from '@core/i18n';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { NOW } from '../support/fixtures';
 
@@ -52,6 +53,34 @@ describe('dates', () => {
     it('prints months and short days', () => {
         expect(monthWithYear(NOW)).toBe('September 2026');
         expect(dayShort(NOW)).toBe('27 Sep');
+    });
+});
+
+describe('in French', () => {
+    beforeEach(() => {
+        chooseLanguage('fr');
+    });
+
+    it('writes amounts with a decimal comma, spaced thousands and the symbol last', () => {
+        expect(euro(1234.5)).toBe('1\u00a0235\u00a0€');
+        expect(euroPrecise(1234.5)).toBe('1\u00a0234,50\u00a0€');
+        expect(money(48.9, currencyNamed('USD'))).toBe('48,90\u00a0$');
+        expect(money(5000, currencyNamed('KRW'))).toBe('5\u00a0000,00\u00a0₩');
+    });
+
+    it('writes rates and percentages the French way', () => {
+        expect(rate(0.869032)).toBe('0,86903');
+        expect(percent(0.584)).toBe('58\u00a0%');
+    });
+
+    it('names days and months in French, like the app', () => {
+        expect(relativeDay(new Date(2026, 8, 27, 9), NOW)).toBe('Aujourd’hui');
+        expect(relativeDay(new Date(2026, 8, 26, 9), NOW)).toBe('Hier');
+        expect(relativeDay(new Date(2026, 8, 25, 9), NOW)).toBe('ven. 25 sept.');
+        expect(fieldDate(new Date(2026, 8, 27), NOW)).toBe('Aujourd’hui, 27 sept.');
+        expect(fieldDate(new Date(2026, 8, 3), NOW)).toBe('jeu. 3 sept.');
+        expect(monthWithYear(NOW)).toBe('Septembre 2026');
+        expect(dayShort(new Date(2026, 6, 4))).toBe('4 juil.');
     });
 });
 

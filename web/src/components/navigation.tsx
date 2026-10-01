@@ -1,4 +1,6 @@
 import { useOperationEditor } from '@application/editor-context';
+import type { MessageKey } from '@core/i18n';
+import { t } from '@core/i18n';
 import { ChartPie, History as HistoryIcon, Plus, Settings, type LucideIcon } from 'lucide-react';
 import { useEffect, useState, type JSX } from 'react';
 import { Link, NavLink } from 'react-router-dom';
@@ -9,7 +11,7 @@ import { Link, NavLink } from 'react-router-dom';
  */
 interface Tab {
     to: string; /*!< Its path */
-    label: string; /*!< Its name */
+    label: MessageKey; /*!< Its name */
     icon: LucideIcon; /*!< Its icon on a phone's tab bar */
 }
 
@@ -18,9 +20,9 @@ interface Tab {
  * @description Budget, History and Settings, like the app's tab bar.
  */
 const TABS: Tab[] = [
-    { to: '/budget', label: 'Budget', icon: ChartPie },
-    { to: '/history', label: 'History', icon: HistoryIcon },
-    { to: '/settings', label: 'Settings', icon: Settings }
+    { to: '/budget', label: 'navigation.budget', icon: ChartPie },
+    { to: '/history', label: 'navigation.history', icon: HistoryIcon },
+    { to: '/settings', label: 'navigation.settings', icon: Settings }
 ];
 
 /**
@@ -50,14 +52,14 @@ function NavigationComponent(): JSX.Element {
                         My Budget
                     </Link>
 
-                    <nav className="hidden rounded-full bg-fill-strong/80 p-1 sm:flex" aria-label="Sections">
+                    <nav className="hidden rounded-full bg-fill-strong/80 p-1 sm:flex" aria-label={t('navigation.sections')}>
                         {TABS.map(({ to, label }) => (
                             <NavLink
                                 key={to}
                                 to={to}
                                 className={({ isActive }) => `rounded-full px-4 py-1.5 text-[14px] font-medium transition ${isActive ? 'bg-white text-ink shadow-control' : 'text-ink-secondary hover:text-ink'}`}
                             >
-                                {label}
+                                {t(label)}
                             </NavLink>
                         ))}
                     </nav>
@@ -66,19 +68,19 @@ function NavigationComponent(): JSX.Element {
                         type="button"
                         onClick={openNew}
                         className="col-start-3 flex h-9 items-center gap-1.5 justify-self-end rounded-full bg-accent pl-2.5 pr-2.5 text-[14px] font-semibold text-white transition hover:bg-accent-strong active:scale-95 sm:pl-3 sm:pr-4"
-                        aria-label="New operation"
+                        aria-label={t('navigation.newOperation')}
                     >
                         <Plus size={18} strokeWidth={2.6} />
-                        <span className="hidden sm:inline">New operation</span>
+                        <span className="hidden sm:inline">{t('navigation.newOperation')}</span>
                     </button>
                 </div>
             </header>
 
-            <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-hairline bg-canvas/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 sm:hidden" aria-label="Sections">
+            <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-hairline bg-canvas/80 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl backdrop-saturate-150 sm:hidden" aria-label={t('navigation.sections')}>
                 {TABS.map(({ to, label, icon: Icon }) => (
                     <NavLink key={to} to={to} className={({ isActive }) => `flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-medium ${isActive ? 'text-accent' : 'text-ink-tertiary'}`}>
                         <Icon size={23} strokeWidth={2} />
-                        {label}
+                        {t(label)}
                     </NavLink>
                 ))}
             </nav>

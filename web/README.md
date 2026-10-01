@@ -8,7 +8,8 @@ The **web interface** of My Budget: the same budget as the iOS app, in the brows
 - **History** — operations grouped by day with day totals, a search, and a filter chip per category.
 - **New & edit operation** — amount in any currency with the euro equivalent at the rate of the operation's own day (bank markup included), category, name, note, date, online, place, recurring. Delete with a confirmation.
 - **Limits** — the monthly budget and each category's limit, with what is left to dispatch.
-- **Settings** — sync state, default currency, exchange rates, operation and category counts, reset, sign out.
+- **Settings** — sync state, default currency, language, exchange rates, operation and category counts, reset, sign out.
+- **English & French** — the page follows the browser's language, or the one picked in Settings, and switches on the spot. Amounts and dates are written as in the app: `€1,234.50` in English, `1 234,50 €` in French.
 - **Works on a phone too** — the tabs move to a bottom tab bar and sheets rise from the bottom edge.
 
 ## Stack
@@ -29,7 +30,7 @@ The page is a second client of the backend, next to the app, and both write the 
 src/
 ├─ application/   Session, services, the operation editor, notices, layout
 ├─ components/    Sheet, alert, ring and bars, switch, icon tiles, navigation
-├─ core/          API client, budget store (sync), rates, budget math, formatting
+├─ core/          API client, budget store (sync), rates, budget math, formatting, languages (i18n, locales/)
 └─ pages/         One folder per tab (sign-in, budget, history, operations, settings)
 ```
 

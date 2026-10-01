@@ -1,18 +1,58 @@
 import type { Currency } from '@core/currencies';
 import { EURO } from '@core/currencies';
 import { isSameDay } from '@core/dates';
+import type { Language } from '@core/i18n';
+import { currentLanguage, t } from '@core/i18n';
+import type { Maybe } from '@/models';
 
 /**
- * @constant MONTHS
- * @description Month names, in English like the app.
+ * @interface NumberStyle
+ * @description How a language writes a number. Spelled out rather than left to `Intl` so the page prints the very
+ * characters the app does.
  */
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export interface NumberStyle {
+    decimal: string; /*!< Before the cents */
+    grouping: string; /*!< Between the thousands */
+    unitSeparator: Maybe<string>; /*!< Before a trailing currency symbol or percent sign, or null when the symbol leads */
+}
 
 /**
- * @constant WEEKDAYS
- * @description Abbreviated weekday names, Sunday first like `Date.getDay`.
+ * @constant NUMBER_STYLES
+ * @description English groups with commas and puts the symbol first: €1,234.50. French groups with a no-break space,
+ * uses a decimal comma and puts the symbol last: 1 234,50 €. The narrow space French typography prefers for thousands
+ * vanishes in the app's large figures, so both use the full-width one.
  */
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const NUMBER_STYLES: Record<Language, NumberStyle> = {
+    en: { decimal: '.', grouping: ',', unitSeparator: null },
+    fr: { decimal: ',', grouping: '\u00a0', unitSeparator: '\u00a0' }
+};
+
+/**
+ * @interface DateWords
+ * @description How a language names months and days.
+ */
+interface DateWords {
+    months: string[]; /*!< Month names, as a title */
+    shortMonths: string[]; /*!< Abbreviated month names, inside a date */
+    weekdays: string[]; /*!< Abbreviated weekday names, Sunday first like `Date.getDay` */
+}
+
+/**
+ * @constant DATE_WORDS
+ * @description Month and day names, as the app's date formats write them in each language.
+ */
+const DATE_WORDS: Record<Language, DateWords> = {
+    en: {
+        months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    },
+    fr: {
+        months: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+        shortMonths: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+        weekdays: ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.']
+    }
+};
 
 /**
  * @constant compact
@@ -34,6 +74,42 @@ const precise = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maxim
 const significant = new Intl.NumberFormat('en-US', { minimumSignificantDigits: 5, maximumSignificantDigits: 5, useGrouping: false });
 
 /**
+ * @function numberStyle
+ * @description How the page's language writes a number.
+ */
+export function numberStyle(): NumberStyle {
+    return NUMBER_STYLES[currentLanguage()];
+}
+
+/**
+ * @function localize
+ * @description Rewrites a number formatted the English way in the page's language.
+ */
+function localize(formatted: string): string {
+    const { decimal, grouping } = numberStyle();
+
+    return formatted.replace(/[,.]/g, (mark) => (mark === ',' ? grouping : decimal));
+}
+
+/**
+ * @function withSymbol
+ * @description Puts a currency symbol where the page's language puts it.
+ */
+function withSymbol(number: string, symbol: string): string {
+    const { unitSeparator } = numberStyle();
+
+    return unitSeparator === null ? `${symbol}${number}` : `${number}${unitSeparator}${symbol}`;
+}
+
+/**
+ * @function dateWords
+ * @description How the page's language names months and days.
+ */
+function dateWords(): DateWords {
+    return DATE_WORDS[currentLanguage()];
+}
+
+/**
  * @function roundHalfAwayFromZero
  * @description Rounds like Swift's `rounded()`, so a figure lands on the same euro in the app and on the web.
  */
@@ -46,7 +122,7 @@ function roundHalfAwayFromZero(value: number): number {
  * @description A euro amount rounded to the euro: €1,234.
  */
 export function euro(amount: number): string {
-    return `€${compact.format(roundHalfAwayFromZero(amount))}`;
+    return withSymbol(localize(compact.format(roundHalfAwayFromZero(amount))), EURO.symbol);
 }
 
 /**
@@ -54,7 +130,7 @@ export function euro(amount: number): string {
  * @description A euro amount to the cent: €1,234.50.
  */
 export function euroPrecise(amount: number): string {
-    return `€${precise.format(amount)}`;
+    return withSymbol(localize(precise.format(amount)), EURO.symbol);
 }
 
 /**
@@ -62,7 +138,7 @@ export function euroPrecise(amount: number): string {
  * @description An amount in its own currency, to the cent and without a sign: $48.90.
  */
 export function money(amount: number, currency: Currency = EURO): string {
-    return `${currency.symbol}${precise.format(Math.abs(amount))}`;
+    return withSymbol(localize(precise.format(Math.abs(amount))), currency.symbol);
 }
 
 /**
@@ -70,7 +146,7 @@ export function money(amount: number, currency: Currency = EURO): string {
  * @description An exchange rate to five significant digits: 0.86903.
  */
 export function rate(value: number): string {
-    return significant.format(value);
+    return localize(significant.format(value));
 }
 
 /**
@@ -78,7 +154,7 @@ export function rate(value: number): string {
  * @description A fraction as a whole percentage: 58%.
  */
 export function percent(fraction: number): string {
-    return `${Math.round(fraction * 100)}%`;
+    return `${Math.round(fraction * 100)}${numberStyle().unitSeparator ?? ''}%`;
 }
 
 /**
@@ -86,7 +162,7 @@ export function percent(fraction: number): string {
  * @description A month's name: September.
  */
 export function monthTitle(date: Date): string {
-    return MONTHS[date.getMonth()] ?? '';
+    return dateWords().months[date.getMonth()] ?? '';
 }
 
 /**
@@ -102,7 +178,7 @@ export function monthWithYear(date: Date): string {
  * @description A day and abbreviated month: 27 Sep.
  */
 export function dayShort(date: Date): string {
-    return `${date.getDate()} ${monthTitle(date).slice(0, 3)}`;
+    return `${date.getDate()} ${dateWords().shortMonths[date.getMonth()] ?? ''}`;
 }
 
 /**
@@ -110,7 +186,15 @@ export function dayShort(date: Date): string {
  * @description A weekday, day and month: Sat 27 Sep.
  */
 export function weekdayDay(date: Date): string {
-    return `${WEEKDAYS[date.getDay()] ?? ''} ${dayShort(date)}`;
+    return `${dateWords().weekdays[date.getDay()] ?? ''} ${dayShort(date)}`;
+}
+
+/**
+ * @function isYesterday
+ * @description Whether a date falls on the day before another.
+ */
+function isYesterday(date: Date, now: Date): boolean {
+    return isSameDay(date, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
 }
 
 /**
@@ -119,11 +203,11 @@ export function weekdayDay(date: Date): string {
  */
 export function relativeDay(date: Date, now: Date = new Date()): string {
     if (isSameDay(date, now)) {
-        return 'Today';
+        return t('dates.today');
     }
 
-    if (isSameDay(date, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))) {
-        return 'Yesterday';
+    if (isYesterday(date, now)) {
+        return t('dates.yesterday');
     }
 
     return weekdayDay(date);
@@ -134,9 +218,15 @@ export function relativeDay(date: Date, now: Date = new Date()): string {
  * @description The date of an operation the way its editor shows it: Today, 27 Sep.
  */
 export function fieldDate(date: Date, now: Date = new Date()): string {
-    const relative = relativeDay(date, now);
+    if (isSameDay(date, now)) {
+        return t('dates.todayOn', { day: dayShort(date) });
+    }
 
-    return relative === 'Today' || relative === 'Yesterday' ? `${relative}, ${dayShort(date)}` : relative;
+    if (isYesterday(date, now)) {
+        return t('dates.yesterdayOn', { day: dayShort(date) });
+    }
+
+    return weekdayDay(date);
 }
 
 /**

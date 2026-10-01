@@ -6,10 +6,11 @@ import { CategoryIconComponent } from '@components/icon-tile';
 import SheetComponent from '@components/sheet';
 import SwitchComponent from '@components/switch';
 import { latestLocation } from '@core/budget-math';
-import { categoriesOf } from '@core/categories';
+import { categoriesOf, categoryName } from '@core/categories';
 import { CURRENCIES, EURO } from '@core/currencies';
 import { dayKey, isFutureDay, isSameDay, parseDay, withTimeOf } from '@core/dates';
 import { euroPrecise, fieldDate, rate } from '@core/formatting';
+import { t } from '@core/i18n';
 import type { Operation } from '@core/models';
 import { amountInputOf, deleteOperation, groupAmountInput, Limits, parseAmountInput, sanitizeAmountInput, toOperation, upsertOperation } from '@core/operations';
 import { defaultCurrency, rememberCurrency } from '@core/preferences';
@@ -126,7 +127,7 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
 
         store.apply((current) => {
             if (existing !== null && !current.operations.some((candidate) => candidate.id === existing.id)) {
-                throw new Error('This operation was deleted on another device.');
+                throw new Error(t('operation.deletedElsewhere'));
             }
 
             return upsertOperation(current, operation);
@@ -135,10 +136,10 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
         onDone();
     };
 
-    let rateLine = rates.failure(day) ?? 'Loading…';
+    let rateLine = rates.failure(day) ?? t('operation.loadingRate');
 
     if (appliedRate !== null) {
-        rateLine = `Rate ${rate(appliedRate)}`;
+        rateLine = t('operation.rate', { rate: rate(appliedRate) });
     }
 
     return (
@@ -151,20 +152,20 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
             className="space-y-5"
         >
             <div className="flex flex-col items-center pb-2 pt-1">
-                <label htmlFor="amount" className="eyebrow">Amount</label>
+                <label htmlFor="amount" className="eyebrow">{t('operation.amount')}</label>
                 <div className="mt-2 flex items-center gap-2">
                     <input
                         id="amount"
                         inputMode="decimal"
                         autoComplete="off"
-                        placeholder="0.00"
+                        placeholder={groupAmountInput('0.00')}
                         value={amountText}
                         onChange={(event) => setAmountText(groupAmountInput(sanitizeAmountInput(event.target.value)))}
                         style={{ width: `${Math.max(4, amountText.length) * 0.6 + 0.3}em` }}
                         className="bg-transparent text-right text-[46px] font-semibold tracking-tight tabular-nums outline-none placeholder:text-ink-quaternary"
                     />
                     <select
-                        aria-label="Currency"
+                        aria-label={t('operation.currency')}
                         value={currencyCode}
                         onChange={(event) => setCurrencyCode(event.target.value)}
                         className="h-9 cursor-pointer rounded-xl bg-fill px-2.5 text-[15px] font-semibold outline-none transition hover:bg-fill-strong focus:ring-2 focus:ring-accent/40"
@@ -183,7 +184,7 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
             </div>
 
             <div className="border-t border-hairline pt-5">
-                <p className="field-label">Category</p>
+                <p className="field-label">{t('operation.category')}</p>
                 <div className="grid grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-5">
                     {categories.map((category) => {
                         const isSelected = category.id === categoryId;
@@ -199,40 +200,40 @@ function OperationForm({ existing, onDone, onDelete, onValidityChange }: { exist
                                 <span className={`rounded-[16px] p-[3px] ring-2 transition ${isSelected ? 'ring-accent' : 'ring-transparent group-hover:ring-fill-strong group-focus-visible:ring-accent/50'}`}>
                                     <CategoryIconComponent category={category} size={44} />
                                 </span>
-                                <span className={`w-full truncate text-center text-[12px] transition ${isSelected ? 'font-semibold text-accent' : 'font-medium text-ink-secondary'}`}>{category.name}</span>
+                                <span className={`w-full truncate text-center text-[12px] transition ${isSelected ? 'font-semibold text-accent' : 'font-medium text-ink-secondary'}`}>{categoryName(category)}</span>
                             </button>
                         );
                     })}
                 </div>
             </div>
 
-            <Field label="Name" htmlFor="name">
-                <input id="name" className="field" value={name} maxLength={Limits.name} onChange={(event) => setName(event.target.value)} placeholder="Whole Foods" autoComplete="off" />
+            <Field label={t('operation.name')} htmlFor="name">
+                <input id="name" className="field" value={name} maxLength={Limits.name} onChange={(event) => setName(event.target.value)} placeholder={t('operation.namePlaceholder')} autoComplete="off" />
             </Field>
 
-            <Field label="Description" htmlFor="description">
-                <textarea id="description" className="field min-h-[76px] resize-none py-2.5 leading-snug" value={description} maxLength={Limits.description} onChange={(event) => setDescription(event.target.value)} placeholder="Weekly groceries with Anna" rows={2} />
+            <Field label={t('operation.description')} htmlFor="description">
+                <textarea id="description" className="field min-h-[76px] resize-none py-2.5 leading-snug" value={description} maxLength={Limits.description} onChange={(event) => setDescription(event.target.value)} placeholder={t('operation.descriptionPlaceholder')} rows={2} />
             </Field>
 
-            <Field label="Date" htmlFor="date" aside={fieldDate(date, now)}>
+            <Field label={t('operation.date')} htmlFor="date" aside={fieldDate(date, now)}>
                 <input id="date" type="date" className="field" value={day} max={dayKey(now)} onChange={(event) => pickDay(event.target.value)} />
             </Field>
 
-            <ToggleRow icon={Globe} title="Online" hint="No physical location" checked={isOnline} onChange={setIsOnline} />
+            <ToggleRow icon={Globe} title={t('operation.online')} hint={t('operation.onlineHint')} checked={isOnline} onChange={setIsOnline} />
 
             {!isOnline && (
-                <Field label="Location" htmlFor="location">
+                <Field label={t('operation.location')} htmlFor="location">
                     <div className="relative">
                         <MapPin size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-accent" />
-                        <input id="location" className="field pl-9" value={location} maxLength={Limits.location} onChange={(event) => setLocation(event.target.value)} placeholder="Berlin Mitte" />
+                        <input id="location" className="field pl-9" value={location} maxLength={Limits.location} onChange={(event) => setLocation(event.target.value)} placeholder={t('operation.locationPlaceholder')} />
                     </div>
                 </Field>
             )}
 
-            <ToggleRow icon={Repeat} title="Recurring" hint="Repeats monthly" checked={isRecurring} onChange={setIsRecurring} />
+            <ToggleRow icon={Repeat} title={t('operation.recurring')} hint={t('operation.recurringHint')} checked={isRecurring} onChange={setIsRecurring} />
 
             {existing !== null && (
-                <button type="button" onClick={onDelete} className="w-full py-2 text-[15px] font-medium text-negative-text transition hover:opacity-70">Delete operation</button>
+                <button type="button" onClick={onDelete} className="w-full py-2 text-[15px] font-medium text-negative-text transition hover:opacity-70">{t('operation.delete')}</button>
             )}
         </form>
     );
@@ -267,19 +268,19 @@ function OperationSheet({ route, onClose }: { route: EditorRoute | null; onClose
         <>
             <SheetComponent
                 open={route !== null}
-                title={route?.kind === 'edit' ? 'Edit operation' : 'New operation'}
+                title={route?.kind === 'edit' ? t('operation.edit') : t('operation.new')}
                 onClose={onClose}
-                footer={isMissing ? undefined : <button type="submit" form={FORM_ID} disabled={!canSave} className="button-primary">{route?.kind === 'edit' ? 'Save changes' : 'Save operation'}</button>}
+                footer={isMissing ? undefined : <button type="submit" form={FORM_ID} disabled={!canSave} className="button-primary">{route?.kind === 'edit' ? t('operation.saveChanges') : t('operation.save')}</button>}
             >
                 {isMissing
-                    ? <p className="py-10 text-center text-[15px] text-ink-secondary">This operation no longer exists.</p>
+                    ? <p className="py-10 text-center text-[15px] text-ink-secondary">{t('operation.missing')}</p>
                     : <OperationForm key={route?.kind === 'edit' ? route.id : 'new'} existing={existing} onDone={onClose} onDelete={() => setIsConfirmingDelete(true)} onValidityChange={setCanSave} />}
             </SheetComponent>
             <AlertComponent
                 open={isConfirmingDelete}
-                title="Delete this operation?"
-                message="This can't be undone."
-                action="Delete"
+                title={t('operation.confirmDelete')}
+                message={t('common.irreversible')}
+                action={t('operation.deleteAction')}
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmingDelete(false)}
             />

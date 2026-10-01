@@ -5,11 +5,13 @@ import AlertComponent from '@components/alert';
 import { IconTileComponent } from '@components/icon-tile';
 import SyncBadgeComponent from '@components/sync-badge';
 import { DEFAULT_CATEGORIES } from '@core/categories';
-import { BANK_MARKUP, bankRate, CURRENCIES, EURO } from '@core/currencies';
+import { BANK_MARKUP, bankRate, CURRENCIES, currencyName, EURO } from '@core/currencies';
 import { euro, percent, rate } from '@core/formatting';
+import type { LanguageChoice } from '@core/i18n';
+import { chooseLanguage, LANGUAGES, languageChoice, t } from '@core/i18n';
 import { defaultCurrency, rememberCurrency } from '@core/preferences';
 import LimitsSheet from '@pages/budget/limits-sheet';
-import { ChevronRight, CircleUser, Euro, LayoutGrid, List, LogOut, Target, Trash2 } from 'lucide-react';
+import { ChevronRight, CircleUser, Euro, Languages, LayoutGrid, List, LogOut, Target, Trash2 } from 'lucide-react';
 import { useState, type JSX, type ReactNode } from 'react';
 
 /**
@@ -75,6 +77,7 @@ function SettingsPage(): JSX.Element {
     const { signOut } = useSession();
     const [showLimits, setShowLimits] = useState(false);
     const [currency, setCurrency] = useState(defaultCurrency);
+    const [language, setLanguage] = useState(languageChoice);
     const [confirming, setConfirming] = useState<'reset' | 'signOut' | null>(null);
     const latest = rates.latest;
 
@@ -94,25 +97,25 @@ function SettingsPage(): JSX.Element {
 
     return (
         <div className="mx-auto max-w-2xl animate-rise">
-            <p className="eyebrow">Settings</p>
-            <h1 className="mb-8 mt-1 text-[34px] font-semibold leading-tight tracking-tight">Preferences</h1>
+            <p className="eyebrow">{t('settings.eyebrow')}</p>
+            <h1 className="mb-8 mt-1 text-[34px] font-semibold leading-tight tracking-tight">{t('settings.title')}</h1>
 
-            <Group title="Account">
-                <Row icon={<IconTileComponent icon={CircleUser} color={ACCENT} size={30} />} title="Signed in">
+            <Group title={t('settings.account')}>
+                <Row icon={<IconTileComponent icon={CircleUser} color={ACCENT} size={30} />} title={t('settings.signedIn')}>
                     <SyncBadgeComponent status={status} />
                 </Row>
-                <Row icon={<IconTileComponent icon={LogOut} color={NEGATIVE} size={30} />} title="Sign out" destructive onClick={() => setConfirming('signOut')} />
+                <Row icon={<IconTileComponent icon={LogOut} color={NEGATIVE} size={30} />} title={t('settings.signOut')} destructive onClick={() => setConfirming('signOut')} />
             </Group>
 
-            <Group title="Budget">
-                <Row icon={<IconTileComponent icon={Target} color={ACCENT} size={30} />} title="Budget & limits" onClick={() => setShowLimits(true)}>
+            <Group title={t('settings.budget')}>
+                <Row icon={<IconTileComponent icon={Target} color={ACCENT} size={30} />} title={t('settings.budgetAndLimits')} onClick={() => setShowLimits(true)}>
                     <span className="text-[15px] text-ink-secondary tabular-nums">{euro(document.budget.monthlyLimit)}</span>
                     <ChevronRight size={17} className="text-ink-quaternary" />
                 </Row>
             </Group>
 
-            <Group title="Entry">
-                <Row icon={<IconTileComponent icon={Euro} color={ACCENT} size={30} />} title={<label htmlFor="default-currency">Default currency</label>}>
+            <Group title={t('settings.entry')}>
+                <Row icon={<IconTileComponent icon={Euro} color={ACCENT} size={30} />} title={<label htmlFor="default-currency">{t('settings.defaultCurrency')}</label>}>
                     <select
                         id="default-currency"
                         value={currency}
@@ -127,26 +130,45 @@ function SettingsPage(): JSX.Element {
                 </Row>
             </Group>
 
-            <Group title="Exchange rates" note={`Includes the ${percent(BANK_MARKUP)} your bank adds on top of the reference rate.`}>
+            <Group title={t('settings.general')}>
+                <Row icon={<IconTileComponent icon={Languages} color={ACCENT} size={30} />} title={<label htmlFor="language">{t('settings.language')}</label>}>
+                    <select
+                        id="language"
+                        value={language}
+                        onChange={(event) => {
+                            const next = event.target.value as LanguageChoice;
+
+                            setLanguage(next);
+                            chooseLanguage(next);
+                        }}
+                        className="cursor-pointer rounded-lg bg-transparent py-1 text-right text-[15px] text-ink-secondary outline-none focus:ring-2 focus:ring-accent/40"
+                    >
+                        <option value="automatic">{t('settings.automatic')}</option>
+                        {LANGUAGES.map((option) => <option key={option.code} value={option.code} lang={option.code}>{option.name}</option>)}
+                    </select>
+                </Row>
+            </Group>
+
+            <Group title={t('settings.exchangeRates')} note={t('settings.markup', { markup: percent(BANK_MARKUP) })}>
                 {CURRENCIES.filter((option) => option.code !== EURO.code).map((option) => {
                     const reference = latest?.rates[option.code];
 
                     return (
-                        <Row key={option.code} title={<span><span className="font-mono text-[14px] font-medium">{option.code}</span> <span className="ml-1.5 text-ink-secondary">{option.name}</span></span>}>
+                        <Row key={option.code} title={<span><span className="font-mono text-[14px] font-medium">{option.code}</span> <span className="ml-1.5 text-ink-secondary">{currencyName(option)}</span></span>}>
                             <span className="text-[14px] text-ink-secondary tabular-nums">{reference === undefined ? '—' : `1 ${option.code} = ${rate(bankRate(reference, option.code))} €`}</span>
                         </Row>
                     );
                 })}
             </Group>
 
-            <Group title="Data">
-                <Row icon={<IconTileComponent icon={List} color={ACCENT} size={30} />} title="Operations">
+            <Group title={t('settings.data')}>
+                <Row icon={<IconTileComponent icon={List} color={ACCENT} size={30} />} title={t('settings.operations')}>
                     <span className="text-[15px] text-ink-secondary tabular-nums">{document.operations.length}</span>
                 </Row>
-                <Row icon={<IconTileComponent icon={LayoutGrid} color={ACCENT} size={30} />} title="Categories">
+                <Row icon={<IconTileComponent icon={LayoutGrid} color={ACCENT} size={30} />} title={t('settings.categories')}>
                     <span className="text-[15px] text-ink-secondary tabular-nums">{document.categories.length}</span>
                 </Row>
-                <Row icon={<IconTileComponent icon={Trash2} color={NEGATIVE} size={30} />} title="Reset all data" destructive onClick={() => setConfirming('reset')} />
+                <Row icon={<IconTileComponent icon={Trash2} color={NEGATIVE} size={30} />} title={t('settings.reset')} destructive onClick={() => setConfirming('reset')} />
             </Group>
 
             <p className="mt-10 text-center text-[12px] text-ink-quaternary">My Budget Web {__APP_VERSION__}</p>
@@ -154,17 +176,17 @@ function SettingsPage(): JSX.Element {
             <LimitsSheet open={showLimits} onClose={() => setShowLimits(false)} />
             <AlertComponent
                 open={confirming === 'reset'}
-                title="Delete every operation?"
-                message="Your limits go back to their defaults too. This can't be undone."
-                action="Reset"
+                title={t('settings.confirmReset')}
+                message={t('settings.resetMessage')}
+                action={t('settings.resetAction')}
                 onConfirm={reset}
                 onCancel={() => setConfirming(null)}
             />
             <AlertComponent
                 open={confirming === 'signOut'}
-                title="Sign out?"
-                message="You'll need your code to open your budget again."
-                action="Sign out"
+                title={t('settings.confirmSignOut')}
+                message={t('settings.signOutMessage')}
+                action={t('settings.signOut')}
                 onConfirm={() => {
                     setConfirming(null);
                     void signOut();

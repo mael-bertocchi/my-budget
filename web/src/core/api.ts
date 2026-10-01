@@ -1,8 +1,9 @@
 import { ApiError } from '@core/errors';
+import { t } from '@core/i18n';
 import type { BudgetDocument, IdentityTokens, RateSnapshot, StoredState } from '@core/models';
 import { IdentityTokensSchema, RateSnapshotSchema, StoredStateSchema } from '@core/models';
 import type { Maybe } from '@/models';
-import type { z } from 'zod';
+import { z } from 'zod';
 
 /**
  * @constant PRODUCTION_API_URL
@@ -35,6 +36,33 @@ const REQUEST_TIMEOUT = 15 * 1000;
  * @description What the proxy in front of the backend answers when it can't reach it: unreachable, not refused.
  */
 const GATEWAY_ERRORS = new Set([502, 503, 504]);
+
+/**
+ * @constant ThrottleSchema
+ * @description The body of a refusal from the sign-in throttle, which says how many seconds are left before it lets codes
+ * through again.
+ */
+const ThrottleSchema = z.object({ data: z.object({ retryAfter: z.number() }) });
+
+/**
+ * @function refusal
+ * @description What to tell the person when the server turns a request down, in the page's language. The server words
+ * its own messages in English for whoever reads its logs, so they are never shown.
+ *
+ * @param {number} status The HTTP status.
+ * @param {unknown} payload The answer's body.
+ *
+ * @returns {string} The message to show.
+ */
+function refusal(status: number, payload: unknown): string {
+    if (status === 429) {
+        const throttle = ThrottleSchema.safeParse(payload);
+
+        return throttle.success ? t('error.throttled', { minutes: Math.max(1, Math.ceil(throttle.data.data.retryAfter / 60)) }) : t('error.tooManyAttempts');
+    }
+
+    return status >= 500 ? t('error.unavailable') : t('error.refused');
+}
 
 /**
  * @function readTokens
@@ -108,6 +136,10 @@ export class ApiClient {
      */
     async login(code: string): Promise<void> {
         const response = await this.send('/v1/identity/login', { method: 'POST', body: JSON.stringify({ code }) });
+
+        if (response.status === 401) {
+            throw new ApiError(401, t('error.wrongCode'));
+        }
 
         this.store(await this.unwrap(response, IdentityTokensSchema));
     }
@@ -184,7 +216,7 @@ export class ApiClient {
                     listener();
                 }
 
-                throw new ApiError(401, 'Your session has expired.');
+                throw new ApiError(401, t('error.sessionExpired'));
             }
 
             response = await this.send(path, init, this.tokens?.accessToken);
@@ -241,14 +273,14 @@ export class ApiClient {
         try {
             return await fetch(`${API_URL}${path}`, { ...init, headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT) });
         } catch {
-            throw new ApiError(0, "Can't reach the server.");
+            throw new ApiError(0, t('error.unreachable'));
         }
     }
 
     /**
      * @function unwrap
-     * @description Reads a response's `{ data }` envelope, or turns an error answer into an `ApiError` with the server's
-     * own message.
+     * @description Reads a response's `{ data }` envelope, or turns an error answer into an `ApiError` saying why in the
+     * page's language.
      */
     private async unwrap<T extends z.ZodType>(response: Response, schema: T): Promise<z.infer<T>> {
         const payload: unknown = await response.json().catch(() => null);
@@ -257,16 +289,16 @@ export class ApiClient {
             const hasMessage = typeof payload === 'object' && payload !== null && 'message' in payload && typeof payload.message === 'string';
 
             if (!hasMessage && GATEWAY_ERRORS.has(response.status)) {
-                throw new ApiError(0, "Can't reach the server.");
+                throw new ApiError(0, t('error.unreachable'));
             }
 
-            throw new ApiError(response.status, hasMessage ? String(payload.message) : 'The server refused the request.');
+            throw new ApiError(response.status, refusal(response.status, payload));
         }
 
         const parsed = schema.safeParse(typeof payload === 'object' && payload !== null && 'data' in payload ? payload.data : undefined);
 
         if (!parsed.success) {
-            throw new ApiError(response.status, 'The server sent an unexpected response.');
+            throw new ApiError(response.status, t('error.unexpected'));
         }
 
         return parsed.data;

@@ -3,9 +3,10 @@ import { useDocument } from '@application/hooks';
 import EmptyStateComponent from '@components/empty-state';
 import { CategoryIconComponent } from '@components/icon-tile';
 import { dayGroups, euroAmount } from '@core/budget-math';
-import { categoriesOf, categoryOrFallback } from '@core/categories';
+import { categoriesOf, categoryName, categoryOrFallback } from '@core/categories';
 import { currencyNamed, EURO } from '@core/currencies';
 import { euroPrecise, money, relativeDay } from '@core/formatting';
+import { t } from '@core/i18n';
 import type { BudgetDocument, Operation } from '@core/models';
 import { AlignLeft, Globe, MapPin, Repeat, Search, X } from 'lucide-react';
 import { useMemo, type JSX } from 'react';
@@ -22,7 +23,7 @@ function matches(document: BudgetDocument, operation: Operation, query: string):
         return true;
     }
 
-    const haystack = [operation.name, operation.description, operation.location, categoryOrFallback(document.categories, operation.categoryId).name];
+    const haystack = [operation.name, operation.description, operation.location, categoryName(categoryOrFallback(document.categories, operation.categoryId))];
 
     return haystack.some((text) => (text ?? '').toLowerCase().includes(needle));
 }
@@ -43,11 +44,11 @@ function OperationRow({ document, operation, onOpen }: { document: BudgetDocumen
             <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5">
                     <span className="truncate text-[15px] font-medium">{operation.name}</span>
-                    {operation.isRecurring && <Repeat size={13} className="shrink-0 text-ink-quaternary" aria-label="Recurring" />}
-                    {hasDescription && <AlignLeft size={13} className="shrink-0 text-ink-quaternary" aria-label="Has a note" />}
+                    {operation.isRecurring && <Repeat size={13} className="shrink-0 text-ink-quaternary" aria-label={t('history.recurring')} />}
+                    {hasDescription && <AlignLeft size={13} className="shrink-0 text-ink-quaternary" aria-label={t('history.hasNote')} />}
                 </span>
                 {operation.isOnline && (
-                    <span className="mt-0.5 flex items-center gap-1 text-[13px] text-ink-secondary"><Globe size={12} /> Online</span>
+                    <span className="mt-0.5 flex items-center gap-1 text-[13px] text-ink-secondary"><Globe size={12} /> {t('history.online')}</span>
                 )}
                 {!operation.isOnline && (operation.location ?? '') !== '' && (
                     <span className="mt-0.5 flex items-center gap-1 text-[13px] text-ink-secondary"><MapPin size={12} className="shrink-0" /> <span className="truncate">{operation.location}</span></span>
@@ -93,12 +94,12 @@ function HistoryPage(): JSX.Element {
     };
 
     const isFiltered = query !== '' || categoryId !== null;
-    const chips = [{ id: null, name: 'All' }, ...categoriesOf(document.categories)];
+    const chips = [{ id: null, name: t('history.all') }, ...categoriesOf(document.categories).map((category) => ({ id: category.id, name: categoryName(category) }))];
 
     return (
         <div className="mx-auto max-w-3xl animate-rise">
-            <p className="eyebrow">History</p>
-            <h1 className="mt-1 text-[34px] font-semibold leading-tight tracking-tight">Operations</h1>
+            <p className="eyebrow">{t('history.eyebrow')}</p>
+            <h1 className="mt-1 text-[34px] font-semibold leading-tight tracking-tight">{t('history.title')}</h1>
 
             <label className="relative mt-6 block">
                 <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-tertiary" />
@@ -106,11 +107,11 @@ function HistoryPage(): JSX.Element {
                     type="search"
                     value={query}
                     onChange={(event) => update('q', event.target.value)}
-                    placeholder="Search operations"
+                    placeholder={t('history.search')}
                     className="h-11 w-full rounded-xl bg-fill-strong/70 pl-10 pr-10 text-[16px] outline-none transition placeholder:text-ink-tertiary focus:bg-white focus:shadow-control focus:ring-2 focus:ring-accent/40 [&::-webkit-search-cancel-button]:hidden"
                 />
                 {query !== '' && (
-                    <button type="button" aria-label="Clear search" onClick={() => update('q', null)} className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-ink-quaternary text-white">
+                    <button type="button" aria-label={t('history.clearSearch')} onClick={() => update('q', null)} className="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full bg-ink-quaternary text-white">
                         <X size={12} strokeWidth={3} />
                     </button>
                 )}
@@ -136,7 +137,7 @@ function HistoryPage(): JSX.Element {
             <div className="mt-2">
                 {groups.length === 0 && (
                     <div className="mt-6">
-                        <EmptyStateComponent message={isFiltered ? 'No operations match this search.' : 'No operations yet. Use New operation to log your first expense.'} />
+                        <EmptyStateComponent message={isFiltered ? t('history.noMatch') : t('history.empty')} />
                     </div>
                 )}
                 {groups.map((group) => (

@@ -3,6 +3,7 @@ import { useBudget } from '@application/hooks';
 import { useServices } from '@application/services';
 import { useSession } from '@application/session-context';
 import NavigationComponent from '@components/navigation';
+import { t } from '@core/i18n';
 import SpinnerComponent from '@components/spinner';
 import SignInPage from '@pages/sign-in/sign-in';
 import type { JSX } from 'react';
@@ -29,9 +30,9 @@ function LayoutComponent(): JSX.Element {
                     <SpinnerComponent size={28} />
                 ) : (
                     <>
-                        <p className="text-[17px] font-semibold">Your budget couldn't be loaded</p>
+                        <p className="text-[17px] font-semibold">{t('layout.loadFailed')}</p>
                         <p className="text-[15px] text-ink-secondary">{error}</p>
-                        <button type="button" onClick={() => void store.refresh()} className="mt-2 rounded-full bg-accent px-5 py-2 text-[15px] font-semibold text-white">Try again</button>
+                        <button type="button" onClick={() => void store.refresh()} className="mt-2 rounded-full bg-accent px-5 py-2 text-[15px] font-semibold text-white">{t('layout.tryAgain')}</button>
                     </>
                 )}
             </main>

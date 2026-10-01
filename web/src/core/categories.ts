@@ -1,3 +1,4 @@
+import { isMessageKey, t } from '@core/i18n';
 import type { Category } from '@core/models';
 
 /**
@@ -63,6 +64,21 @@ export function categoriesOf(categories: readonly Category[]): readonly Category
 
         return shipped === undefined ? category : { ...category, name: shipped.name, symbol: shipped.symbol, colorHex: shipped.colorHex };
     });
+}
+
+/**
+ * @function categoryName
+ * @description The name to show. The budget keeps the English name whatever language each device is in, so the
+ * categories the app knows are translated by id, and anything else shows the name it was stored with.
+ *
+ * @param {Category} category The category.
+ *
+ * @returns {string} Its name in the page's language.
+ */
+export function categoryName(category: Category): string {
+    const key = `category.${category.id}`;
+
+    return isMessageKey(key) ? t(key) : category.name;
 }
 
 /**

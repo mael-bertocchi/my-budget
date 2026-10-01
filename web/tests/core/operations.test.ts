@@ -1,3 +1,4 @@
+import { chooseLanguage } from '@core/i18n';
 import { amountInputOf, deleteOperation, groupAmountInput, parseAmountInput, sanitizeAmountInput, toOperation, upsertOperation } from '@core/operations';
 import { describe, expect, it } from 'vitest';
 
@@ -36,6 +37,27 @@ describe('amount field', () => {
     it('prefills an amount', () => {
         expect(amountInputOf(1200)).toBe('1,200');
         expect(amountInputOf(12.5)).toBe('12.50');
+    });
+});
+
+describe('amount field in French', () => {
+    it('reads a comma or a dot as the decimal separator and ignores the spaced thousands', () => {
+        chooseLanguage('fr');
+
+        expect(sanitizeAmountInput('12,')).toBe('12.');
+        expect(sanitizeAmountInput('12,5')).toBe('12.5');
+        expect(sanitizeAmountInput('12.5')).toBe('12.5');
+        expect(sanitizeAmountInput('1\u00a0234,567')).toBe('1234.56');
+        expect(parseAmountInput('1\u00a0234,50')).toBe(1234.5);
+    });
+
+    it('groups and prefills the French way', () => {
+        chooseLanguage('fr');
+
+        expect(groupAmountInput('1234567.5')).toBe('1\u00a0234\u00a0567,5');
+        expect(groupAmountInput(sanitizeAmountInput('1234,')).toString()).toBe('1\u00a0234,');
+        expect(amountInputOf(12.5)).toBe('12,50');
+        expect(amountInputOf(1200)).toBe('1\u00a0200');
     });
 });
 

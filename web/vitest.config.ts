@@ -18,5 +18,6 @@ export default defineConfig({
       TZ: 'Europe/Paris',
     },
     include: ['tests/**/*.test.ts'],
+    setupFiles: ['tests/support/setup.ts'],
   },
 });

@@ -1,6 +1,8 @@
 import { useServices } from '@application/services';
 import type { BudgetSnapshot } from '@core/budget-store';
 import type { ExchangeRates } from '@core/exchange-rates';
+import type { Language } from '@core/i18n';
+import { currentLanguage, subscribeLanguage } from '@core/i18n';
 import type { BudgetDocument } from '@core/models';
 import { useSyncExternalStore } from 'react';
 
@@ -26,6 +28,14 @@ export function useDocument(): BudgetDocument {
     }
 
     return document;
+}
+
+/**
+ * @function useLanguage
+ * @description The language the page is in, re-rendering whenever another is picked.
+ */
+export function useLanguage(): Language {
+    return useSyncExternalStore(subscribeLanguage, currentLanguage);
 }
 
 /**

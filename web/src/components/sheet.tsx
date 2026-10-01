@@ -1,3 +1,4 @@
+import { t } from '@core/i18n';
 import { X } from 'lucide-react';
 import { useEffect, useRef, type JSX, type ReactNode } from 'react';
 
@@ -54,7 +55,7 @@ function SheetComponent({ open, title, onClose, children, footer }: SheetProps):
                 <>
                     <header className="flex items-center justify-between px-6 pb-2 pt-5">
                         <h2 className="text-[20px] font-semibold tracking-tight">{title}</h2>
-                        <button type="button" onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-full bg-fill text-ink-secondary transition hover:bg-fill-strong">
+                        <button type="button" onClick={onClose} aria-label={t('common.close')} className="flex h-8 w-8 items-center justify-center rounded-full bg-fill text-ink-secondary transition hover:bg-fill-strong">
                             <X size={17} strokeWidth={2.4} />
                         </button>
                     </header>

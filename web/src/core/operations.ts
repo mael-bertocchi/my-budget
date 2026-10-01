@@ -1,5 +1,6 @@
 import { EURO } from '@core/currencies';
 import { wholeSeconds } from '@core/dates';
+import { numberStyle } from '@core/formatting';
 import type { BudgetDocument, Operation } from '@core/models';
 import type { Maybe } from '@/models';
 
@@ -38,7 +39,9 @@ export interface OperationDraft {
 /**
  * @function sanitizeAmountInput
  * @description Keeps what is typed in the amount field a valid amount: digits, one decimal separator, two decimals at
- * most and eight digits in all. A comma followed by at most two digits is read as the decimal separator, so 12,50 works.
+ * most and eight digits in all. In English a comma is grouping, unless it is followed by at most two digits, so 12,50
+ * works. In French both a comma and a dot are the decimal separator, and the spaces grouping the thousands are dropped
+ * with anything else.
  *
  * @param {string} text What was typed.
  *
@@ -47,11 +50,15 @@ export interface OperationDraft {
 export function sanitizeAmountInput(text: string): string {
     let working = text;
 
-    if (!working.includes('.') && /^[^,]*,\d{0,2}$/.test(working)) {
-        working = working.replace(',', '.');
-    }
+    if (numberStyle().decimal === ',') {
+        working = working.replaceAll(',', '.');
+    } else {
+        if (!working.includes('.') && /^[^,]*,\d{0,2}$/.test(working)) {
+            working = working.replace(',', '.');
+        }
 
-    working = working.replaceAll(',', '');
+        working = working.replaceAll(',', '');
+    }
 
     let integer = '';
     let fraction = '';
@@ -91,13 +98,15 @@ export function sanitizeAmountInput(text: string): string {
 
 /**
  * @function groupAmountInput
- * @description Adds thousands separators to a cleaned amount, as the app does while typing.
+ * @description Writes a cleaned amount the way the page's language does, thousands separators included, as the app
+ * does while typing.
  */
 export function groupAmountInput(cleaned: string): string {
+    const { decimal, grouping } = numberStyle();
     const [integer = '', ...fraction] = cleaned.split('.');
-    const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, grouping);
 
-    return fraction.length > 0 ? `${grouped}.${fraction.join('')}` : grouped;
+    return fraction.length > 0 ? `${grouped}${decimal}${fraction.join('')}` : grouped;
 }
 
 /**

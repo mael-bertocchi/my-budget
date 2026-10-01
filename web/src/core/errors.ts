@@ -1,3 +1,5 @@
+import { t } from '@core/i18n';
+
 /**
  * @class ApiError
  * @description An error answered by the budget server, or raised while trying to reach it. Its message is written for
@@ -47,5 +49,5 @@ export class ApiError extends Error {
  * @returns {string} Its message.
  */
 export function messageOf(error: unknown): string {
-    return error instanceof Error ? error.message : 'Something went wrong.';
+    return error instanceof Error ? error.message : t('error.generic');
 }

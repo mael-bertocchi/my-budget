@@ -1,6 +1,7 @@
 import { useSession } from '@application/session-context';
 import SpinnerComponent from '@components/spinner';
 import { messageOf } from '@core/errors';
+import { t } from '@core/i18n';
 import { useEffect, useRef, useState, type ClipboardEvent, type JSX, type KeyboardEvent } from 'react';
 
 /**
@@ -129,9 +130,9 @@ function SignInPage(): JSX.Element {
         <main className="flex min-h-dvh items-center justify-center px-5">
             <div className="w-full max-w-[420px] animate-rise text-center">
                 <h1 className="text-[34px] font-semibold tracking-tight">My Budget</h1>
-                <p className="mt-2 text-[17px] text-ink-secondary">Enter your code to open your budget.</p>
+                <p className="mt-2 text-[17px] text-ink-secondary">{t('signIn.prompt')}</p>
 
-                <div key={attempts} className={`mt-10 flex justify-center gap-2 sm:gap-2.5 ${attempts > 0 ? 'animate-shake' : ''}`} role="group" aria-label="Six-digit code">
+                <div key={attempts} className={`mt-10 flex justify-center gap-2 sm:gap-2.5 ${attempts > 0 ? 'animate-shake' : ''}`} role="group" aria-label={t('signIn.code')}>
                     {digits.map((digit, index) => (
                         <input
                             key={index}
@@ -144,7 +145,7 @@ function SignInPage(): JSX.Element {
                             maxLength={LENGTH}
                             value={digit}
                             disabled={isSubmitting}
-                            aria-label={`Digit ${index + 1}`}
+                            aria-label={t('signIn.digit', { position: index + 1 })}
                             onChange={(event) => handleChange(index, event.target.value)}
                             onKeyDown={(event) => handleKeyDown(index, event)}
                             onPaste={handlePaste}
