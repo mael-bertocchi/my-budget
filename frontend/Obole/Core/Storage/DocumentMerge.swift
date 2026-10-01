@@ -2,7 +2,7 @@ import Foundation
 
 /// Reconciles the device's copy of the budget with the server's, now that the device is no longer the only writer.
 ///
-/// Both copies are compared against the base — the last document the two agreed on — so each side's edits can be
+/// Both copies are compared against the base (the last document the two agreed on), so each side's edits can be
 /// told apart from the other's and kept. Only when both sides changed the same entry does one have to lose, and the
 /// device wins: it holds what the person in front of it just did. An entry one side edited and the other deleted
 /// is kept, since an edit is the more recent intent and a lost expense is worse than a stray one.

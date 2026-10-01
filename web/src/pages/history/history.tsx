@@ -30,7 +30,7 @@ function matches(document: BudgetDocument, operation: Operation, query: string):
 
 /**
  * @function OperationRow
- * @description One operation: its category, name and marks, where it happened, and its amount — with the euro figure
+ * @description One operation: its category, name and marks, where it happened, and its amount, with the euro figure
  * under a foreign one.
  */
 function OperationRow({ document, operation, onOpen }: { document: BudgetDocument; operation: Operation; onOpen: () => void }): JSX.Element {

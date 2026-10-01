@@ -184,7 +184,7 @@ export class BudgetStore {
     /**
      * @function drain
      * @description Writes every pending edit. Finished months are sealed first, as the app does before any edit. An edit
-     * that no longer applies — its operation was deleted on the phone, say — is dropped and reported.
+     * that no longer applies (its operation was deleted on the phone, say) is dropped and reported.
      */
     private async drain(): Promise<void> {
         if (this.retry !== null) {

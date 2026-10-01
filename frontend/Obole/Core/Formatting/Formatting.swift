@@ -5,7 +5,7 @@ enum Formatting {
     /// How the interface's language writes a number. The rules are spelled out rather than read off a locale's
     /// formatter so the web, which mirrors them, prints the very same characters. English groups with commas and
     /// puts the symbol first; French groups with a no-break space, uses a decimal comma and puts the symbol last,
-    /// after another no-break space — `€1,234.50` against `1 234,50 €`. The narrow space French typography prefers
+    /// after another no-break space: `€1,234.50` against `1 234,50 €`. The narrow space French typography prefers
     /// for thousands vanishes under the ring's tight tracking, so the full-width one is used throughout.
     private struct NumberStyle {
         let decimal: String
@@ -21,7 +21,7 @@ enum Formatting {
         let compact: NumberFormatter
         let precise: NumberFormatter
 
-        /// Rates span orders of magnitude — a euro buys about one dollar but over fifteen hundred won — so they
+        /// Rates span orders of magnitude (a euro buys about one dollar but over fifteen hundred won), so they
         /// carry a fixed count of significant digits rather than of decimals. At five decimals every recent won
         /// rate collapsed onto the same 0.00064, hiding the difference between one date and the next.
         let rate: NumberFormatter
@@ -108,7 +108,7 @@ enum Formatting {
     }
 
     /// Reduces whatever is in an amount field to digits and a dot before at most two decimals. In English a comma is
-    /// grouping, unless it was just typed with no dot yet — the decimal key of a French keypad. In French both a comma
+    /// grouping, unless it was just typed with no dot yet (the decimal key of a French keypad). In French both a comma
     /// and a dot are the decimal separator, and the spaces grouping the thousands are dropped with anything else.
     static func sanitizeAmountInput(_ text: String, maximumDigits: Int = 8) -> String {
         var working = text

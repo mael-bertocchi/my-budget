@@ -43,7 +43,7 @@ extension Currency {
     static let bankMarkup = 0.01
 
     /// The rate the app applies: the published reference rate with the bank's markup on top, so a euro
-    /// amount matches what is actually charged. The euro itself is never marked up — it is never converted.
+    /// amount matches what is actually charged. The euro itself is never marked up, since it is never converted.
     static func bankRate(_ referenceRate: Double, code: String) -> Double {
         guard code != euro.code else { return referenceRate }
 
@@ -137,7 +137,7 @@ final class ExchangeRates {
     }
 
     /// Whether a day's rates may still be replaced. A day answered by an earlier day's rate is provisional
-    /// while it is today or later: its own rate simply hasn't been published yet. A past weekend is not —
+    /// while it is today or later: its own rate simply hasn't been published yet. A past weekend is not:
     /// Friday's rate is the final answer for it.
     private func isProvisional(_ snapshot: RateSnapshot, for day: String) -> Bool {
         snapshot.quoteDate != day && day >= Self.day(from: .now)

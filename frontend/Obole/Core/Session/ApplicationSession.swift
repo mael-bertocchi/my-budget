@@ -81,7 +81,7 @@ final class ApplicationSession {
         await push()
     }
 
-    /// Picks up what was written elsewhere while the app sat in the background — in the web interface, say —
+    /// Picks up what was written elsewhere while the app sat in the background (in the web interface, say)
     /// before anything is pushed, so coming back to the app never erases it.
     func applicationBecameActive() {
         guard identityState == .signedIn, !isDemo else { return }
@@ -101,7 +101,7 @@ final class ApplicationSession {
     #endif
 
     /// Re-prices recent operations at the rate published for their own date. An operation entered before the
-    /// ECB publishes — around 16:00 CET — is stored at the previous day's rate, because at that moment no
+    /// ECB publishes (around 16:00 CET) is stored at the previous day's rate, because at that moment no
     /// rate for its own day exists yet. This corrects it once that day is out.
     ///
     /// A day with no rate of its own resolves to the last one published before it, so a Saturday purchase
@@ -248,7 +248,7 @@ final class ApplicationSession {
     }
 
     /// What the device should hold once it has seen the server's document. Without a base to measure edits against
-    /// — a first sign-in, or a server whose revision went backwards because it was reset — the server wins unless
+    /// (a first sign-in, or a server whose revision went backwards because it was reset), the server wins unless
     /// it is empty, in which case the device's budget seeds it.
     private func resolve(_ remote: RemoteState) -> BudgetDocument {
         let local = store.document()

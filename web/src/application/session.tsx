@@ -15,7 +15,7 @@ const CATCH_UP_EVERY = 60 * 1000;
 /**
  * @function useCatchUp
  * @description Keeps a signed-in page in step with the server: it reads the budget when the page opens, when it comes
- * back into view, when the connection returns and every minute while visible — the web version of the app reconciling
+ * back into view, when the connection returns and every minute while visible: the web version of the app reconciling
  * when it becomes active. The first read also re-prices recent foreign operations, as the app does.
  */
 function useCatchUp(services: Services, state: IdentityState): void {

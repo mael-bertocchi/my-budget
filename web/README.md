@@ -1,20 +1,20 @@
-# 🖥️ Obole — Web
+# 🖥️ Obole • Web
 
-The **web interface** of Obole: the same budget as the iOS app, in the browser — light, calm and Apple-like. Open it, type your six-digit code, and everything is there.
+The **web interface** of Obole: the same budget as the iOS app, in the browser: light, calm and Apple-like. Open it, type your six-digit code, and everything is there.
 
 ## Features
 
-- **Budget** — the ring with what is left to spend, the spent, days-left and per-day figures, and every category against its limit. Step back through past months; a past month is measured against the budget frozen when it ended.
-- **History** — operations grouped by day with day totals, a search, and a filter chip per category.
-- **New & edit operation** — amount in any currency with the euro equivalent at the rate of the operation's own day (bank markup included), category, name, note, date, online, place, recurring. Delete with a confirmation.
-- **Limits** — the monthly budget and each category's limit, with what is left to dispatch.
-- **Settings** — sync state, default currency, language, exchange rates, operation and category counts, reset, sign out.
-- **English & French** — the page follows the browser's language, or the one picked in Settings, and switches on the spot. Amounts and dates are written as in the app: `€1,234.50` in English, `1 234,50 €` in French.
-- **Works on a phone too** — the tabs move to a bottom tab bar and sheets rise from the bottom edge.
+- **Budget** • the ring with what is left to spend, the spent, days-left and per-day figures, and every category against its limit. Step back through past months; a past month is measured against the budget frozen when it ended.
+- **History** • operations grouped by day with day totals, a search, and a filter chip per category.
+- **New & edit operation** • amount in any currency with the euro equivalent at the rate of the operation's own day (bank markup included), category, name, note, date, online, place, recurring. Delete with a confirmation.
+- **Limits** • the monthly budget and each category's limit, with what is left to dispatch.
+- **Settings** • sync state, default currency, language, exchange rates, operation and category counts, reset, sign out.
+- **English & French** • the page follows the browser's language, or the one picked in Settings, and switches on the spot. Amounts and dates are written as in the app: `€1,234.50` in English, `1 234,50 €` in French.
+- **Works on a phone too** • the tabs move to a bottom tab bar and sheets rise from the bottom edge.
 
 ## Stack
 
-React 19 · TypeScript · Vite · Tailwind CSS · React Router · lucide · Zod — served by Caddy.
+React 19 · TypeScript · Vite · Tailwind CSS · React Router · lucide · Zod, served by Caddy.
 
 ## Signing in
 
@@ -22,7 +22,7 @@ The page asks for the six-digit code set in the backend's environment (`IDENTITY
 
 ## How it syncs
 
-The page is a second client of the backend, next to the app, and both write the same budget document. An edit shows at once and is sent in the background, naming the revision it was made from. If the app wrote in between, the backend refuses it; the page reads the new revision and applies the edit again on top, so neither side erases the other. While it is open, the page also picks up what the app writes — when it comes back into view, when the connection returns, and every minute.
+The page is a second client of the backend, next to the app, and both write the same budget document. An edit shows at once and is sent in the background, naming the revision it was made from. If the app wrote in between, the backend refuses it; the page reads the new revision and applies the edit again on top, so neither side erases the other. While it is open, the page also picks up what the app writes: when it comes back into view, when the connection returns, and every minute.
 
 ## Architecture
 
@@ -52,7 +52,7 @@ npm install
 cp .env.example .env
 ```
 
-In development the page calls its own origin, and the development server forwards `/v1` to `API_URL` — `http://localhost:8080` by default — so no CORS setup is needed locally.
+In development the page calls its own origin, and the development server forwards `/v1` to `API_URL` (`http://localhost:8080` by default), so no CORS setup is needed locally.
 
 3. Start it
 
@@ -72,7 +72,7 @@ npm run dev
 
 ## Docker
 
-A multi-stage image lives at `.docker/Dockerfile`: the build is served as static files by Caddy (`.docker/Caddyfile`), on port 80 over plain HTTP — TLS belongs to the proxy in front of it.
+A multi-stage image lives at `.docker/Dockerfile`: the build is served as static files by Caddy (`.docker/Caddyfile`), on port 80 over plain HTTP; TLS belongs to the proxy in front of it.
 
 ```bash
 docker build -f .docker/Dockerfile -t obole-web .

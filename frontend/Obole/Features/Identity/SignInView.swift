@@ -92,7 +92,7 @@ struct SignInView: View {
     }
 
     /// Keeps the field to six digits and submits as the sixth arrives. It runs on every edit, however fast the digits
-    /// come — typed, pasted or autofilled all at once.
+    /// come: typed, pasted or autofilled all at once.
     private var digitsOnly: Binding<String> {
         Binding(
             get: { code },

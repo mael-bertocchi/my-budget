@@ -47,7 +47,7 @@ const CATALOGUE = new Map(DEFAULT_CATEGORIES.map((category) => [category.id, cat
 /**
  * @function categoriesOf
  * @description The categories to offer: the stored ones, or the shipped catalogue when none were ever stored. As in the
- * app, the catalogue owns how a shipped category looks — its name, symbol and colour — and the stored copy only its
+ * app, the catalogue owns how a shipped category looks (its name, symbol and colour) and the stored copy only its
  * limit, so a new icon reaches a budget stored before it.
  *
  * @param {readonly Category[]} categories The stored categories.

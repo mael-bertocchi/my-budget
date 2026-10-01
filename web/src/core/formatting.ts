@@ -68,8 +68,8 @@ const precise = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maxim
 
 /**
  * @constant significant
- * @description Rates to five significant digits. They span orders of magnitude — a euro buys about one dollar but
- * over fifteen hundred won — so a fixed count of decimals would flatten the small ones.
+ * @description Rates to five significant digits. They span orders of magnitude (a euro buys about one dollar but
+ * over fifteen hundred won), so a fixed count of decimals would flatten the small ones.
  */
 const significant = new Intl.NumberFormat('en-US', { minimumSignificantDigits: 5, maximumSignificantDigits: 5, useGrouping: false });
 

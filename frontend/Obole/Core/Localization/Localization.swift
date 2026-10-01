@@ -1,7 +1,7 @@
 import Foundation
 
-/// The languages the interface can be shown in. `automatic` follows the device — or the language picked for the
-/// app in the iOS settings — and falls back to English when the device speaks neither.
+/// The languages the interface can be shown in. `automatic` follows the device (or the language picked for the
+/// app in the iOS settings) and falls back to English when the device speaks neither.
 enum InterfaceLanguage: String, CaseIterable, Identifiable {
     case automatic
     case english = "en"
@@ -19,7 +19,7 @@ enum InterfaceLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-/// The language the interface is shown in. It can change while the app runs, which the main bundle can't follow —
+/// The language the interface is shown in. It can change while the app runs, which the main bundle can't follow:
 /// it settles its localization once, at launch. So views take it from the `locale` environment value the root sets,
 /// and strings built outside a view go through `String(appLocalized:)`, which looks them up in it.
 enum Localization {

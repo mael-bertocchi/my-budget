@@ -59,7 +59,7 @@ function Field({ label, htmlFor, aside, children }: { label: string; htmlFor: st
 /**
  * @function OperationForm
  * @description The editor, mounted fresh each time the sheet opens. A foreign amount is priced at the rate of its own
- * day, markup included, and can't be saved until that rate is known — a guessed rate never passes for a published one.
+ * day, markup included, and can't be saved until that rate is known: a guessed rate never passes for a published one.
  */
 function OperationForm({ existing, onDone, onDelete, onValidityChange }: { existing: Operation | null; onDone: () => void; onDelete: () => void; onValidityChange: (isValid: boolean) => void }): JSX.Element {
     const document = useDocument();

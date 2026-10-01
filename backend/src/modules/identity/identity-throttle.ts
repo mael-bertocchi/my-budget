@@ -15,7 +15,7 @@ export const FAILURE_WINDOW = 15 * 60 * 1000;
  * @description Caps wrong codes across every caller. A six-digit code has a million values, so a per-address rate
  * limit alone would let an attacker spread guesses over many addresses; this counts every failure, wherever it came
  * from, and closes sign-in once too many land within the window. At ten per quarter of an hour, going through half
- * the codes takes years. The account's owner stays signed in meanwhile — only new sign-ins wait.
+ * the codes takes years. The account's owner stays signed in meanwhile: only new sign-ins wait.
  */
 export class SignInThrottle {
     private failures: number[] = []; /*!> When each recent wrong code was submitted */

@@ -112,7 +112,7 @@ function settle(): void {
 
 /**
  * @function applyToDocument
- * @description Tells the browser — and screen readers — which language the page is in.
+ * @description Tells the browser, and screen readers, which language the page is in.
  */
 function applyToDocument(): void {
     if (typeof document !== 'undefined') {

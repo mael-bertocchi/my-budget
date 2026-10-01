@@ -88,7 +88,7 @@ function SignInPage(): JSX.Element {
     /**
      * @function handleChange
      * @description Takes what was typed in a box. A digit typed after the one already there replaces it; several digits
-     * at once — autofill on a phone — spread over the next boxes.
+     * at once (autofill on a phone) spread over the next boxes.
      */
     const handleChange = (index: number, value: string): void => {
         const current = digits[index] ?? '';

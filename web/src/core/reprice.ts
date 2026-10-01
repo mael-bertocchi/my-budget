@@ -20,7 +20,7 @@ const EPSILON = 1e-9;
 /**
  * @function repriceRecent
  * @description Prices recent foreign operations again at the rate published for their own day. One logged before the
- * day's publication — around 16:00 CET — was priced at the previous day's rate; the app corrects it the same way.
+ * day's publication (around 16:00 CET) was priced at the previous day's rate; the app corrects it the same way.
  *
  * @param {BudgetDocument} document The budget.
  * @param {ExchangeRates} rates The rates.

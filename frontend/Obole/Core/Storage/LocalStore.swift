@@ -201,9 +201,9 @@ final class LocalStore {
 
     /// Lines the stored categories up with the shipped catalog, so a document written before a
     /// category existed gains it instead of silently missing it. For an id the catalog knows, the
-    /// catalog owns how the category looks — name, symbol and colour — and the stored copy only its
+    /// catalog owns how the category looks (name, symbol and colour) and the stored copy only its
     /// limit, so a new icon reaches documents written before it while the limits set on the device
-    /// stay. Anything outside the catalog is left alone at the end of the list — unless it was
+    /// stay. Anything outside the catalog is left alone at the end of the list, unless it was
     /// retired, in which case it is dropped once nothing is filed under it. A retired category still
     /// holding operations stays, so history never loses the name and icon its rows are drawn with.
     private func mergeCatalog() {

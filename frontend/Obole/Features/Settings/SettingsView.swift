@@ -221,7 +221,7 @@ struct SettingsView: View {
         }
     }
 
-    /// Picking a language redraws every screen in it on the spot, so a menu is enough — no sheet to come back from.
+    /// Picking a language redraws every screen in it on the spot, so a menu is enough: no sheet to come back from.
     private var languageRow: some View {
         let selection = Binding(
             get: { preferences.language },
