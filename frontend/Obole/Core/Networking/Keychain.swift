@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 enum Keychain {
-    private static let service = "fr.mael-bertocchi.my-budget"
+    private static let service = "fr.mael-bertocchi.obole"
 
     static func set(_ value: String, for key: String) {
         let data = Data(value.utf8)

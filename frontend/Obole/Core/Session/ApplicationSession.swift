@@ -304,5 +304,5 @@ final class ApplicationSession {
     /// How many pull-merge-push rounds a reconcile tries before giving up on a server that keeps changing under it.
     private static let reconcileAttempts = 3
 
-    static let serverURL = "https://api-budget.mael-bertocchi.fr"
+    static let serverURL = "https://api-obole.mael-bertocchi.fr"
 }

@@ -59,7 +59,7 @@ struct SignInView: View {
                     .foregroundStyle(Theme.accent)
             }
             .padding(.bottom, 6)
-            Text(verbatim: "My Budget")
+            Text(verbatim: "Obole")
                 .font(Theme.font(30, .semibold))
                 .tracking(-0.5)
                 .foregroundStyle(Theme.text)

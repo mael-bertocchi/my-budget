@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MyBudgetApplication: App {
+struct OboleApplication: App {
     @State private var store: LocalStore
     @State private var rates: ExchangeRates
     @State private var preferences: Preferences

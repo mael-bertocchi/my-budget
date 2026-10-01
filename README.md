@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💶 My Budget
+# 🪙 Obole
 
 ### A calm place for every euro.
 
@@ -12,7 +12,7 @@ Log an operation, scan the history ledger, and watch the monthly budget — on y
 
 ---
 
-## Why My Budget
+## Why Obole
 
 - 🎯 **One glance, one number** — a budget ring that tells you what is left to spend, and how much that is per remaining day.
 - 🧾 **A ledger you can read** — operations grouped by day, with day totals, search, and filters by category.
@@ -40,7 +40,7 @@ Log an operation, scan the history ledger, and watch the monthly budget — on y
 ## Layout
 
 ```
-my-budget/
+obole/
 ├─ frontend/   iOS application (SwiftUI)
 ├─ web/        Web interface (React)
 └─ backend/    Fastify server (TypeScript)

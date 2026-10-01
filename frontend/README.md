@@ -1,4 +1,4 @@
-# 💶 My Budget — Frontend
+# 🪙 Obole — Frontend
 
 The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Glass" design language: translucent, blurred materials floating over ambient colour glows on a pure-black base.
 
@@ -18,12 +18,12 @@ The native **iOS** app, built entirely in SwiftUI against the iOS 26 "Liquid Gla
 
 ## Tech
 
-Swift · SwiftUI · Observation · URLSession — a single target (`MyBudget`), no third-party dependencies.
+Swift · SwiftUI · Observation · URLSession — a single target (`Obole`), no third-party dependencies.
 
 ## Architecture
 
 ```
-MyBudget/
+Obole/
 ├─ Application/    App entry, root shell (auth gate + native TabView)
 ├─ Core/
 │  ├─ Budget/      Derived selectors (month summary, category spend, day groups)
@@ -42,7 +42,7 @@ MyBudget/
 
 ### Languages
 
-Every string lives in `MyBudget/Localizable.xcstrings`, with English as the source and a French translation. The language can change while the app runs, which the main bundle can't follow, so the root sets the chosen locale in the environment — `Text("…")` resolves in it — and strings built outside a view go through `String(appLocalized:)`, which looks them up in that locale. Category names stay in English in the synced document and are translated by id when shown, so the app and the web never fight over them.
+Every string lives in `Obole/Localizable.xcstrings`, with English as the source and a French translation. The language can change while the app runs, which the main bundle can't follow, so the root sets the chosen locale in the environment — `Text("…")` resolves in it — and strings built outside a view go through `String(appLocalized:)`, which looks them up in that locale. Category names stay in English in the synced document and are translated by id when shown, so the app and the web never fight over them.
 
 State lives in `@Observable` objects injected through the environment: `LocalStore` (data, persisted to Application Support as JSON), `ExchangeRates` (currencies), `Preferences` (UserDefaults), and `ApplicationSession` (auth + sync). Views read them directly and derive everything else through `BudgetMath` — no view models.
 
@@ -56,27 +56,27 @@ The local JSON store is the working copy; the server holds the durable one, and 
 
 A failed push flips the Settings badge to **Offline**, and the next reconcile catches up. Access tokens refresh automatically on a `401`; when the refresh token is gone, the app returns to the sign-in screen.
 
-The app talks to a fixed HTTPS endpoint — `https://api-budget.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
+The app talks to a fixed HTTPS endpoint — `https://api-obole.mael-bertocchi.fr` (`ApplicationSession.serverURL`) — shown in Settings. To develop against a local server, change that constant.
 
 ## Local Development
 
 1. Open the project in Xcode
 
 ```bash
-open MyBudget.xcodeproj
+open Obole.xcodeproj
 ```
 
 2. Build the application
 
 ```bash
-xcodebuild -project MyBudget.xcodeproj -scheme MyBudget -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+xcodebuild -project Obole.xcodeproj -scheme Obole -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 > Note: To run the simulator, go to Xcode and press the run button.
 
 ## Keeping It Installed On A Device
 
-The project signs with a free personal Apple team, so each provisioning profile lasts **seven days**. When one lapses, iOS refuses to launch the app — *"My Budget" Is No Longer Available*, greyed-out icon — and also drops the developer trust, which only a tap on the phone can restore.
+The project signs with a free personal Apple team, so each provisioning profile lasts **seven days**. When one lapses, iOS refuses to launch the app — *"Obole" Is No Longer Available*, greyed-out icon — and also drops the developer trust, which only a tap on the phone can restore.
 
 `Scripts/refresh-device-install.sh` rebuilds, re-signs and reinstalls over the network. The iPhone only needs to be paired for wireless debugging and on the same Wi-Fi — no cable. Run it once a week, before the profile runs out, and the trust stays intact:
 
@@ -90,13 +90,13 @@ The project signs with a free personal Apple team, so each provisioning profile 
 | `--no-launch` | Install without launching the app |
 | `--device <udid>` | Target a specific device instead of the paired iPhone |
 
-It builds `Release` into `build/device`; set `MY_BUDGET_CONFIGURATION=Debug` to match what Xcode's Run button installs.
+It builds `Release` into `build/device`; set `OBOLE_CONFIGURATION=Debug` to match what Xcode's Run button installs.
 
 If the profile has already expired, the reinstall works but the launch is refused — restore the trust under **Settings ▸ General ▸ VPN & Device Management** on the phone, then run the script again.
 
 ## Signing in
 
-The app needs the backend running at `https://api-budget.mael-bertocchi.fr`. Sign in with the six-digit code set in the backend's environment (`IDENTITY_CODE`); the sixth digit submits it.
+The app needs the backend running at `https://api-obole.mael-bertocchi.fr`. Sign in with the six-digit code set in the backend's environment (`IDENTITY_CODE`); the sixth digit submits it.
 
 ## Running Demonstration
 

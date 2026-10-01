@@ -159,7 +159,7 @@ struct SettingsView: View {
                 }
                 .glassCard()
 
-                Text(verbatim: "My Budget \(applicationVersion)")
+                Text(verbatim: "Obole \(applicationVersion)")
                     .font(Theme.font(11))
                     .foregroundStyle(Theme.faint)
                     .frame(maxWidth: .infinity)

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B100000000000000000000A6"
-               BuildableName = "MyBudget.app"
-               BlueprintName = "MyBudget"
-               ReferencedContainer = "container:MyBudget.xcodeproj">
+               BuildableName = "Obole.app"
+               BlueprintName = "Obole"
+               ReferencedContainer = "container:Obole.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B100000000000000000000A6"
-            BuildableName = "MyBudget.app"
-            BlueprintName = "MyBudget"
-            ReferencedContainer = "container:MyBudget.xcodeproj">
+            BuildableName = "Obole.app"
+            BlueprintName = "Obole"
+            ReferencedContainer = "container:Obole.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -71,9 +71,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B100000000000000000000A6"
-            BuildableName = "MyBudget.app"
-            BlueprintName = "MyBudget"
-            ReferencedContainer = "container:MyBudget.xcodeproj">
+            BuildableName = "Obole.app"
+            BlueprintName = "Obole"
+            ReferencedContainer = "container:Obole.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
